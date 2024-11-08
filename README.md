@@ -4,31 +4,31 @@ Code and documentation for Track to Treat. Data are also stored in the local rep
 
 File organization:
 
-- README.md
-- Data/ [ignored]
--   Phase 1/
--     LifePak/
--       Raw/
--       Clean/
--     Qualtrics/
--       Raw/
--       Clean/
--     Merged/
--   Phase 2/
--     LifePak/
--       Raw/
--       Clean/
--     Qualtrics/
--       Raw/
--       Clean/
--     Merged/
-- Phase 1/
--   README.md
--   Qualtrics Data Cleaning.R
--   LifePak Data Cleaning.R
--   Data Merging.R
-- Phase 2/
--   README.md
--   Qualtrics Data Cleaning.R
--   LifePak Data Cleaning.R
--   Data Merging.R
+* README.md
+* Data/ [ignored]
+  * Phase 1/
+    * LifePak/
+      * Raw/
+      * Clean/
+    * Qualtrics/
+      * Raw/
+      * Clean/
+    * Merged/
+  * Phase 2/
+    * LifePak/
+      * Raw/
+      * Clean/
+    * Qualtrics/
+      * Raw/
+      * Clean/
+    * Merged/
+* Phase 1/
+  * README.md
+  * Qualtrics Data Cleaning.R
+  * LifePak Data Cleaning.R
+  * Data Merging.R
+* Phase 2/
+  * README.md
+  * Qualtrics Data Cleaning.R
+  * LifePak Data Cleaning.R
+  * Data Merging.R
