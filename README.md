@@ -1,6 +1,6 @@
 # track-to-treat
 
-Code and documentation for Track to Treat. Data are also stored in the local repository on /resfiles, but not uploaded here (see .gitignore).
+Data cleaning code and documentation for Track to Treat. Data are also stored in the local repository on /resfiles, but not uploaded here (see .gitignore).
 
 File organization:
 
