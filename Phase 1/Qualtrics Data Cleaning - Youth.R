@@ -1,0 +1,375 @@
+## Track-to-Treat Phase 1 Data Cleaning
+## Qualtrics data (youth)
+
+####  Startup  ####
+## Load packages
+library(tidyverse)
+library(qualtRics)
+library(here)
+library(openxlsx)
+`%+%` <- paste0
+
+
+## Load helper functions
+source(here("Qualtrics Data Cleaning Helper Functions.R"))
+
+
+## Load data
+# Save directory
+raw_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\Qualtrics Data\\Raw Data\\"
+clean_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\Clean Data (Isaac)\\"
+
+# Load datasets in the following format: [respondent][wave]_[administration]_raw
+yb_in_person_raw <- read_survey(raw_data_dir %+% "dp5_b_child_p1_numeric.csv")
+yb_remote_raw <- read_survey(raw_data_dir %+% "dp5_b_child_remote_p1_numeric.csv")
+y3m_raw <- read_survey(raw_data_dir %+% "dp5_3m_child_p1_numeric.csv")
+
+# Item-level config file
+config <- openxlsx::read.xlsx(
+  here("Phase 1", "Track to Treat P1 Codebook.xlsx"),
+  sheet = "Individual Variables",
+  rows = c(1, 3:1214)
+) %>%
+  select(
+    item = Variable.Name,
+    measure = Measure,
+    subscale = Subscale,
+    reversed = `Is.the.variable.reverse.coded?`,
+    reverse_base = Reverse.base
+  ) %>%
+  mutate(
+    reversed = reversed == 1
+  )
+
+
+
+####  Clean Data  ####
+## Combine in-person and remote administrations
+# Note on variable overlap: 
+# - No variables appear in the in-person dataset only
+# - No important variables appear in the remote dataset only (only "password_child" and click information)
+yb_raw <- bind_rows(
+  list(
+    "in-person" = yb_in_person_raw, 
+    "remote" = yb_remote_raw
+    ),
+  .id = "administration"
+)
+
+
+## Remove invalid responses
+# Invalid IDs: Tests or survey previews
+invalid_ids <- c("LSMH00000", "LSMH00000000111", "LSMH00001", "LSMH00062", "LSMH000", "LSMH000000")
+
+# Remove invalid responses using helper function
+yb_valid_ids <- remove_invalid_responses(yb_raw, yb_lsmh_id)
+y3m_valid_ids <- remove_invalid_responses(y3m_raw, y3m_lsmh_id)
+
+# Manually correct IDs that was entered incorrectly at 3m
+y3m_valid_ids$y3m_lsmh_id[y3m_valid_ids$y3m_lsmh_id == "LSMH00196"] <- "LSMH00169"
+
+
+## Deduplicate
+# Identify duplicates using helper function
+identify_duplicates(yb_valid_ids, yb_lsmh_id)
+identify_duplicates(y3m_valid_ids, y3m_lsmh_id)
+
+# Remove duplicates using helper function
+yb_deduplicated <- remove_duplicates(yb_valid_ids, yb_lsmh_id)
+y3m_deduplicated <- remove_duplicates(y3m_valid_ids, y3m_lsmh_id)
+
+# Double-check work
+identify_duplicates(yb_deduplicated, yb_lsmh_id)
+identify_duplicates(y3m_deduplicated, y3m_lsmh_id)
+
+
+## Merge data by LSMH ID
+# IDs in baseline not 3m
+setdiff(yb_deduplicated$yb_lsmh_id, y3m_deduplicated$y3m_lsmh_id)
+
+# IDs in 3m not baseline
+setdiff(y3m_deduplicated$y3m_lsmh_id, yb_deduplicated$yb_lsmh_id)
+
+# Full join
+y_merged <- full_join(
+  yb_deduplicated,
+  y3m_deduplicated,
+  by = c("yb_lsmh_id" = "y3m_lsmh_id"),
+  relationship = "one-to-one",
+  suffix = c(".yb", ".y3m")
+)
+
+
+## Clean columns
+y_clean <- y_merged %>%
+  
+  # Remove click, page time variables
+  select(
+    
+    -matches("Click Count"),
+    -matches("First Click"),
+    -matches("Last Click"),
+    -matches("Page Submit")
+    
+  ) %>%
+  
+  # Un-reverse code items
+  mutate(
+    across(
+      .cols = any_of(config$item[config$reversed]),
+      .fns = ~ config$reverse_base[config$item == cur_column()] - .x
+    )
+  ) %>%
+  
+  # Rename "mvps" to "mpvs" throughout
+  rename_with(
+    .fn = ~ gsub("mvps", "mpvs", .x),
+    .cols = contains("mvps")
+  ) %>%
+  
+  # Clean columns and create composites
+  rowwise() %>%
+  mutate(
+    
+    ## Metadata
+    # ID
+    lsmh_id = yb_lsmh_id,
+    lifepak_id = `yb_LifePak ID`,
+    
+    # Administration mode
+    yb_administration = administration,
+    
+    # Survey completion
+    yb_complete = !is.na(EndDate.yb),
+    y3m_complete = !is.na(EndDate.y3m),
+    
+    # Survey datetime and duration
+    yb_date = EndDate.yb,
+    yb_duration = EndDate.yb - StartDate.yb,
+    y3m_date = EndDate.y3m,
+    y3m_duration = EndDate.y3m - StartDate.y3m,
+    
+    
+    ## CDI-2 (Children's Depression Inventory - 2)
+    # Overall mean score
+    yb_cdi_mean = mean_across("yb", "CDI-2 SR"),
+    y3m_cdi_mean = mean_across("y3m", "CDI-2 SR"),
+    
+    # Negative mood/physical symptoms subscale
+    yb_cdi_nmps_mean = mean_across("yb", "CDI-2 SR", "Negative Mood/Physical Symptoms"),
+    y3m_cdi_nmps_mean = mean_across("y3m", "CDI-2 SR", "Negative Mood/Physical Symptoms"),
+    
+    # Negative self-esteem subscale
+    yb_cdi_nse_mean = mean_across("yb", "CDI-2 SR", "Negative Self-Esteem"),
+    y3m_cdi_nse_mean = mean_across("y3m", "CDI-2 SR", "Negative Self-Esteem"),
+    
+    # Ineffectiveness subscale
+    yb_cdi_inef_mean = mean_across("yb", "CDI-2 SR", "Ineffectiveness"),
+    y3m_cdi_inef_mean = mean_across("y3m", "CDI-2 SR", "Ineffectiveness"),
+    
+    # Interpersonal problems subscale
+    yb_cdi_inter_mean = mean_across("yb", "CDI-2 SR", "Interpersonal Problems"),
+    y3m_cdi_inter_mean = mean_across("y3m", "CDI-2 SR", "Interpersonal Problems"),
+
+    # Emotional problems subscale
+    yb_cdi_emotional_mean = yb_cdi_nmps_mean + yb_cdi_nse_mean,
+    y3m_cdi_emotional_mean = y3m_cdi_nmps_mean + y3m_cdi_nse_mean,
+
+    # Functional problems subscale
+    yb_cdi_functional_mean = yb_cdi_inef_mean + yb_cdi_inter_mean,
+    y3m_cdi_functional_mean = y3m_cdi_inef_mean + y3m_cdi_inter_mean,
+  
+    
+    ## BHS-4 (Beck Hopelessness Scale - 4-item)
+    # Overall mean score
+    yb_bhs_mean = mean_across("yb", "bhs"),
+    y3m_bhs_mean = mean_across("y3m", "bhs"),
+    
+    
+    ## PCSC (Primary Control Scale for Children)
+    # Overall mean score
+    yb_pcsc_mean = mean_across("yb", "pcsc"),
+    y3m_pcsc_mean = mean_across("y3m", "pcsc"),
+    
+    # Academic subscale
+    yb_pcsc_academic_mean = mean_across("yb", "pcsc", "Academic"),
+    y3m_pcsc_academic_mean = mean_across("y3m", "pcsc", "Academic"),
+    
+    # Social subscale
+    yb_pcsc_social_mean = mean_across("yb", "pcsc", "Social"),
+    y3m_pcsc_social_mean = mean_across("y3m", "pcsc", "Social"),
+    
+    # Behavioral subscale
+    yb_pcsc_behavioral_mean = mean_across("yb", "pcsc", "Behavioral"),
+    y3m_pcsc_behavioral_mean = mean_across("y3m", "pcsc", "Behavioral"),
+    
+    
+    ## SCSC (Secondary Control Scale for Children)
+    # Overall mean score
+    yb_scsc_mean = mean_across("yb", "scsc"),
+    y3m_scsc_mean = mean_across("y3m", "scsc"),
+    
+    
+    ## BADS (Bvioral Activation for Depression Scale)
+    # Activation subscale
+    yb_bads_ac_mean = mean_across("yb", "bads", "AC"),
+    y3m_bads_ac_mean = mean_across("y3m", "bads", "AC"),
+    
+    # Avoidance/rumination subscale    
+    yb_bads_ar_mean = mean_across("yb", "bads", "AR"),
+    y3m_bads_ar_mean = mean_across("yb", "bads", "AR"),
+    
+    # Work/school impairment subscale
+    yb_bads_ws_mean = mean_across("yb", "bads", "WS"),
+    y3m_bads_ws_mean = mean_across("yb", "bads", "WS"),
+    
+    # Social impairment subscale
+    yb_bads_si_mean = mean_across("yb", "bads", "SI"),
+    y3m_bads_si_mean = mean_across("yb", "bads", "SI"),
+    
+    
+    ## SHS (Self-Hate Scale)
+    # Overall mean score
+    yb_shs_mean = mean_across("yb", "shs"),
+    y3m_shs_mean = mean_across("y3m", "shs"),
+    
+    
+    ## IDAS-II (Inventory of Depression and Anxiety Symptoms - II)
+    # Overall mean score
+    yb_idas_mean = mean_across("yb", "idas"),
+    y3m_idas_mean = mean_across("y3m", "idas"),
+    
+    
+    ## SCARED (Screen for Child Anxiety and Related Disorders)
+    # Overall mean score
+    yb_scared_mean = mean_across("yb", "scared"),
+    y3m_scared_mean = mean_across("y3m", "scared"),
+    
+    # Panic disorder/significant somatic symptoms subscale
+    yb_scared_paso_mean = mean_across("yb", "scared", "PA/SO"),
+    y3m_scared_paso_mean = mean_across("y3m", "scared", "PA/SO"),
+    
+    # Generalized anxiety disorder subscale
+    yb_scared_ga_mean = mean_across("yb", "scared", "GA"),
+    y3m_scared_ga_mean = mean_across("y3m", "scared", "GA"),
+    
+    # Separation anxiety disorder subscale
+    yb_scared_sep_mean = mean_across("yb", "scared", "SEP"),
+    y3m_scared_sep_mean = mean_across("y3m", "scared", "SEP"),
+    
+    # Social phobic disorder subscale
+    yb_scared_soc_mean = mean_across("yb", "scared", "SOC"),
+    y3m_scared_soc_mean = mean_across("y3m", "scared", "SOC"),
+    
+    # Significant school avoidance symptoms
+    yb_scared_sch_mean = mean_across("yb", "scared", "SCH"),
+    y3m_scared_sch_mean = mean_across("y3m", "scared", "SCH"),
+    
+    
+    ## SHAPS (Snaith-Hamilton Pleasure Scale)
+    # Overall mean score
+    yb_shaps_mean = mean_across("yb", "shaps"),
+    y3m_shaps_mean = mean_across("y3m", "shaps"),
+    
+    
+    ## SRET (Self-Referential Encoding Task)
+    # (Currently a low priority to code given how time-intensive this is; see
+    # Dainer-Best et al., 2018)
+
+    
+    ## DRS (Dietary Restriction Screener)
+    # Two items that do not need to be recoded or combined
+    
+    
+    ## SITBI-SF (Self-Injurious Thoughts and Behaviors Interview - Short Form)
+    # Many items but no recoding or combining
+    
+    
+    ## IPTQ (Implicit Personality Theory Questionnaire)
+    # Overall mean score
+    yb_iptq_mean = mean_across("yb", "iptq"),
+    y3m_iptq_mean = mean_across("y3m", "iptq"),
+    
+    
+    ## BFAMG (Brief Family Assessment Measure - General Scale)
+    # Overall mean score
+    yb_bfamg_mean = mean_across("yb", "bfamg"),
+    y3m_bfamg_mean = mean_across("y3m", "bfamg"),
+    
+    
+    ## MPVS (Multidimensional Peer Victimization Scale)
+    # Overall mean score
+    yb_mpvs_mean = mean_across("yb", "mpvs"),
+    y3m_mpvs_mean = mean_across("y3m", "mpvs"),
+    
+    # Physical victimization subscale
+    yb_mpvs_physical_mean = mean_across("yb", "mpvs", "Physical Victimization"),
+    y3m_mpvs_physical_mean = mean_across("y3m", "mpvs", "Physical Victimization"),
+    
+    # Social manipulation subscale
+    yb_mpvs_social_mean = mean_across("yb", "mpvs", "Social Manipulation"),
+    y3m_mpvs_social_mean = mean_across("y3m", "mpvs", "Social Manipulation"),
+    
+    # Verbal victimization subscale
+    yb_mpvs_verbal_mean = mean_across("yb", "mpvs", "Verbal Victimization"),
+    y3m_mpvs_verbal_mean = mean_across("y3m", "mpvs", "Verbal Victimization"),
+    
+    # Attacks on property subscale
+    yb_mpvs_property_mean = mean_across("yb", "mpvs", "Attacks on Property"),
+    y3m_mpvs_property_mean = mean_across("y3m", "mpvs", "Attacks on Property"),
+    
+    ## UCLA (UCLA Loneliness Scale, aka ULS)
+    # Overall mean score
+    yb_ucla_mean = mean_across("yb", "ucla"),
+    y3m_ucla_mean = mean_across("y3m", "ucla")
+
+  ) %>%
+  
+  ungroup() %>%
+  
+  select(
+    
+    # Metadata
+    lsmh_id,
+    lifepak_id,
+    yb_administration,
+    yb_complete,
+    y3m_complete,
+    yb_date,
+    yb_duration,
+    y3m_date,
+    y3m_duration,
+    
+    # Measures
+    matches("_cdi_"),
+    matches("_bhs_"),
+    matches("_pcsc_"),
+    matches("_scsc_"),
+    matches("_bads_"),
+    matches("_shs_"),
+    matches("_idas_"),
+    matches("_scared_"),
+    matches("_shaps_"),
+    matches("SRET"),
+    matches("_drs_"),
+    matches("_sitb_"),
+    matches("_iptq_"),
+    matches("_bfamg_"),
+    matches("_mpvs_"),
+    matches("_ucla_")
+    
+  )
+
+
+## Manually add LifePak IDs as needed, per readme_ttt_p1
+y_clean$lifepak_id[y_clean$lsmh_id == "LSMH00097"] <- "092521"
+y_clean$lifepak_id[y_clean$lsmh_id == "LSMH00457"] <- "292656"
+y_clean$lifepak_id[y_clean$lsmh_id == "LSMH00483"] <- "558692"
+y_clean$lifepak_id[y_clean$lsmh_id == "LSMH00617"] <- "479327"
+y_clean$lifepak_id[y_clean$lsmh_id == "LSMH00306"] <- "130294"
+y_clean$lifepak_id[y_clean$lsmh_id == "LSMH00416"] <- "946021"
+
+
+
+####  Save Data  ####
+saveRDS(y_clean, clean_data_dir %+% "Phase 1 Youth Qualtrics Data.rds")
