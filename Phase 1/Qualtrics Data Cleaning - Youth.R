@@ -24,8 +24,8 @@ yb_in_person_raw <- read_survey(raw_data_dir %+% "dp5_b_child_p1_numeric.csv")
 yb_remote_raw <- read_survey(raw_data_dir %+% "dp5_b_child_remote_p1_numeric.csv")
 y3m_raw <- read_survey(raw_data_dir %+% "dp5_3m_child_p1_numeric.csv")
 
-# Item-level config file
-config <- openxlsx::read.xlsx(
+# Item-level codebook file
+codebook <- openxlsx::read.xlsx(
   here("Phase 1", "Track to Treat P1 Codebook.xlsx"),
   sheet = "Individual Variables",
   rows = c(1, 3:1214)
@@ -116,8 +116,8 @@ y_clean <- y_merged %>%
   # Un-reverse code items
   mutate(
     across(
-      .cols = any_of(config$item[config$reversed]),
-      .fns = ~ config$reverse_base[config$item == cur_column()] - .x
+      .cols = any_of(codebook$item[codebook$reversed]),
+      .fns = ~ codebook$reverse_base[codebook$item == cur_column()] - .x
     )
   ) %>%
   
@@ -361,7 +361,7 @@ y_clean <- y_merged %>%
   )
 
 
-## Manually add LifePak IDs as needed, per readme_ttt_p1
+## Manually add or change LifePak IDs as needed, per readme_ttt_p1
 y_clean$lifepak_id[y_clean$lsmh_id == "LSMH00097"] <- "092521"
 y_clean$lifepak_id[y_clean$lsmh_id == "LSMH00457"] <- "292656"
 y_clean$lifepak_id[y_clean$lsmh_id == "LSMH00483"] <- "558692"

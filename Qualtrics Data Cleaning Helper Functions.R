@@ -70,12 +70,12 @@ remove_duplicates <- function(data, id) {
   
 }
 
-# Function to return items from the config file, given some criteria
+# Function to return items from the codebook file, given some criteria
 get_items <- function(.prefix, .measure, .subscale) {
   
   if(missing(.subscale)) {
     
-    filtered_config <- config %>%
+    filtered_codebook <- codebook %>%
       filter(
         grepl(.prefix, item),
         measure == .measure
@@ -83,7 +83,7 @@ get_items <- function(.prefix, .measure, .subscale) {
     
   } else {
     
-    filtered_config <- config %>%
+    filtered_codebook <- codebook %>%
       filter(
         grepl("^" %+% .prefix, item),
         measure == .measure,
@@ -92,9 +92,9 @@ get_items <- function(.prefix, .measure, .subscale) {
     
   }
   
-  if(nrow(filtered_config) == 0) stop("No items match these criteria")
+  if(nrow(filtered_codebook) == 0) stop("No items match these criteria")
   
-  filtered_config %>%
+  filtered_codebook %>%
     pull(item) %>%
     return()
   

@@ -24,8 +24,8 @@ pb_in_person_raw <- read_survey(raw_data_dir %+% "dp5_b_parent_p1_numeric.csv")
 pb_remote_raw <- read_survey(raw_data_dir %+% "dp5_b_parent_remote_p1_numeric.csv")
 p3m_raw <- read_survey(raw_data_dir %+% "dp5_3m_parent_p1_numeric.csv")
 
-# Item-level config file
-config <- openxlsx::read.xlsx(
+# Item-level codebook file
+codebook <- openxlsx::read.xlsx(
   here("Phase 1", "Track to Treat P1 Codebook.xlsx"),
   sheet = "Individual Variables",
   rows = c(1, 3:1214)
@@ -130,8 +130,8 @@ p_clean <- p_merged %>%
   # Un-reverse code items
   mutate(
     across(
-      .cols = any_of(config$item[config$reversed]),
-      .fns = ~ config$reverse_base[config$item == cur_column()] - .x
+      .cols = any_of(codebook$item[codebook$reversed]),
+      .fns = ~ codebook$reverse_base[codebook$item == cur_column()] - .x
     )
   ) %>%
   
