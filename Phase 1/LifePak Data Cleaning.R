@@ -1,8 +1,5 @@
-#############################
-##     Track-to-Treat      ##
-##         Phase 1         ##
-##  LifePak Data Cleaning  ##
-#############################
+## Track-to-Treat Phase 1 Data Cleaning
+## LifePak data
 
 ####  Startup  ####
 ## Load packages
@@ -16,7 +13,7 @@ library(lubridate)
 raw_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\LifePak Raw Data (Do Not Modify)\\"
 clean_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\Clean Data (Isaac)\\"
 
-# Load "notification-initiated survey" datasets
+# Load NIS ("notification-initiated survey") datasets
 nis_1 <- read.csv(raw_data_dir %+% "3T_P1_V1_NIS_2020_Mar_02.csv")
 nis_2 <- read.csv(raw_data_dir %+% "3T_P1_V2_NIS_2020_Mar_13.csv")
 nis_3 <- read.csv(raw_data_dir %+% "3T_P1_V2_NIS_21200_958251_Download2.csv")

@@ -1,4 +1,5 @@
 ## Compare my clean LifePak data to Michael's
+
 ## Load data
 lp_me <- nis_valid %>%
   mutate(lifepak_id = as.numeric(lifepak_id))
