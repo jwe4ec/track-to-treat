@@ -1,12 +1,13 @@
 ## Track-to-Treat Phase 1 Data Cleaning
 ## Qualtrics data (youth)
+# R version 4.1.2
 
 ####  Startup  ####
 ## Load packages
-library(tidyverse)
-library(qualtRics)
-library(here)
-library(openxlsx)
+library(tidyverse) # 2.0.0
+library(qualtRics) # 3.2.0
+library(here) # 1.0.1
+library(openxlsx) # 4.2.5.2
 `%+%` <- paste0
 
 
@@ -34,11 +35,17 @@ codebook <- openxlsx::read.xlsx(
     item = Variable.Name,
     measure = Measure,
     subscale = Subscale,
-    reversed = `Is.the.variable.reverse.coded?`,
-    reverse_base = Reverse.base
+    minimum = Minimum,
+    maximum = Maximum,
+    reversed = `Is.the.variable.reverse.coded?`
   ) %>%
   mutate(
-    reversed = reversed == 1
+    reversed = reversed == 1,
+    reverse_base = if_else(
+      reversed,
+      maximum + minimum,
+      NA_real_
+    )
   )
 
 
@@ -123,8 +130,8 @@ y_clean <- y_merged %>%
   
   # Rename "mvps" to "mpvs" throughout
   rename_with(
-    .fn = ~ gsub("mvps", "mpvs", .x),
-    .cols = contains("mvps")
+    .cols = contains("mvps"),
+    .fn = ~ gsub("mvps", "mpvs", .x)
   ) %>%
   
   # Clean columns and create composites
@@ -267,6 +274,8 @@ y_clean <- y_merged %>%
     
     
     ## SHAPS (Snaith-Hamilton Pleasure Scale)
+    # First, recode current 1-4
+    
     # Overall mean score
     yb_shaps_mean = mean_across("yb", "shaps"),
     y3m_shaps_mean = mean_across("y3m", "shaps"),
@@ -359,6 +368,37 @@ y_clean <- y_merged %>%
     matches("_ucla_")
     
   )
+
+
+## Check that values are in expected range
+items_to_check <- y_clean %>%
+  select(
+    matches("_cdi_"),
+    matches("_bhs_"),
+    matches("_pcsc_"),
+    matches("_scsc_"),
+    matches("_bads_"),
+    matches("_shs_"),
+    matches("_idas_"),
+    matches("_scared_"),
+    matches("_shaps_"),
+    matches("_drs_"),
+    matches("_sitb_"),
+    matches("_iptq_"),
+    matches("_bfamg_"),
+    matches("_mpvs_"),
+    matches("_ucla_"),
+    -ends_with("mean")
+  ) %>%
+  names()
+
+walk(
+  items_to_check,
+  ~ check_values(
+    .data = y_clean,
+    .item = .x
+  )
+)
 
 
 ## Manually add or change LifePak IDs as needed, per readme_ttt_p1

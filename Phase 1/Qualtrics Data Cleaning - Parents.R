@@ -1,12 +1,13 @@
 ## Track-to-Treat Phase 1 Data Cleaning
 ## Qualtrics data (parents)
+# R version 4.1.2
 
 ####  Startup  ####
 ## Load packages
-library(tidyverse)
-library(qualtRics)
-library(here)
-library(openxlsx)
+library(tidyverse) # 2.0.0
+library(qualtRics) # 3.2.0
+library(here) # 1.0.1
+library(openxlsx) # 4.2.5.2
 `%+%` <- paste0
 
 
@@ -34,12 +35,19 @@ codebook <- openxlsx::read.xlsx(
     item = Variable.Name,
     measure = Measure,
     subscale = Subscale,
-    reversed = `Is.the.variable.reverse.coded?`,
-    reverse_base = Reverse.base
+    minimum = Minimum,
+    maximum = Maximum,
+    reversed = `Is.the.variable.reverse.coded?`
   ) %>%
   mutate(
-    reversed = reversed == 1
+    reversed = reversed == 1,
+    reverse_base = if_else(
+      reversed,
+      maximum + minimum,
+      NA_real_
+    )
   )
+
 
 
 
@@ -363,6 +371,29 @@ p_clean <- p_merged %>%
     matches("_scared_")
     
   )
+
+
+## Check that values are in expected range
+items_to_check <- p_clean %>%
+  select(
+    matches("_child_aces_"),
+    matches("_parent_aces_"),
+    matches("_cdi_"),
+    matches("_bhs_"),
+    matches("_bsi_"),
+    matches("_bace_"),
+    matches("_scared_"),
+    -ends_with("mean")
+  ) %>%
+  names()
+
+walk(
+  items_to_check,
+  ~ check_values(
+    .data = p_clean,
+    .item = .x
+  )
+)
 
 
 
