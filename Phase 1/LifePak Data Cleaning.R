@@ -1,10 +1,11 @@
 ## Track-to-Treat Phase 1 Data Cleaning
 ## LifePak data
+# R version 4.1.2
 
 ####  Startup  ####
 ## Load packages
-library(tidyverse)
-library(lubridate)
+library(tidyverse) # 2.0.0
+library(lubridate) # 1.9.3
 `%+%` <- paste0
 
 
