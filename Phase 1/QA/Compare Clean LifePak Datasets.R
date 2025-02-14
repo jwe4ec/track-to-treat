@@ -1,9 +1,13 @@
 ## Compare my clean LifePak data to Michael's
 
+`%+%` <- paste0
+
 ## Load data
+# Mine
 lp_me <- nis_valid %>%
   mutate(lifepak_id = as.numeric(lifepak_id))
 
+# Michael's
 lp_mi <- read.csv("R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\Processed Data\\2022 From Michael Mullarkey\\deid_cleaned_lifepak_ttt_phase_1.csv") %>%
   mutate(
     notification_datetime = as_datetime(notification_time),
@@ -38,8 +42,8 @@ for(x in c("sad", "bad", "interest", "energy", "focus", "movement", "control", "
   
   match <- test[[x %+% ".me"]] == test[[x %+% ".michael"]]
   
-  print(x)
+  print("Variable: " %+% x)
   
-  print(mean(match, na.rm = T))
+  print("Match rate: " %+% scales::percent(mean(match, na.rm = T)))
   
 }

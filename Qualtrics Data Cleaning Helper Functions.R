@@ -75,7 +75,7 @@ remove_duplicates <- function(data, id) {
     group_by({{id}}) %>%
     # ... by ID, arrange first by Finished (putting completed responses at the top),
     # then by Progress (putting more completed responses at the top), then by StartDate
-    # (putting older responses at the top)...
+    # (putting first/oldest responses at the top)...
     arrange(
       desc(Finished),
       desc(Progress),
@@ -166,5 +166,8 @@ check_values <- function(.data, .item) {
   # Check
   if(actual_min < expected_min) stop("Actual min (" %+% actual_min %+% ") lower than expected min (" %+% expected_min %+% ")")
   if(actual_max > expected_max) stop("Actual max (" %+% actual_max %+% ") higher than expected max (" %+% expected_max %+% ")")
+  
+  # Confirm if no errors
+  print(.item %+% " confirmed: All values in anticipated range")
   
 }

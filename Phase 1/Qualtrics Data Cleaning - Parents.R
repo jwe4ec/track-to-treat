@@ -31,6 +31,7 @@ codebook <- openxlsx::read.xlsx(
   sheet = "Individual Variables",
   rows = c(1, 3:1214)
 ) %>%
+  # Select only necessary variables
   select(
     item = Variable.Name,
     measure = Measure,
@@ -40,7 +41,9 @@ codebook <- openxlsx::read.xlsx(
     reversed = `Is.the.variable.reverse.coded?`
   ) %>%
   mutate(
+    # Make `reversed` logical
     reversed = reversed == 1,
+    # Crate `reverse_base`: the number a response should be subtracted from to reverse it
     reverse_base = if_else(
       reversed,
       maximum + minimum,
@@ -59,7 +62,8 @@ pb_remote_raw$pb_siblings_2 <- as.character(pb_remote_raw$pb_siblings_2)
 
 # Note on variable overlap: 
 # - No variables appear in the in-person dataset only
-# - Variables that appear in the remote dataset only include "password_parent", click information, and COVID-related variables)
+# - Variables that appear in the remote dataset only include "password_parent", 
+#   click information, and COVID-related variables)
 pb_raw <- bind_rows(
   list(
     "in-person" = pb_in_person_raw, 
@@ -122,7 +126,6 @@ p_merged <- full_join(
 # - Parent attitudes towards therapy
 # - Child birth order (requires manual coding)
 # These can be cleaned if needed but I'm not sure we have plans for them...
-
 p_clean <- p_merged %>%
   
   # Remove click, page time variables

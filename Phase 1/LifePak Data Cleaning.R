@@ -79,30 +79,43 @@ nis_combined <- lst(
 nis_clean <- nis_combined %>%
   mutate(
     
-    # Metadata
-    lifepak_id = gsub(".*-", "", Participant.ID), # Double-check this, but seems to work
+    ## Metadata
+    # ID
+    lifepak_id = gsub(".*-", "", Participant.ID),
+    
+    # Survey type (EMA or feedback)
     survey_type = case_match(
       Session.Name,
       c("3T Project Day", "3T Project Night") ~ "EMA",
       "3T Project Feedback" ~ "Feedback"
     ),
+    
+    # Time of day (day or night)
     time_of_day = case_match(
       Session.Name,
       "3T Project Day" ~ "Day",
       "3T Project Night" ~ "Night"
     ),
+    
+    # Notification date and datetime
     notification_datetime = as_datetime(Notification.Time),
     notification_date = as_date(notification_datetime),
-    response_datetime = as_datetime(Notification.Time) + as.difftime(Session.Instance.Response.Lapse),
-    response_date = as_date(response_datetime),
+    
+    # Response indicator (logical)
     responded = Responded == "1",
-    response_lag_seconds = response_datetime - notification_datetime,
+    
+    # Response lag
+    response_lag_seconds = as.difftime(Session.Instance.Response.Lapse),
     responded_in_2h_or_less = if_else(
       responded,
       response_lag_seconds <= 7200,
       F
     ),
-    
+
+    # Response date and datetime
+    response_datetime = notification_datetime + response_lag_seconds,
+    response_date = as_date(response_datetime),
+
     # Response data
     sad = case_when(
       time_of_day == "Day" ~ sad_day,

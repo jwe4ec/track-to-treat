@@ -16,21 +16,22 @@ source(here("Qualtrics Data Cleaning Helper Functions.R"))
 
 
 ## Load data
-# Save directory
+# Save directories
 raw_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\Qualtrics Data\\Raw Data\\"
 clean_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\Clean Data (Isaac)\\"
 
-# Load datasets in the following format: [respondent][wave]_[administration]_raw
+# Load datasets
 yb_in_person_raw <- read_survey(raw_data_dir %+% "dp5_b_child_p1_numeric.csv")
 yb_remote_raw <- read_survey(raw_data_dir %+% "dp5_b_child_remote_p1_numeric.csv")
 y3m_raw <- read_survey(raw_data_dir %+% "dp5_3m_child_p1_numeric.csv")
 
-# Item-level codebook file
+# Load item-level codebook file
 codebook <- openxlsx::read.xlsx(
   here("Phase 1", "Track to Treat P1 Codebook.xlsx"),
   sheet = "Individual Variables",
   rows = c(1, 3:1214)
 ) %>%
+  # Select only necessary variables
   select(
     item = Variable.Name,
     measure = Measure,
@@ -40,7 +41,9 @@ codebook <- openxlsx::read.xlsx(
     reversed = `Is.the.variable.reverse.coded?`
   ) %>%
   mutate(
+    # Make `reversed` logical
     reversed = reversed == 1,
+    # Crate `reverse_base`: the number a response should be subtracted from to reverse it
     reverse_base = if_else(
       reversed,
       maximum + minimum,
@@ -224,15 +227,15 @@ y_clean <- y_merged %>%
     
     # Avoidance/rumination subscale    
     yb_bads_ar_mean = mean_across("yb", "bads", "AR"),
-    y3m_bads_ar_mean = mean_across("yb", "bads", "AR"),
+    y3m_bads_ar_mean = mean_across("y3m", "bads", "AR"),
     
     # Work/school impairment subscale
     yb_bads_ws_mean = mean_across("yb", "bads", "WS"),
-    y3m_bads_ws_mean = mean_across("yb", "bads", "WS"),
+    y3m_bads_ws_mean = mean_across("y3m", "bads", "WS"),
     
     # Social impairment subscale
     yb_bads_si_mean = mean_across("yb", "bads", "SI"),
-    y3m_bads_si_mean = mean_across("yb", "bads", "SI"),
+    y3m_bads_si_mean = mean_across("y3m", "bads", "SI"),
     
     
     ## SHS (Self-Hate Scale)
