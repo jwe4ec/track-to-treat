@@ -1,11 +1,14 @@
 ## Track-to-Treat Phase 1 Data Cleaning
 ## LifePak data
-# R version 4.1.2
+# R version 4.4.3
 
 ####  Startup  ####
 ## Load packages
-library(tidyverse) # 2.0.0
-library(lubridate) # 1.9.3
+library(groundhog) # 3.2.2
+groundhog.library(
+  pkg = c("tidyverse", "lubridate"),
+  date = "2025-03-28"
+)
 `%+%` <- paste0
 
 
@@ -76,6 +79,9 @@ nis_combined <- lst(
 
 
 ## Clean columns
+# Other variables not currently included: feedback variables (e.g,. intro_feedback_1),
+# five_times_a_day, notice_change, aware_mood, aware_felt_worse, aware_felt_better
+# Note that if we aren't using feedback data, we can remove those rows!
 nis_clean <- nis_combined %>%
   mutate(
     
@@ -104,17 +110,21 @@ nis_clean <- nis_combined %>%
     # Response indicator (logical)
     responded = Responded == "1",
     
+    # Response time
+    response_duration = as.difftime(Session.Length),
+    
     # Response lag
     response_lag_seconds = as.difftime(Session.Instance.Response.Lapse),
     responded_in_2h_or_less = if_else(
       responded,
-      response_lag_seconds <= 7200,
+      response_lag_seconds + response_duration <= 7200,
       F
     ),
-
+    
     # Response date and datetime
-    response_datetime = notification_datetime + response_lag_seconds,
-    response_date = as_date(response_datetime),
+    response_start_datetime = notification_datetime + response_lag_seconds,
+    response_end_datetime = response_start_datetime + response_duration,
+    response_date = as_date(response_start_datetime),
 
     # Response data
     sad = case_when(
@@ -174,7 +184,7 @@ nis_clean <- nis_combined %>%
         NA_real_
       )
     ),
-    
+
     fun_rev = 100 - fun # Creating a reverse-coded item so that there is a set of 8 items all representing dysfunction
     
   ) %>%
@@ -188,7 +198,9 @@ nis_clean <- nis_combined %>%
     notification_datetime,
     responded,
     response_date,
-    response_datetime,
+    response_start_datetime,
+    response_end_datetime,
+    response_duration,
     response_lag_seconds,
     responded_in_2h_or_less,
     
@@ -197,10 +209,17 @@ nis_clean <- nis_combined %>%
     
     # Most pleasant and most unpleasant event from the day
     most_pleasant = best_night, 
-    most_unpleasant = worst_night
+    most_unpleasant = worst_night,
+    
+    # Another open-ended response worth keeping
+    other_night
     
   ) %>%
   
+  # Filter to only EMA data (not "feedback" surveys)
+  filter(survey_type == "EMA") %>%
+  
+  # Arrange by lifepak ID, then notification datetime
   arrange(
     
     lifepak_id,
@@ -217,23 +236,45 @@ nis_clean$lifepak_id[nis_clean$lifepak_id == "878753"] <- "958251"
 
 ## Deduplicate
 # No duplicate responses
-nis_clean %>%
-  count(lifepak_id, response_datetime) %>%
+duplicate_responses <- nis_clean %>%
+  count(lifepak_id, response_start_datetime) %>%
   drop_na() %>% 
   filter(n > 1)
 
-# Three notifications appear twice; in all cases, there is only one valid response
-nis_clean %>% 
+duplicate_responses
+
+# Two notifications appear twice; in both cases, there is no more than one valid response
+duplicate_notifications <- nis_clean %>% 
   count(lifepak_id, notification_datetime) %>% 
   filter(n > 1) %>%
-  left_join(nis_clean)
+  left_join(
+    nis_clean, 
+    by = c("lifepak_id", "notification_datetime")
+  )
+
+duplicate_notifications
+
+# Of these duplicated notifications, keep the first row where responded_in_2h_or_less == T
+duplicate_notifications_to_keep <- duplicate_notifications %>%
+  group_by(lifepak_id, notification_datetime) %>%
+  arrange(desc(responded_in_2h_or_less), response_start_datetime) %>%
+  slice_head(n = 1) %>%
+  ungroup()
+
+duplicate_notifications_to_keep
+
+duplicate_notifications_to_drop <- duplicate_notifications %>%
+  anti_join(
+    duplicate_notifications_to_keep,
+    by = c("lifepak_id", "notification_datetime", "response_start_datetime")
+  )
+duplicate_notifications_to_drop
 
 # Remove invalid responses manually here
 nis_deduplicated <- nis_clean %>%
-  filter(
-    !(lifepak_id == "816917" & response_datetime %in% as_datetime("2020-10-11 18:24:54")),
-    !(lifepak_id == "905207" & response_datetime %in% as_datetime("2020-11-28 11:20:56")),
-    !(lifepak_id == "958251" & response_datetime %in% as_datetime("2020-03-31 11:21:46"))
+  anti_join(
+    duplicate_notifications_to_drop,
+    by = c("lifepak_id", "notification_datetime", "response_start_datetime")
   )
 
 
