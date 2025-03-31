@@ -93,7 +93,20 @@ remove_duplicates <- function(data, id) {
 # Function to return items from the codebook file, given some criteria
 get_items <- function(.prefix, .measure, .subscale) {
   
-  # If the user provies .prefix and .measure only, only filter the codebook by those criteria
+  # Confirm provided measure and subscale are in the codebook
+  if(!missing(.measure)) {
+    
+    if(!.measure %in% codebook$measure) stop(".measure not in codebook")
+    
+  }
+  
+  if(!missing(.subscale)) {
+    
+    if(!.subscale %in% codebook$subscale) stop(".subscale not in codebook")
+    
+  } 
+  
+  # If the user provides .prefix and .measure only, only filter the codebook by those criteria
   if(missing(.subscale)) {
     
     # Take the codebook and...
@@ -133,7 +146,7 @@ get_items <- function(.prefix, .measure, .subscale) {
   
 }
 
-# Function to takes the mean across items from get_items()
+# Function to take the mean across items from get_items()
 mean_across <- function(...) {
   
   # Get items
