@@ -1,9 +1,16 @@
 ## Compare my clean LifePak data to Michael's
-
+# R version 4.4.3
 `%+%` <- paste0
+library(groundhog) # 3.2.2
+groundhog.library(
+  pkg = "tidyverse",
+  date = "2025-03-28"
+)
 
 ## Load data
 # Mine
+clean_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\Clean Data (Isaac)\\"
+nis_valid <- readRDS(clean_data_dir %+% "Phase 1 LifePak Data.rds")
 lp_me <- nis_valid %>%
   mutate(lifepak_id = as.numeric(lifepak_id))
 

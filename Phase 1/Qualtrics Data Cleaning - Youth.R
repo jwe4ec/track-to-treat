@@ -1,13 +1,14 @@
 ## Track-to-Treat Phase 1 Data Cleaning
 ## Qualtrics data (youth)
-# R version 4.1.2
+# R version 4.4.3
 
 ####  Startup  ####
 ## Load packages
-library(tidyverse) # 2.0.0
-library(qualtRics) # 3.2.0
-library(here) # 1.0.1
-library(openxlsx) # 4.2.5.2
+library(groundhog) # 3.2.2
+groundhog.library(
+  pkg = c("tidyverse", "qualtRics", "here", "openxlsx"),
+  date = "2025-03-28"
+)
 `%+%` <- paste0
 
 
@@ -43,7 +44,7 @@ codebook <- openxlsx::read.xlsx(
   mutate(
     # Make `reversed` logical
     reversed = reversed == 1,
-    # Crate `reverse_base`: the number a response should be subtracted from to reverse it
+    # Create `reverse_base`: the number a response should be subtracted from to reverse it
     reverse_base = if_else(
       reversed,
       maximum + minimum,
@@ -57,7 +58,11 @@ codebook <- openxlsx::read.xlsx(
 ## Combine in-person and remote administrations
 # Note on variable overlap: 
 # - No variables appear in the in-person dataset only
-# - No important variables appear in the remote dataset only (only "password_child" and click information)
+# - yb_scared_c_11 appears in the remote dataset only; because mean_across() 
+#   drops NAs, this item is excluded from scales in the remote dataset
+# - Other variables appear in the remote dataset only, but are less important
+#   ("password_child", click and time on page information, yb_interview, 
+#   and yb_scared_c_11)
 yb_raw <- bind_rows(
   list(
     "in-person" = yb_in_person_raw, 
@@ -65,6 +70,13 @@ yb_raw <- bind_rows(
     ),
   .id = "administration"
 )
+
+
+## Confirm that all IDs match "validate" columns
+all(yb_raw$yb_lsmh_id == yb_raw$`yb_lsmh_id_ validate`, na.rm = TRUE)
+all(yb_raw$`yb_LifePak ID` == yb_raw$`yb_LifePak ID Verify`, na.rm = TRUE)
+all(yb_raw$yb_phone == yb_raw$yb_phone_validate, na.rm = TRUE)
+all(y3m_raw$y3m_lsmh_id == y3m_raw$`y3_lsmh_id_ validate`, na.rm = TRUE)
 
 
 ## Remove invalid responses
@@ -123,6 +135,12 @@ y_clean <- y_merged %>%
     
   ) %>%
   
+  # Rename "mvps" to "mpvs" throughout
+  rename_with(
+    .cols = contains("mvps"),
+    .fn = ~ gsub("mvps", "mpvs", .x)
+  ) %>%
+  
   # Un-reverse code items
   mutate(
     across(
@@ -130,13 +148,7 @@ y_clean <- y_merged %>%
       .fns = ~ codebook$reverse_base[codebook$item == cur_column()] - .x
     )
   ) %>%
-  
-  # Rename "mvps" to "mpvs" throughout
-  rename_with(
-    .cols = contains("mvps"),
-    .fn = ~ gsub("mvps", "mpvs", .x)
-  ) %>%
-  
+
   # Clean columns and create composites
   rowwise() %>%
   mutate(
@@ -162,7 +174,7 @@ y_clean <- y_merged %>%
     
     ## CDI-2 (Children's Depression Inventory - 2)
     # Overall mean score
-    yb_cdi_mean = mean_across("yb", "CDI-2 SR"),
+    yb_cdi_mean = mean_across("yb", "CDI-2 SR"), # mean_across() from helper function script
     y3m_cdi_mean = mean_across("y3m", "CDI-2 SR"),
     
     # Negative mood/physical symptoms subscale
@@ -182,12 +194,12 @@ y_clean <- y_merged %>%
     y3m_cdi_inter_mean = mean_across("y3m", "CDI-2 SR", "Interpersonal Problems"),
 
     # Emotional problems subscale
-    yb_cdi_emotional_mean = yb_cdi_nmps_mean + yb_cdi_nse_mean,
-    y3m_cdi_emotional_mean = y3m_cdi_nmps_mean + y3m_cdi_nse_mean,
+    yb_cdi_emotional_mean = ((yb_cdi_nmps_mean * 9) + (yb_cdi_nse_mean * 6)) / 15,
+    y3m_cdi_emotional_mean = ((y3m_cdi_nmps_mean * 9) + (y3m_cdi_nse_mean * 6)) / 15,
 
     # Functional problems subscale
-    yb_cdi_functional_mean = yb_cdi_inef_mean + yb_cdi_inter_mean,
-    y3m_cdi_functional_mean = y3m_cdi_inef_mean + y3m_cdi_inter_mean,
+    yb_cdi_functional_mean = ((yb_cdi_inef_mean * 8) + (yb_cdi_inter_mean * 5)) / 13,
+    y3m_cdi_functional_mean = ((y3m_cdi_inef_mean * 8) + (y3m_cdi_inter_mean * 5)) / 13,
   
     
     ## BHS-4 (Beck Hopelessness Scale - 4-item)
@@ -277,8 +289,6 @@ y_clean <- y_merged %>%
     
     
     ## SHAPS (Snaith-Hamilton Pleasure Scale)
-    # First, recode current 1-4
-    
     # Overall mean score
     yb_shaps_mean = mean_across("yb", "shaps"),
     y3m_shaps_mean = mean_across("y3m", "shaps"),
@@ -287,6 +297,7 @@ y_clean <- y_merged %>%
     ## SRET (Self-Referential Encoding Task)
     # (Currently a low priority to code given how time-intensive this is; see
     # Dainer-Best et al., 2018)
+    # Items (both baseline and 3m): "SRET", "SRET.keys", "SRET.time", "SRET.words", "tlcond"
 
     
     ## DRS (Dietary Restriction Screener)
@@ -362,9 +373,8 @@ y_clean <- y_merged %>%
     matches("_idas_"),
     matches("_scared_"),
     matches("_shaps_"),
-    matches("SRET"),
     matches("_drs_"),
-    matches("_sitb_"),
+    matches("_sitbi_"), - matches("sitbi_.*_TEXT"),
     matches("_iptq_"),
     matches("_bfamg_"),
     matches("_mpvs_"),
@@ -386,7 +396,7 @@ items_to_check <- y_clean %>%
     matches("_scared_"),
     matches("_shaps_"),
     matches("_drs_"),
-    matches("_sitb_"),
+    # matches("_sitbi_"), # 
     matches("_iptq_"),
     matches("_bfamg_"),
     matches("_mpvs_"),
@@ -397,7 +407,7 @@ items_to_check <- y_clean %>%
 
 walk(
   items_to_check,
-  ~ check_values(
+  ~ check_values( # Helper function
     .data = y_clean,
     .item = .x
   )

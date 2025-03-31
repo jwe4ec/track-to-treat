@@ -1,13 +1,14 @@
 ## Track-to-Treat Phase 1 Data Cleaning
 ## Qualtrics data (parents)
-# R version 4.1.2
+# R version 4.4.3
 
 ####  Startup  ####
 ## Load packages
-library(tidyverse) # 2.0.0
-library(qualtRics) # 3.2.0
-library(here) # 1.0.1
-library(openxlsx) # 4.2.5.2
+library(groundhog) # 3.2.2
+groundhog.library(
+  pkg = c("tidyverse", "qualtRics", "here", "openxlsx"),
+  date = "2025-03-28"
+)
 `%+%` <- paste0
 
 
@@ -25,7 +26,7 @@ pb_in_person_raw <- read_survey(raw_data_dir %+% "dp5_b_parent_p1_numeric.csv")
 pb_remote_raw <- read_survey(raw_data_dir %+% "dp5_b_parent_remote_p1_numeric.csv")
 p3m_raw <- read_survey(raw_data_dir %+% "dp5_3m_parent_p1_numeric.csv")
 
-# Item-level codebook file
+# Load item-level codebook file
 codebook <- openxlsx::read.xlsx(
   here("Phase 1", "Track to Treat P1 Codebook.xlsx"),
   sheet = "Individual Variables",
@@ -43,7 +44,7 @@ codebook <- openxlsx::read.xlsx(
   mutate(
     # Make `reversed` logical
     reversed = reversed == 1,
-    # Crate `reverse_base`: the number a response should be subtracted from to reverse it
+    # Create `reverse_base`: the number a response should be subtracted from to reverse it
     reverse_base = if_else(
       reversed,
       maximum + minimum,
@@ -242,7 +243,7 @@ p_clean <- p_merged %>%
     
     ## Child ACES
     # Overall mean score
-    pb_child_aces_mean = mean_across("pb", "ace_y"),
+    pb_child_aces_mean = mean_across("pb", "ace_y"), # mean_across() from helper function script
     p3m_child_aces_mean = mean_across("p3m", "ace_y"),
     
     

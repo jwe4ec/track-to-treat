@@ -1,4 +1,6 @@
 ## Check overlap across Qualtrics, LifePak datasets
+# R version 4.4.3
+`%+%` <- paste0
 
 ## Load data
 clean_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\Clean Data (Isaac)\\"
