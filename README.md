@@ -31,6 +31,7 @@ Data cleaning notes:
   * Merge datasets (across waves, etc.)
   * Clean columns
   * Manually correct IDs as necessary
+* In the Qualtrics data, items used to compute means via mean_across() are logged in Mean Items Log list files (confirm the items are correct before analyzing the means)
 * In the Qualtrics data, on the parent-report SCARED, one item (`scared_c_1`) was entered into the survey incorrectly and is excluded from composite variables
 * In the Qualtrics data, on the child-report SCARED, one item (`scared_c_11`) was not included on the in-person baseline survey and is excluded from composite variables
 * Clean LifePak data includes EMA survey data only (i.e., excludes "feedback surveys")
