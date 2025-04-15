@@ -122,6 +122,10 @@ y_merged <- full_join(
 )
 
 
+## Create list for logging items used to compute means via mean_across() below
+mean_items_log <- list()
+
+
 ## Clean columns
 y_clean <- y_merged %>%
   
@@ -174,24 +178,24 @@ y_clean <- y_merged %>%
     
     ## CDI-2 (Children's Depression Inventory - 2)
     # Overall mean score
-    yb_cdi_mean = mean_across("yb", "CDI-2 SR"), # mean_across() from helper function script
-    y3m_cdi_mean = mean_across("y3m", "CDI-2 SR"),
+    yb_cdi_mean = mean_across("yb", "CDI-2 SR", name = "yb_cdi_mean"), # mean_across() from helper function script
+    y3m_cdi_mean = mean_across("y3m", "CDI-2 SR", name = "y3m_cdi_mean"),
     
     # Negative mood/physical symptoms subscale
-    yb_cdi_nmps_mean = mean_across("yb", "CDI-2 SR", "Negative Mood/Physical Symptoms"),
-    y3m_cdi_nmps_mean = mean_across("y3m", "CDI-2 SR", "Negative Mood/Physical Symptoms"),
+    yb_cdi_nmps_mean = mean_across("yb", "CDI-2 SR", "Negative Mood/Physical Symptoms", name = "yb_cdi_nmps_mean"),
+    y3m_cdi_nmps_mean = mean_across("y3m", "CDI-2 SR", "Negative Mood/Physical Symptoms", name = "y3m_cdi_nmps_mean"),
     
     # Negative self-esteem subscale
-    yb_cdi_nse_mean = mean_across("yb", "CDI-2 SR", "Negative Self-Esteem"),
-    y3m_cdi_nse_mean = mean_across("y3m", "CDI-2 SR", "Negative Self-Esteem"),
+    yb_cdi_nse_mean = mean_across("yb", "CDI-2 SR", "Negative Self-Esteem", name = "yb_cdi_nse_mean"),
+    y3m_cdi_nse_mean = mean_across("y3m", "CDI-2 SR", "Negative Self-Esteem", name = "y3m_cdi_nse_mean"),
     
     # Ineffectiveness subscale
-    yb_cdi_inef_mean = mean_across("yb", "CDI-2 SR", "Ineffectiveness"),
-    y3m_cdi_inef_mean = mean_across("y3m", "CDI-2 SR", "Ineffectiveness"),
+    yb_cdi_inef_mean = mean_across("yb", "CDI-2 SR", "Ineffectiveness", name = "yb_cdi_inef_mean"),
+    y3m_cdi_inef_mean = mean_across("y3m", "CDI-2 SR", "Ineffectiveness", name = "y3m_cdi_inef_mean"),
     
     # Interpersonal problems subscale
-    yb_cdi_inter_mean = mean_across("yb", "CDI-2 SR", "Interpersonal Problems"),
-    y3m_cdi_inter_mean = mean_across("y3m", "CDI-2 SR", "Interpersonal Problems"),
+    yb_cdi_inter_mean = mean_across("yb", "CDI-2 SR", "Interpersonal Problems", name = "yb_cdi_inter_mean"),
+    y3m_cdi_inter_mean = mean_across("y3m", "CDI-2 SR", "Interpersonal Problems", name = "y3m_cdi_inter_mean"),
 
     # Emotional problems subscale
     yb_cdi_emotional_mean = ((yb_cdi_nmps_mean * 9) + (yb_cdi_nse_mean * 6)) / 15,
@@ -204,94 +208,94 @@ y_clean <- y_merged %>%
     
     ## BHS-4 (Beck Hopelessness Scale - 4-item)
     # Overall mean score
-    yb_bhs_mean = mean_across("yb", "bhs"),
-    y3m_bhs_mean = mean_across("y3m", "bhs"),
+    yb_bhs_mean = mean_across("yb", "bhs", name = "yb_bhs_mean"),
+    y3m_bhs_mean = mean_across("y3m", "bhs", name = "y3m_bhs_mean"),
     
     
     ## PCSC (Primary Control Scale for Children)
     # Overall mean score
-    yb_pcsc_mean = mean_across("yb", "pcsc"),
-    y3m_pcsc_mean = mean_across("y3m", "pcsc"),
+    yb_pcsc_mean = mean_across("yb", "pcsc", name = "yb_pcsc_mean"),
+    y3m_pcsc_mean = mean_across("y3m", "pcsc", name = "y3m_pcsc_mean"),
     
     # Academic subscale
-    yb_pcsc_academic_mean = mean_across("yb", "pcsc", "Academic"),
-    y3m_pcsc_academic_mean = mean_across("y3m", "pcsc", "Academic"),
+    yb_pcsc_academic_mean = mean_across("yb", "pcsc", "Academic", name = "yb_pcsc_academic_mean"),
+    y3m_pcsc_academic_mean = mean_across("y3m", "pcsc", "Academic", name = "y3m_pcsc_academic_mean"),
     
     # Social subscale
-    yb_pcsc_social_mean = mean_across("yb", "pcsc", "Social"),
-    y3m_pcsc_social_mean = mean_across("y3m", "pcsc", "Social"),
+    yb_pcsc_social_mean = mean_across("yb", "pcsc", "Social", name = "yb_pcsc_social_mean"),
+    y3m_pcsc_social_mean = mean_across("y3m", "pcsc", "Social", name = "y3m_pcsc_social_mean"),
     
     # Behavioral subscale
-    yb_pcsc_behavioral_mean = mean_across("yb", "pcsc", "Behavioral"),
-    y3m_pcsc_behavioral_mean = mean_across("y3m", "pcsc", "Behavioral"),
+    yb_pcsc_behavioral_mean = mean_across("yb", "pcsc", "Behavioral", name = "yb_pcsc_behavioral_mean"),
+    y3m_pcsc_behavioral_mean = mean_across("y3m", "pcsc", "Behavioral", name = "y3m_pcsc_behavioral_mean"),
     
     
     ## SCSC (Secondary Control Scale for Children)
     # Overall mean score
-    yb_scsc_mean = mean_across("yb", "scsc"),
-    y3m_scsc_mean = mean_across("y3m", "scsc"),
+    yb_scsc_mean = mean_across("yb", "scsc", name = "yb_scsc_mean"),
+    y3m_scsc_mean = mean_across("y3m", "scsc", name = "y3m_scsc_mean"),
     
     
     ## BADS (Bvioral Activation for Depression Scale)
     # Activation subscale
-    yb_bads_ac_mean = mean_across("yb", "bads", "AC"),
-    y3m_bads_ac_mean = mean_across("y3m", "bads", "AC"),
+    yb_bads_ac_mean = mean_across("yb", "bads", "AC", name = "yb_bads_ac_mean"),
+    y3m_bads_ac_mean = mean_across("y3m", "bads", "AC", name = "y3m_bads_ac_mean"),
     
     # Avoidance/rumination subscale    
-    yb_bads_ar_mean = mean_across("yb", "bads", "AR"),
-    y3m_bads_ar_mean = mean_across("y3m", "bads", "AR"),
+    yb_bads_ar_mean = mean_across("yb", "bads", "AR", name = "yb_bads_ar_mean"),
+    y3m_bads_ar_mean = mean_across("y3m", "bads", "AR", name = "y3m_bads_ar_mean"),
     
     # Work/school impairment subscale
-    yb_bads_ws_mean = mean_across("yb", "bads", "WS"),
-    y3m_bads_ws_mean = mean_across("y3m", "bads", "WS"),
+    yb_bads_ws_mean = mean_across("yb", "bads", "WS", name = "yb_bads_ws_mean"),
+    y3m_bads_ws_mean = mean_across("y3m", "bads", "WS", name = "y3m_bads_ws_mean"),
     
     # Social impairment subscale
-    yb_bads_si_mean = mean_across("yb", "bads", "SI"),
-    y3m_bads_si_mean = mean_across("y3m", "bads", "SI"),
+    yb_bads_si_mean = mean_across("yb", "bads", "SI", name = "yb_bads_si_mean"),
+    y3m_bads_si_mean = mean_across("y3m", "bads", "SI", name = "y3m_bads_si_mean"),
     
     
     ## SHS (Self-Hate Scale)
     # Overall mean score
-    yb_shs_mean = mean_across("yb", "shs"),
-    y3m_shs_mean = mean_across("y3m", "shs"),
+    yb_shs_mean = mean_across("yb", "shs", name = "yb_shs_mean"),
+    y3m_shs_mean = mean_across("y3m", "shs", name = "y3m_shs_mean"),
     
     
     ## IDAS-II (Inventory of Depression and Anxiety Symptoms - II)
     # Overall mean score
-    yb_idas_mean = mean_across("yb", "idas"),
-    y3m_idas_mean = mean_across("y3m", "idas"),
+    yb_idas_mean = mean_across("yb", "idas", name = "yb_idas_mean"),
+    y3m_idas_mean = mean_across("y3m", "idas", name = "y3m_idas_mean"),
     
     
     ## SCARED (Screen for Child Anxiety and Related Disorders)
     # Overall mean score
-    yb_scared_mean = mean_across("yb", "scared"),
-    y3m_scared_mean = mean_across("y3m", "scared"),
+    yb_scared_mean = mean_across("yb", "scared", name = "yb_scared_mean"),
+    y3m_scared_mean = mean_across("y3m", "scared", name = "y3m_scared_mean"),
     
     # Panic disorder/significant somatic symptoms subscale
-    yb_scared_paso_mean = mean_across("yb", "scared", "PA/SO"),
-    y3m_scared_paso_mean = mean_across("y3m", "scared", "PA/SO"),
+    yb_scared_paso_mean = mean_across("yb", "scared", "PA/SO", name = "yb_scared_paso_mean"),
+    y3m_scared_paso_mean = mean_across("y3m", "scared", "PA/SO", name = "y3m_scared_paso_mean"),
     
     # Generalized anxiety disorder subscale
-    yb_scared_ga_mean = mean_across("yb", "scared", "GA"),
-    y3m_scared_ga_mean = mean_across("y3m", "scared", "GA"),
+    yb_scared_ga_mean = mean_across("yb", "scared", "GA", name = "yb_scared_ga_mean"),
+    y3m_scared_ga_mean = mean_across("y3m", "scared", "GA", name = "y3m_scared_ga_mean"),
     
     # Separation anxiety disorder subscale
-    yb_scared_sep_mean = mean_across("yb", "scared", "SEP"),
-    y3m_scared_sep_mean = mean_across("y3m", "scared", "SEP"),
+    yb_scared_sep_mean = mean_across("yb", "scared", "SEP", name = "yb_scared_sep_mean"),
+    y3m_scared_sep_mean = mean_across("y3m", "scared", "SEP", name = "y3m_scared_sep_mean"),
     
     # Social phobic disorder subscale
-    yb_scared_soc_mean = mean_across("yb", "scared", "SOC"),
-    y3m_scared_soc_mean = mean_across("y3m", "scared", "SOC"),
+    yb_scared_soc_mean = mean_across("yb", "scared", "SOC", name = "yb_scared_soc_mean"),
+    y3m_scared_soc_mean = mean_across("y3m", "scared", "SOC", name = "y3m_scared_soc_mean"),
     
     # Significant school avoidance symptoms
-    yb_scared_sch_mean = mean_across("yb", "scared", "SCH"),
-    y3m_scared_sch_mean = mean_across("y3m", "scared", "SCH"),
+    yb_scared_sch_mean = mean_across("yb", "scared", "SCH", name = "yb_scared_sch_mean"),
+    y3m_scared_sch_mean = mean_across("y3m", "scared", "SCH", name = "y3m_scared_sch_mean"),
     
     
     ## SHAPS (Snaith-Hamilton Pleasure Scale)
     # Overall mean score
-    yb_shaps_mean = mean_across("yb", "shaps"),
-    y3m_shaps_mean = mean_across("y3m", "shaps"),
+    yb_shaps_mean = mean_across("yb", "shaps", name = "yb_shaps_mean"),
+    y3m_shaps_mean = mean_across("y3m", "shaps", name = "y3m_shaps_mean"),
     
     
     ## SRET (Self-Referential Encoding Task)
@@ -310,41 +314,41 @@ y_clean <- y_merged %>%
     
     ## IPTQ (Implicit Personality Theory Questionnaire)
     # Overall mean score
-    yb_iptq_mean = mean_across("yb", "iptq"),
-    y3m_iptq_mean = mean_across("y3m", "iptq"),
+    yb_iptq_mean = mean_across("yb", "iptq", name = "yb_iptq_mean"),
+    y3m_iptq_mean = mean_across("y3m", "iptq", name = "y3m_iptq_mean"),
     
     
     ## BFAMG (Brief Family Assessment Measure - General Scale)
     # Overall mean score
-    yb_bfamg_mean = mean_across("yb", "bfamg"),
-    y3m_bfamg_mean = mean_across("y3m", "bfamg"),
+    yb_bfamg_mean = mean_across("yb", "bfamg", name = "yb_bfamg_mean"),
+    y3m_bfamg_mean = mean_across("y3m", "bfamg", name = "y3m_bfamg_mean"),
     
     
     ## MPVS (Multidimensional Peer Victimization Scale)
     # Overall mean score
-    yb_mpvs_mean = mean_across("yb", "mpvs"),
-    y3m_mpvs_mean = mean_across("y3m", "mpvs"),
+    yb_mpvs_mean = mean_across("yb", "mpvs", name = "yb_mpvs_mean"),
+    y3m_mpvs_mean = mean_across("y3m", "mpvs", name = "y3m_mpvs_mean"),
     
     # Physical victimization subscale
-    yb_mpvs_physical_mean = mean_across("yb", "mpvs", "Physical Victimization"),
-    y3m_mpvs_physical_mean = mean_across("y3m", "mpvs", "Physical Victimization"),
+    yb_mpvs_physical_mean = mean_across("yb", "mpvs", "Physical Victimization", name = "yb_mpvs_physical_mean"),
+    y3m_mpvs_physical_mean = mean_across("y3m", "mpvs", "Physical Victimization", name = "y3m_mpvs_physical_mean"),
     
     # Social manipulation subscale
-    yb_mpvs_social_mean = mean_across("yb", "mpvs", "Social Manipulation"),
-    y3m_mpvs_social_mean = mean_across("y3m", "mpvs", "Social Manipulation"),
+    yb_mpvs_social_mean = mean_across("yb", "mpvs", "Social Manipulation", name = "yb_mpvs_social_mean"),
+    y3m_mpvs_social_mean = mean_across("y3m", "mpvs", "Social Manipulation", name = "y3m_mpvs_social_mean"),
     
     # Verbal victimization subscale
-    yb_mpvs_verbal_mean = mean_across("yb", "mpvs", "Verbal Victimization"),
-    y3m_mpvs_verbal_mean = mean_across("y3m", "mpvs", "Verbal Victimization"),
+    yb_mpvs_verbal_mean = mean_across("yb", "mpvs", "Verbal Victimization", name = "yb_mpvs_verbal_mean"),
+    y3m_mpvs_verbal_mean = mean_across("y3m", "mpvs", "Verbal Victimization", name = "y3m_mpvs_verbal_mean"),
     
     # Attacks on property subscale
-    yb_mpvs_property_mean = mean_across("yb", "mpvs", "Attacks on Property"),
-    y3m_mpvs_property_mean = mean_across("y3m", "mpvs", "Attacks on Property"),
+    yb_mpvs_property_mean = mean_across("yb", "mpvs", "Attacks on Property", name = "yb_mpvs_property_mean"),
+    y3m_mpvs_property_mean = mean_across("y3m", "mpvs", "Attacks on Property", name = "y3m_mpvs_property_mean"),
     
     ## UCLA (UCLA Loneliness Scale, aka ULS)
     # Overall mean score
-    yb_ucla_mean = mean_across("yb", "ucla"),
-    y3m_ucla_mean = mean_across("y3m", "ucla")
+    yb_ucla_mean = mean_across("yb", "ucla", name = "yb_ucla_mean"),
+    y3m_ucla_mean = mean_across("y3m", "ucla", name = "y3m_ucla_mean")
 
   ) %>%
   
@@ -424,5 +428,6 @@ y_clean$lifepak_id[y_clean$lsmh_id == "LSMH00416"] <- "946021"
 
 
 
-####  Save Data  ####
-saveRDS(y_clean, clean_data_dir %+% "Phase 1 Youth Qualtrics Data.rds")
+####  Save Data and Mean Items Log  ####
+saveRDS(y_clean,        clean_data_dir %+% "Phase 1 Youth Qualtrics Data.rds")
+saveRDS(mean_items_log, clean_data_dir %+% "Phase 1 Youth Qualtrics Mean Items Log.rds")

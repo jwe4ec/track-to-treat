@@ -143,17 +143,21 @@ get_items <- function(.prefix, .measure, .subscale) {
   filtered_codebook %>%
     pull(item) %>%
     return()
-  
+
 }
 
-# Function to take the mean across items from get_items()
-mean_across <- function(...) {
+# Function to take the mean across items from get_items() and to log the items
+# used to compute the mean
+mean_across <- function(.prefix, .measure, .subscale, name) {
   
   # Get items
-  items <- get_items(...)
+  items <- get_items(.prefix, .measure, .subscale)
+  
+  # If items are not unique, throw an error
+  if(length(items) != length(unique(items))) stop("Item(s) are repeated and will bias mean")
 
   # Take mean across items, dropping NA values
-  mean(
+  mean <- mean(
     c_across(
       all_of(
         items
@@ -161,6 +165,12 @@ mean_across <- function(...) {
     ),
     na.rm = T
   )
+  
+  # Log the items used to compute the mean in list stored in global environment
+  mean_items_log[[name]]$items   <<- items
+  mean_items_log[[name]]$n_items <<- length(items)
+  
+  return(mean)
   
 }
 

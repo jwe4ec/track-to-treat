@@ -114,6 +114,10 @@ p_merged <- full_join(
 )
 
 
+## Create list for logging items used to compute means via mean_across() below
+mean_items_log <- list()
+
+
 ## Clean columns
 # Data collected but not included here: 
 # - Data regarding child's current medications
@@ -243,94 +247,94 @@ p_clean <- p_merged %>%
     
     ## Child ACES
     # Overall mean score
-    pb_child_aces_mean = mean_across("pb", "ace_y"), # mean_across() from helper function script
-    p3m_child_aces_mean = mean_across("p3m", "ace_y"),
+    pb_child_aces_mean = mean_across("pb", "ace_y", name = "pb_child_aces_mean"), # mean_across() from helper function script
+    p3m_child_aces_mean = mean_across("p3m", "ace_y", name = "p3m_child_aces_mean"),
     
     
     ## Parent ACES
     # Overall mean score
-    pb_parent_aces_mean = mean_across("pb", "ace_p"),
-    p3m_parent_aces_mean = mean_across("p3m", "ace_p"),
+    pb_parent_aces_mean = mean_across("pb", "ace_p", name = "pb_parent_aces_mean"),
+    p3m_parent_aces_mean = mean_across("p3m", "ace_p", name = "p3m_parent_aces_mean"),
     
     
     ## CDI-2 (Children's Depression Inventory - 2)
     # Overall mean score
-    pb_cdi_mean = mean_across("pb", "CDI-2 P"),
-    p3m_cdi_mean = mean_across("p3m", "CDI-2 P"),
+    pb_cdi_mean = mean_across("pb", "CDI-2 P", name = "pb_cdi_mean"),
+    p3m_cdi_mean = mean_across("p3m", "CDI-2 P", name = "p3m_cdi_mean"),
     
     # Emotional problems subscale
-    pb_cdi_emo_mean = mean_across("pb", "CDI-2 P", "Emotional Problems"),
-    p3m_cdi_emo_mean = mean_across("p3m", "CDI-2 P", "Emotional Problems"),
+    pb_cdi_emo_mean = mean_across("pb", "CDI-2 P", "Emotional Problems", name = "pb_cdi_emo_mean"),
+    p3m_cdi_emo_mean = mean_across("p3m", "CDI-2 P", "Emotional Problems", name = "p3m_cdi_emo_mean"),
     
     # Functional problems subscale
-    pb_cdi_fun_mean = mean_across("pb", "CDI-2 P", "Functional Problems"),
-    p3m_cdi_fun_mean = mean_across("p3m", "CDI-2 P", "Functional Problems"),
+    pb_cdi_fun_mean = mean_across("pb", "CDI-2 P", "Functional Problems", name = "pb_cdi_fun_mean"),
+    p3m_cdi_fun_mean = mean_across("p3m", "CDI-2 P", "Functional Problems", name = "p3m_cdi_fun_mean"),
     
     
     ## BHS-4 (Beck Hopelessness Scale - 4-item)
     # Overall mean score
-    pb_bhs_mean = mean_across("pb", "bhs"),
-    p3m_bhs_mean = mean_across("p3m", "bhs"),
+    pb_bhs_mean = mean_across("pb", "bhs", name = "pb_bhs_mean"),
+    p3m_bhs_mean = mean_across("p3m", "bhs", name = "p3m_bhs_mean"),
     
     
     ## BFAMG (Brief Family Assessment Measure - General Scale)
     # Overall mean score
-    pb_bfamg_mean = mean_across("pb", "bfamg"),
-    p3m_bfamg_mean = mean_across("p3m", "bfamg"),
+    pb_bfamg_mean = mean_across("pb", "bfamg", name = "pb_bfamg_mean"),
+    p3m_bfamg_mean = mean_across("p3m", "bfamg", name = "p3m_bfamg_mean"),
     
     
     ## BSI (Brief Symptom Inventory)
     # Overall mean score
-    pb_bsi_mean = mean_across("pb", "bsi"),
-    p3m_bsi_mean = mean_across("p3m", "bsi"),
+    pb_bsi_mean = mean_across("pb", "bsi", name = "pb_bsi_mean"),
+    p3m_bsi_mean = mean_across("p3m", "bsi", name = "p3m_bsi_mean"),
     
     # Somatization subscale
-    pb_bsi_s_mean = mean_across("pb", "bsi", "S"),
-    p3m_bsi_s_mean = mean_across("p3m", "bsi", "S"),
+    pb_bsi_s_mean = mean_across("pb", "bsi", "S", name = "pb_bsi_s_mean"),
+    p3m_bsi_s_mean = mean_across("p3m", "bsi", "S", name = "p3m_bsi_s_mean"),
     
     # Depression subscale
-    pb_bsi_d_mean = mean_across("pb", "bsi", "D"),
-    p3m_bsi_d_mean = mean_across("p3m", "bsi", "D"),
+    pb_bsi_d_mean = mean_across("pb", "bsi", "D", name = "pb_bsi_d_mean"),
+    p3m_bsi_d_mean = mean_across("p3m", "bsi", "D", name = "p3m_bsi_d_mean"),
     
     # Anxiety subscale
-    pb_bsi_a_mean = mean_across("pb", "bsi", "A"),
-    p3m_bsi_a_mean = mean_across("p3m", "bsi", "A"),
+    pb_bsi_a_mean = mean_across("pb", "bsi", "A", name = "pb_bsi_a_mean"),
+    p3m_bsi_a_mean = mean_across("p3m", "bsi", "A", name = "p3m_bsi_a_mean"),
     
     
     ## BACE (Barriers to Accessing Care Evaluation)
     # Overall mean score
-    pb_bace_mean = mean_across("pb", "bace"),
-    p3m_bace_mean = mean_across("p3m", "bace"),
+    pb_bace_mean = mean_across("pb", "bace", name = "pb_bace_mean"),
+    p3m_bace_mean = mean_across("p3m", "bace", name = "p3m_bace_mean"),
     
     # Treatment stigma subscale
-    pb_bace_stigma_mean = mean_across("pb", "bace", "Treatment Stigma"),
-    p3m_bace_stigma_mean = mean_across("p3m", "bace", "Treatment Stigma"),
+    pb_bace_stigma_mean = mean_across("pb", "bace", "Treatment Stigma", name = "pb_bace_stigma_mean"),
+    p3m_bace_stigma_mean = mean_across("p3m", "bace", "Treatment Stigma", name = "p3m_bace_stigma_mean"),
     
     
     ## SCARED (Screen for Child Anxiety and Related Disorders)
     # Overall mean score
-    pb_scared_mean = mean_across("pb", "scared"),
-    p3m_scared_mean = mean_across("p3m", "scared"),
+    pb_scared_mean = mean_across("pb", "scared", name = "pb_scared_mean"),
+    p3m_scared_mean = mean_across("p3m", "scared", name = "p3m_scared_mean"),
     
     # Panic disorder/significant somatic symptoms subscale
-    pb_scared_paso_mean = mean_across("pb", "scared", "PA/SO"),
-    p3m_scared_paso_mean = mean_across("p3m", "scared", "PA/SO"),
+    pb_scared_paso_mean = mean_across("pb", "scared", "PA/SO", name = "pb_scared_paso_mean"),
+    p3m_scared_paso_mean = mean_across("p3m", "scared", "PA/SO", name = "p3m_scared_paso_mean"),
     
     # Generalized anxiety disorder subscale
-    pb_scared_ga_mean = mean_across("pb", "scared", "GA"),
-    p3m_scared_ga_mean = mean_across("p3m", "scared", "GA"),
+    pb_scared_ga_mean = mean_across("pb", "scared", "GA", name = "pb_scared_ga_mean"),
+    p3m_scared_ga_mean = mean_across("p3m", "scared", "GA", name = "p3m_scared_ga_mean"),
     
     # Separation anxiety disorder subscale
-    pb_scared_sep_mean = mean_across("pb", "scared", "SEP"),
-    p3m_scared_sep_mean = mean_across("p3m", "scared", "SEP"),
+    pb_scared_sep_mean = mean_across("pb", "scared", "SEP", name = "pb_scared_sep_mean"),
+    p3m_scared_sep_mean = mean_across("p3m", "scared", "SEP", name = "p3m_scared_sep_mean"),
     
     # Social phobic disorder subscale
-    pb_scared_soc_mean = mean_across("pb", "scared", "SOC"),
-    p3m_scared_soc_mean = mean_across("p3m", "scared", "SOC"),
+    pb_scared_soc_mean = mean_across("pb", "scared", "SOC", name = "pb_scared_soc_mean"),
+    p3m_scared_soc_mean = mean_across("p3m", "scared", "SOC", name = "p3m_scared_soc_mean"),
     
     # Significant school avoidance symptoms
-    pb_scared_sch_mean = mean_across("pb", "scared", "SCH"),
-    p3m_scared_sch_mean = mean_across("p3m", "scared", "SCH"),
+    pb_scared_sch_mean = mean_across("pb", "scared", "SCH", name = "pb_scared_sch_mean"),
+    p3m_scared_sch_mean = mean_across("p3m", "scared", "SCH", name = "p3m_scared_sch_mean"),
     
   ) %>%
   
@@ -402,4 +406,5 @@ walk(
 
 
 ####  Save Data  ####
-saveRDS(p_clean, clean_data_dir %+% "Phase 1 Parent Qualtrics Data.rds")
+saveRDS(p_clean,        clean_data_dir %+% "Phase 1 Parent Qualtrics Data.rds")
+saveRDS(mean_items_log, clean_data_dir %+% "Phase 1 Parent Qualtrics Mean Items Log.rds")
