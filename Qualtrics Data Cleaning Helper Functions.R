@@ -34,12 +34,15 @@ remove_invalid_responses <- function(data, id) {
 
 # Function to compute item completion rate
 compute_item_completion_rate <- function(data, survey_prefix) {
+  
   # Define columns to ignore when computing completion rate
+    # Columns with click and time on page information
   time_cols <- names(data)[grepl("time", names(data)) & grepl("Click|Submit", names(data))]
+  
+    # Columns with specified responses for response options of "Other" (or similar)
   text_cols <- names(data)[grepl("_TEXT", names(data))]
   
-  print(text_cols) # TODO: JE to see whether any text_cols should be included in completion rate
-  
+    # Columns for metadata
   meta_cols <- c("StartDate", "EndDate", "Status", "IPAddress", "Progress", 
                  "Duration (in seconds)", "Finished", "RecordedDate", "ResponseId", 
                  "RecipientLastName", "RecipientFirstName", "RecipientEmail", 
@@ -77,11 +80,15 @@ compute_item_completion_rate <- function(data, survey_prefix) {
   
   data$item_completion_rate <- rowMeans(!is.na(data[, item_cols]))
   
-  # Print items
+  # Print and log items used to compute completion rate in list stored in global environment
   cat("'item_completion_rate' for '", survey_prefix, "' survey is based on these items:\n\n", sep = "")
   print(item_cols)
   
+  log$item_completion_rate[[survey_prefix]]$items   <<- item_cols
+  log$item_completion_rate[[survey_prefix]]$n_items <<- length(item_cols)
+  
   return(data)
+  
 }
 
 # Function to identify duplicates
@@ -219,8 +226,8 @@ mean_across <- function(.prefix, .measure, .subscale, name) {
   )
   
   # Log the items used to compute the mean in list stored in global environment
-  mean_items_log[[name]]$items   <<- items
-  mean_items_log[[name]]$n_items <<- length(items)
+  log$mean_items[[name]]$items   <<- items
+  log$mean_items[[name]]$n_items <<- length(items)
   
   return(mean)
   

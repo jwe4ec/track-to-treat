@@ -95,6 +95,12 @@ y3m_valid_ids <- remove_invalid_responses(y3m_raw, y3m_lsmh_id)
 y3m_valid_ids$y3m_lsmh_id[y3m_valid_ids$y3m_lsmh_id == "LSMH00196"] <- "LSMH00169"
 
 
+## Create lists for logging (a) items used to compute item completion rates below via
+## compute_item_completion_rate() and (b) items used to compute means via mean_across()
+log <- list(item_completion_rate = list(),
+            mean_items = list())
+
+
 ## Deduplicate
 # Compute item completion rate using helper function (given that Qualtrics's "Progress" 
 # and "Finished" variables reflect only clicking through survey, not completing items)
@@ -129,10 +135,6 @@ y_merged <- full_join(
   relationship = "one-to-one",
   suffix = c(".yb", ".y3m")
 )
-
-
-## Create list for logging items used to compute means via mean_across() below
-mean_items_log <- list()
 
 
 ## Clean columns
@@ -436,7 +438,6 @@ y_clean$lifepak_id[y_clean$lsmh_id == "LSMH00306"] <- "130294"
 y_clean$lifepak_id[y_clean$lsmh_id == "LSMH00416"] <- "946021"
 
 
-
-####  Save Data and Mean Items Log  ####
-saveRDS(y_clean,        clean_data_dir %+% "Phase 1 Youth Qualtrics Data.rds")
-saveRDS(mean_items_log, clean_data_dir %+% "Phase 1 Youth Qualtrics Mean Items Log.rds")
+####  Save Data and Log  ####
+saveRDS(y_clean, clean_data_dir %+% "Phase 1 Youth Qualtrics Data.rds")
+saveRDS(log,     clean_data_dir %+% "Phase 1 Youth Qualtrics Log.rds")

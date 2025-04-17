@@ -83,6 +83,12 @@ pb_valid_ids <- remove_invalid_responses(pb_raw, pb_lsmh_id)
 p3m_valid_ids <- remove_invalid_responses(p3m_raw, p3m_lsmh_id)
 
 
+## Create lists for logging (a) items used to compute item completion rates below via
+## compute_item_completion_rate() and (b) items used to compute means via mean_across()
+log <- list(item_completion_rate = list(),
+            mean_items = list())
+
+
 ### Deduplicate
 # Compute item completion rate using helper function (given that Qualtrics's "Progress" 
 # and "Finished" variables reflect only clicking through survey, not completing items)
@@ -117,10 +123,6 @@ p_merged <- full_join(
   relationship = "one-to-one",
   suffix = c(".pb", ".p3m")
 )
-
-
-## Create list for logging items used to compute means via mean_across() below
-mean_items_log <- list()
 
 
 ## Clean columns
@@ -409,7 +411,6 @@ walk(
 )
 
 
-
-####  Save Data  ####
-saveRDS(p_clean,        clean_data_dir %+% "Phase 1 Parent Qualtrics Data.rds")
-saveRDS(mean_items_log, clean_data_dir %+% "Phase 1 Parent Qualtrics Mean Items Log.rds")
+####  Save Data and Log  ####
+saveRDS(p_clean, clean_data_dir %+% "Phase 1 Parent Qualtrics Data.rds")
+saveRDS(log,     clean_data_dir %+% "Phase 1 Parent Qualtrics Log.rds")
