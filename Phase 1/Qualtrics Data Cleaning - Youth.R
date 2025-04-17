@@ -269,6 +269,8 @@ y_clean <- y_merged %>%
     yb_bads_si_mean = mean_across("yb", "bads", "SI", name = "yb_bads_si_mean"),
     y3m_bads_si_mean = mean_across("y3m", "bads", "SI", name = "y3m_bads_si_mean"),
     
+    # Overall score can also be computed (for instructions, see https://doi.org/b23r6w )
+    
     
     ## SHS (Self-Hate Scale)
     # Overall mean score
