@@ -163,10 +163,11 @@ codebook$item <- gsub("^y3n_", "y3m_", codebook$item)
 prefixes_codebook <- str_extract(codebook$item, "^.*?(?=_)")
 table(prefixes_codebook)
 
-
-# Data collected but not included here: 
+# Data collected but not included here:
+# - Self-Referential Encoding Task (SRET)
 # - Prognostic Pessimism for Depression scale (PPD)
 # - Pubertal Development Scale (PDS)
+# - Desired intervention (assessed at 3 months)
 y_clean <- y_merged %>%
   
   # Remove click, page time variables
@@ -292,6 +293,8 @@ y_clean <- y_merged %>%
     # Social impairment subscale
     yb_bads_si_mean = mean_across("yb", "bads", "SI", name = "yb_bads_si_mean"),
     y3m_bads_si_mean = mean_across("y3m", "bads", "SI", name = "y3m_bads_si_mean"),
+    
+    # Overall score can also be computed (for instructions, see https://doi.org/b23r6w )
     
     
     ## SHS (Self-Hate Scale)

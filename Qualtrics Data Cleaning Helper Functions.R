@@ -6,7 +6,7 @@
 # Function to drop invalid responses
 remove_invalid_responses <- function(data, id) {
   
-  # Taking the data, filter out cases where the ID variable is missing or in invalid_ids
+  # Taking the data, filter out cases where ID variable is missing (unclear why) or in invalid_ids
   out <- data %>%
     filter(
       !is.na({{id}}),
@@ -270,6 +270,8 @@ mean_across <- function(.prefix, .measure, .subscale, name, exclude) {
     ),
     na.rm = T
   )
+  
+  if (is.nan(mean)) mean <- NA
   
   # Log the items used to compute the mean in list stored in global environment
   log$mean_items[[name]]$items   <<- items
