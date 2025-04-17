@@ -63,8 +63,11 @@ pb_remote_raw$pb_siblings_2 <- as.character(pb_remote_raw$pb_siblings_2)
 
 # Note on variable overlap: 
 # - No variables appear in the in-person dataset only
-# - Variables that appear in the remote dataset only include "password_parent", 
-#   click and time on page information, and COVID-related variables)
+# - Variables that appear in the remote dataset only include "password_parent",
+#   COVID-related variables, "pb_teletherapy1" and "pb_teletherapy2" (interest in 
+#   teletherapy), "pb_online_tx1" and "pb_online_tx2" (interest in self-guided 
+#   mental health programs), "pb_interview" (interest in being interviewed by a 
+#   journalist), and click and time on page information
 pb_raw <- bind_rows(
   list(
     "in-person" = pb_in_person_raw, 
