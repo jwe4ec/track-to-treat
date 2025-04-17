@@ -138,9 +138,11 @@ y_merged <- full_join(
 
 
 ## Clean columns
-# Data collected but not included here: 
+# Data collected but not included here:
+# - Self-Referential Encoding Task (SRET)
 # - Prognostic Pessimism for Depression scale (PPD)
 # - Pubertal Development Scale (PDS)
+# - Desired intervention (assessed at 3 months)
 y_clean <- y_merged %>%
   
   # Remove click, page time variables
