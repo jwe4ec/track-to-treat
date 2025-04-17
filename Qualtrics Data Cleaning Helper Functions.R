@@ -32,6 +32,58 @@ remove_invalid_responses <- function(data, id) {
   
 }
 
+# Function to compute item completion rate
+compute_item_completion_rate <- function(data, survey_prefix) {
+  # Define columns to ignore when computing completion rate
+  time_cols <- names(data)[grepl("time", names(data)) & grepl("Click|Submit", names(data))]
+  text_cols <- names(data)[grepl("_TEXT", names(data))]
+  
+  print(text_cols) # TODO: JE to see whether any text_cols should be included in completion rate
+  
+  meta_cols <- c("StartDate", "EndDate", "Status", "IPAddress", "Progress", 
+                 "Duration (in seconds)", "Finished", "RecordedDate", "ResponseId", 
+                 "RecipientLastName", "RecipientFirstName", "RecipientEmail", 
+                 "ExternalReference", "LocationLatitude", "LocationLongitude", 
+                 "DistributionChannel", "UserLanguage")
+  
+  y_meta_cols <- c("status", "SC0")
+  
+  if (survey_prefix == "yb") {
+    meta_cols <- c(meta_cols, y_meta_cols,
+                   "administration", "assent_signature", "yb_lsmh_id", "yb_lsmh_id_ validate", 
+                   "yb_phone", "yb_phone_validate", "yb_LifePak ID", "yb_LifePak ID Verify", 
+                   "yb_end", "yb_end_3", "password_child", "yb_interview")
+  } else if (survey_prefix == "y3m") {
+    meta_cols <- c(meta_cols, y_meta_cols,
+                   "y3m_lsmh_id", "y3_lsmh_id_ validate", "y3_childname", "y3m_chrome_browser")
+  } else if (survey_prefix == "pb") {
+    meta_cols <- c(meta_cols,
+                   "administration", "consent_signature", "pb_lsmh_id", "pb_lsmh_id_validate", 
+                   "pb_child_name", "pb_date", "pb_address", "pb_homephone",
+                   "pb_parentcell", "pb_childcell", "pb_workphone", "pb_parentemail", 
+                   "pb_childemail", "password_parent", "pb_interview")
+  } else if (survey_prefix == "p3m") {
+    meta_cols <- c(meta_cols,
+                   "p3m_lsmh_id", "p3m_lsmh_id_validate", 
+                   "p3m_child_name", "p3m_date", "p3m_address", "p3m_homephone", 
+                   "p3m_parentcell", "p3m_childcell", "p3m_workphone", "p3m_parentemail", 
+                   "p3m_childemail", "p3m_wrapup_optin")
+  }
+  
+  ignore_cols <- c(meta_cols, time_cols, text_cols)
+  
+  # Compute completion rate
+  item_cols <- names(data)[!(names(data) %in% ignore_cols)]
+  
+  data$item_completion_rate <- rowMeans(!is.na(data[, item_cols]))
+  
+  # Print items
+  cat("'item_completion_rate' for '", survey_prefix, "' survey is based on these items:\n\n", sep = "")
+  print(item_cols)
+  
+  return(data)
+}
+
 # Function to identify duplicates
 identify_duplicates <- function(data, id) {
   

@@ -27,10 +27,14 @@ yb_remote_raw <- read_survey(raw_data_dir %+% "dp5_b_child_remote_p1_numeric.csv
 y3m_raw <- read_survey(raw_data_dir %+% "dp5_3m_child_p1_numeric.csv")
 
 # Load item-level codebook file
+codebook_path <- here("Phase 1", "Track to Treat P1 Codebook.xlsx")   # TODO: Revised by JE
+sheet_name <- "Individual Variables"
+(sheet_last_row <- nrow(openxlsx::read.xlsx(codebook_path, sheet_name)) + 1) # Add 1 for header row
+
 codebook <- openxlsx::read.xlsx(
-  here("Phase 1", "Track to Treat P1 Codebook.xlsx"),
-  sheet = "Individual Variables",
-  rows = c(1, 3:1214)
+  codebook_path,
+  sheet_name,
+  rows = c(1, 3:sheet_last_row) # Skip column description row
 ) %>%
   # Select only necessary variables
   select(
@@ -92,6 +96,11 @@ y3m_valid_ids$y3m_lsmh_id[y3m_valid_ids$y3m_lsmh_id == "LSMH00196"] <- "LSMH0016
 
 
 ## Deduplicate
+# Compute item completion rate using helper function (given that Qualtrics's "Progress" 
+# and "Finished" variables reflect only clicking through survey, not completing items)
+yb_valid_ids <- compute_item_completion_rate(yb_valid_ids, "yb")
+y3m_valid_ids <- compute_item_completion_rate(y3m_valid_ids, "y3m")
+
 # Identify duplicates using helper function
 identify_duplicates(yb_valid_ids, yb_lsmh_id)
 identify_duplicates(y3m_valid_ids, y3m_lsmh_id)

@@ -84,6 +84,11 @@ p3m_valid_ids <- remove_invalid_responses(p3m_raw, p3m_lsmh_id)
 
 
 ### Deduplicate
+# Compute item completion rate using helper function (given that Qualtrics's "Progress" 
+# and "Finished" variables reflect only clicking through survey, not completing items)
+pb_valid_ids <- compute_item_completion_rate(pb_valid_ids, "pb")
+p3m_valid_ids <- compute_item_completion_rate(p3m_valid_ids, "p3m")
+
 # Identify duplicates using helper function
 identify_duplicates(pb_valid_ids, pb_lsmh_id)
 identify_duplicates(p3m_valid_ids, p3m_lsmh_id)
