@@ -287,6 +287,15 @@ nis_valid <- nis_deduplicated %>%
   )
 
 
+## Add LSMH ID
+clean_qualtrics_data <- readRDS(clean_data_dir %+% "Phase 1 Youth Qualtrics Clean Data.rds")
+
+lsmh_id_lookup <- clean_qualtrics_data %>%
+  distinct(lifepak_id, lsmh_id)
+
+nis_valid_with_lsmh_id <- nis_valid %>%
+  left_join(lsmh_id_lookup, by = "lifepak_id", relationship = "many-to-one")
+
 
 ####  Save Data  ####
-saveRDS(nis_valid, clean_data_dir %+% "Phase 1 LifePak Data.rds")
+saveRDS(nis_valid_with_lsmh_id, clean_data_dir %+% "Phase 1 LifePak Clean Data.rds")

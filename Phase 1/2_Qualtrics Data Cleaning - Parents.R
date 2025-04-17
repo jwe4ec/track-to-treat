@@ -78,11 +78,6 @@ pb_raw <- bind_rows(
 )
 
 
-## Confirm that all IDs match "validate" columns
-all(pb_raw$pb_lsmh_id == pb_raw$`pb_lsmh_id_validate`, na.rm = TRUE)
-all(p3m_raw$p3m_lsmh_id == p3m_raw$`y3_lsmh_id_validate`, na.rm = TRUE)
-
-
 ## Remove invalid responses
 # Invalid IDs: Tests or survey previews
 invalid_ids <- c("LSMH00000", "LSMH00000000111", "LSMH00001", "LSMH00062", "LSMH000", "LSMH000000")
@@ -165,6 +160,7 @@ table(prefixes_codebook)
 # - Further details regarding child's current and lifetime treatment (e.g., type, provider)
 # - Parent's treatment history
 # - Data regarding parent's care taking responsibilities
+# - Parental demographics
 # - Additional caregiver demographics
 # - Child demographics at 3 months
 # - COVID-19-related variables
@@ -215,123 +211,26 @@ p_clean <- p_merged %>%
     
     
     ## Demographics at baseline
-    # Child age
-    pb_child_age = pb_childage,
+    # Child age: Does not need further cleaning
     
     # Child sex
-    pb_child_sex = case_match(
+    pb_childsex = case_match(
       pb_childsex,
       1 ~ "Male",
       2 ~ "Female"
     ),
     
     # Child gender
-    pb_child_gender = case_match(
+    pb_childgender = case_match(
       pb_childgender,
-      1 ~ "Agender",
-      2 ~ "Androgyne",
-      3 ~ "Demigender",
-      4 ~ "Genderqueer or genderfluid",
-      5 ~ "Man",
-      6 ~ "Questioning or unsure",
-      7 ~ "Trans man",
-      8 ~ "Trans woman",
-      9 ~ "Woman",
-      10 ~ "Other"
+      5 ~ "Boy",
+      9 ~ "Girl",
+      c(1, 2, 3, 4, 6, 7, 8, 10) ~ "TGD" # n = 5 total, so collapsing
     ),
-
+    
     # Child ethnicity
-    pb_child_ethnicity = case_match(
+    pb_childethnicity = case_match(
       pb_childethnicity,
-      1 ~ "AI/AN",
-      2 ~ "Asian",
-      3 ~ "Black/African American",
-      4 ~ "Hispanic or Latino/a/x",
-      5 ~ "NH/PI",
-      6 ~ "White non-Hispanic",
-      8 ~ "Multiple", # This is actually "Other", but the only response indicates "multiple"
-      9 ~ "Multiple"
-    ),
-    
-    # Child n/siblings
-    pb_n_sisters = case_when(
-      pb_siblings_1 == "1-3" ~ 2,
-      T ~ as.numeric(pb_siblings_1)
-    ),
-    pb_n_brothers = as.numeric(pb_siblings_2),
-    pb_n_siblings = pb_n_sisters + pb_n_brothers,
-    
-    # Child grade: Does not need further cleaning
-    
-    # Child school type
-    pb_school = case_when(
-      pb_school == 1 ~ "Public School",
-      pb_school == 2 ~ "Private School",
-      pb_school == 3 ~ "Parochial School",
-      pb_school == 4 ~ "Magnet School",
-      pb_school == 5 ~ "Special Education",
-      pb_school == 6 ~ "Combination of Special Education and Regular School",
-      pb_school_7_TEXT == "Public, Integrated classes, but also Home instruction at times due to health issues" ~ "Public School",
-      pb_school_7_TEXT %in% c(
-        "home instruction",
-        "Homeschool",
-        "homeschool",
-        "homeschooled",
-        "Public Home Charter"
-      ) ~ "Other (Specified Homeschool)",
-      pb_school_7_TEXT %in% c(
-        "Public Charter School",
-        "Public Charter",
-        "Charter"
-      ) ~ "Other (Specified Charter School)"
-    ),
-    
-    # Family income
-    pb_income = ordered(
-      pb_income, 
-      levels = 1:8,
-      labels = c(
-        "$0-$19,000",
-        "$20,000-$39,000",
-        "$40,000-$59,000",
-        "$60,000-$79,000",
-        "$80,000-$99,000",
-        "$100,000-$119,000",
-        "$120,000-$140,000",
-        "$140,000+"
-      )
-    ),
-    
-    
-    ## Parent characteristics
-    # Parent age
-    pb_caregiver1_age = pb_caregiver1_1,
-    
-    # Parent sex
-    pb_parent_sex = case_match(
-      pb_caregiver1_2,
-      1 ~ "Male",
-      2 ~ "Female"
-    ),
-    
-    # Parent gender
-    pb_parent_gender = case_match(
-      pb_caregiver1_3,
-      1 ~ "Agender",
-      2 ~ "Androgyne",
-      3 ~ "Demigender",
-      4 ~ "Genderqueer or genderfluid",
-      5 ~ "Man",
-      6 ~ "Questioning or unsure",
-      7 ~ "Trans man",
-      8 ~ "Trans woman",
-      9 ~ "Woman",
-      10 ~ "Other"
-    ),
-    
-    # Parent ethnicity
-    pb_parent_ethnicity = case_match(
-      pb_caregiver1_4,
       1 ~ "AI/AN",
       2 ~ "Asian",
       3 ~ "Black/African American",
@@ -342,57 +241,57 @@ p_clean <- p_merged %>%
       9 ~ "Multiple"
     ),
     
-    # Parent relationship to child
-    pb_caregiver1_relationship_to_child = case_match(
-      pb_caregiver1_5,
-      1 ~ "Biological Parent",
-      2 ~ "Step-Parent",
-      3 ~ "Adoptive Parent",
-      4 ~ "Foster Parent",
-      5 ~ "Other"
+    # Child n/siblings
+    pb_n_sisters = as.numeric(pb_siblings_1),
+    pb_n_brothers = as.numeric(pb_siblings_2),
+    pb_n_siblings = pb_n_sisters + pb_n_brothers,
+    
+    # Child grade: Does not need further cleaning
+    
+    # Child school type
+    pb_school = case_match(
+      pb_school,
+      1 ~ "Public School",
+      2 ~ "Private School",
+      3 ~ "Parochial School",
+      4 ~ "Magnet School",
+      5 ~ "Special Education",
+      6 ~ "Combination of Special Education and Regular School",
+      7 ~ "Other"
     ),
     
-    # Parent relationship status
-    pb_caregiver1_relationship_status = case_match(
-      pb_caregiver1_6,
-      1 ~ "Married",
-      2 ~ "Widowed",
-      3 ~ "Divorced",
-      4 ~ "Separated",
-      5 ~ "Never Married",
-      6 ~ "Living with Partner"
+    # Family income
+    pb_income = case_match(
+      pb_income, 
+      1 ~ "$0-$19,000",
+      2 ~ "$20,000-$39,000",
+      3 ~ "$40,000-$59,000",
+      4 ~ "$60,000-$79,000",
+      5 ~ "$80,000-$99,000",
+      6 ~ "$100,000-$119,000",
+      7 ~ "$120,000-$140,000",
+      8 ~ "$140,000+"
     ),
     
-    # Parent educational attainment
-    pb_caregiver1_education = case_match(
-      pb_caregiver1_7,
-      1 ~ "Less than high school",
-      2 ~ "Attended high school",
-      3 ~ "Graduated high school",
-      4 ~ "Attended college",
-      5 ~ "Bachelor's degree",
-      6 ~ "Graduate/professional degree"
-    ),
-
     
     ## Child treatment history
     # Current and lifetime treatment
-    pb_childtx_lifetime = pb_childtx_1 == 1 | pb_childtx_3 == 1,
+    pb_childtx_lifetime = pb_childtx_1 == 1,
     pb_childtx_current = pb_childtx_3 == 1,
-    p3m_childtx_lifetime = p3m_childtx_1 == 1 | p3m_childtx_3 == 1,
+    p3m_childtx_lifetime = p3m_childtx_1 == 1,
     p3m_childtx_current = p3m_childtx_3 == 1,
 
     
     ## Child ACES
     # Overall mean score
-    pb_child_aces_count = count_across("pb", "ace_y", name = "pb_child_aces_mean"), # count_across() from helper function script
-    p3m_child_aces_count = count_across("p3m", "ace_y", name = "p3m_child_aces_mean"),
+    pb_child_aces_mean = mean_across("pb", "ace_y", name = "pb_child_aces_mean"), # mean_across() from helper function script
+    p3m_child_aces_mean = mean_across("p3m", "ace_y", name = "p3m_child_aces_mean"),
     
     
     ## Parent ACES
     # Overall mean score
-    pb_parent_aces_count = count_across("pb", "ace_p", name = "pb_parent_aces_mean"),
-    p3m_parent_aces_count = count_across("p3m", "ace_p", name = "p3m_parent_aces_mean"),
+    pb_parent_aces_mean = mean_across("pb", "ace_p", name = "pb_parent_aces_mean"),
+    p3m_parent_aces_mean = mean_across("p3m", "ace_p", name = "p3m_parent_aces_mean"),
     
     
     ## CDI-2 (Children's Depression Inventory - 2)
@@ -401,12 +300,12 @@ p_clean <- p_merged %>%
     p3m_cdi_mean = mean_across("p3m", "CDI-2 P", name = "p3m_cdi_mean"),
     
     # Emotional problems subscale
-    pb_cdi_emotional_mean = mean_across("pb", "CDI-2 P", "Emotional Problems", name = "pb_cdi_emo_mean"),
-    p3m_cdi_emotional_mean = mean_across("p3m", "CDI-2 P", "Emotional Problems", name = "p3m_cdi_emo_mean"),
+    pb_cdi_emo_mean = mean_across("pb", "CDI-2 P", "Emotional Problems", name = "pb_cdi_emo_mean"),
+    p3m_cdi_emo_mean = mean_across("p3m", "CDI-2 P", "Emotional Problems", name = "p3m_cdi_emo_mean"),
     
     # Functional problems subscale
-    pb_cdi_functional_mean = mean_across("pb", "CDI-2 P", "Functional Problems", name = "pb_cdi_fun_mean"),
-    p3m_cdi_functional_mean = mean_across("p3m", "CDI-2 P", "Functional Problems", name = "p3m_cdi_fun_mean"),
+    pb_cdi_fun_mean = mean_across("pb", "CDI-2 P", "Functional Problems", name = "pb_cdi_fun_mean"),
+    p3m_cdi_fun_mean = mean_across("p3m", "CDI-2 P", "Functional Problems", name = "p3m_cdi_fun_mean"),
     
     
     ## BHS-4 (Beck Hopelessness Scale - 4-item)
@@ -490,23 +389,22 @@ p_clean <- p_merged %>%
     p3m_date,
     p3m_duration,
     
-    # Parent characteristics
-    
-    # Child demographics
-    pb_child_age,
-    pb_child_sex,
-    pb_child_gender,
-    pb_child_ethnicity,
-    pb_n_sisters,
-    pb_n_brothers,
-    pb_n_siblings,
+    # Demographics
+    pb_childage,
+    pb_childsex,
+    pb_childgender,
+    pb_childethnicity,
+    pb_birthorder,
+    pb_n_sisters = pb_siblings_1,
+    pb_n_brothers = pb_siblings_2,
     pb_grade,
     pb_school,
     pb_income,
-
+    pb_dependent,
+    
     # Child treatment history
     matches("childtx_lifetime"),
-    matches("childtx_current"),
+    matches("pb_childtx_current"),
     
     # Measures
     matches("_child_aces_"),
@@ -515,7 +413,6 @@ p_clean <- p_merged %>%
     matches("_bhs_"),
     matches("_bsi_"),
     matches("_bace_"),
-    matches("_bfamg_"),
     matches("_scared_")
     
   )
@@ -530,9 +427,8 @@ items_to_check <- p_clean %>%
     matches("_bhs_"),
     matches("_bsi_"),
     matches("_bace_"),
-    matches("_bfamg_"),
     matches("_scared_"),
-    -ends_with("mean"), -ends_with("count")
+    -ends_with("mean")
   ) %>%
   names()
 

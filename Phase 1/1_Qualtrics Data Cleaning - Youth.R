@@ -138,6 +138,32 @@ y_merged <- full_join(
 
 
 ## Clean columns
+## Correct misspelled item prefixes in the data and codebook
+# Data: Before
+prefixes_data <- str_extract(colnames(y_merged), "^.*?(?=_)")
+table(prefixes_data)
+
+# Data: Fixing
+colnames(y_merged) <- gsub("^y3_", "y3m_", colnames(y_merged))
+colnames(y_merged) <- gsub("^y3n_", "y3m_", colnames(y_merged))
+colnames(y_merged) <- gsub("^yd_", "yb_", colnames(y_merged))
+
+# Data: After
+prefixes_data <- str_extract(colnames(y_merged), "^.*?(?=_)")
+table(prefixes_data)
+
+# Codebook: Before
+prefixes_codebook <- str_extract(codebook$item, "^.*?(?=_)")
+table(prefixes_codebook)
+
+# Codebook: Fixing
+codebook$item <- gsub("^y3n_", "y3m_", codebook$item)
+
+# Codebook: After
+prefixes_codebook <- str_extract(codebook$item, "^.*?(?=_)")
+table(prefixes_codebook)
+
+
 # Data collected but not included here: 
 # - Prognostic Pessimism for Depression scale (PPD)
 # - Pubertal Development Scale (PDS)
@@ -282,8 +308,8 @@ y_clean <- y_merged %>%
     
     ## SCARED (Screen for Child Anxiety and Related Disorders)
     # Overall mean score
-    yb_scared_mean = mean_across("yb", "scared", name = "yb_scared_mean"),
-    y3m_scared_mean = mean_across("y3m", "scared", name = "y3m_scared_mean"),
+    yb_scared_mean = mean_across("yb", "scared", name = "yb_scared_mean", exclude = "yb_scared_c_11"),
+    y3m_scared_mean = mean_across("y3m", "scared", name = "y3m_scared_mean", exclude = "y3m_scared_c_11"),
     
     # Panic disorder/significant somatic symptoms subscale
     yb_scared_paso_mean = mean_across("yb", "scared", "PA/SO", name = "yb_scared_paso_mean"),
@@ -298,8 +324,8 @@ y_clean <- y_merged %>%
     y3m_scared_sep_mean = mean_across("y3m", "scared", "SEP", name = "y3m_scared_sep_mean"),
     
     # Social phobic disorder subscale
-    yb_scared_soc_mean = mean_across("yb", "scared", "SOC", name = "yb_scared_soc_mean"),
-    y3m_scared_soc_mean = mean_across("y3m", "scared", "SOC", name = "y3m_scared_soc_mean"),
+    yb_scared_soc_mean = mean_across("yb", "scared", "SOC", name = "yb_scared_soc_mean", exclude = "yb_scared_c_11"),
+    y3m_scared_soc_mean = mean_across("y3m", "scared", "SOC", name = "y3m_scared_soc_mean", exclude = "y3m_scared_c_11"),
     
     # Significant school avoidance symptoms
     yb_scared_sch_mean = mean_across("yb", "scared", "SCH", name = "yb_scared_sch_mean"),
@@ -442,5 +468,5 @@ y_clean$lifepak_id[y_clean$lsmh_id == "LSMH00416"] <- "946021"
 
 
 ####  Save Data and Log  ####
-saveRDS(y_clean, clean_data_dir %+% "Phase 1 Youth Qualtrics Data.rds")
-saveRDS(log,     clean_data_dir %+% "Phase 1 Youth Qualtrics Log.rds")
+saveRDS(y_clean, clean_data_dir %+% "Phase 1 Youth Qualtrics Clean Data.rds")
+saveRDS(log, clean_data_dir %+% "Phase 1 Youth Qualtrics Log.rds")

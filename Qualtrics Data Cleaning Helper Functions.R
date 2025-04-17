@@ -207,7 +207,7 @@ get_items <- function(.prefix, .measure, .subscale) {
 
 # Function to take the mean across items from get_items() and to log the items
 # used to compute the mean
-mean_across <- function(.prefix, .measure, .subscale, name) {
+mean_across <- function(.prefix, .measure, .subscale, name, exclude) {
   
   # Get items
   items <- get_items(.prefix, .measure, .subscale)
@@ -215,6 +215,15 @@ mean_across <- function(.prefix, .measure, .subscale, name) {
   # If items are not unique, throw an error
   if(length(items) != length(unique(items))) stop("Item(s) are repeated and will bias mean")
 
+  # Exclude items if argument is provided
+  if(!missing(exclude)) {
+    
+    if(!all(exclude %in% items)) stop("Some items in `exclude` not in item list")
+    
+    items <- setdiff(items, exclude)
+    
+  }
+  
   # Take mean across items, dropping NA values
   mean <- mean(
     c_across(
@@ -233,9 +242,86 @@ mean_across <- function(.prefix, .measure, .subscale, name) {
   
 }
 
+# Function to take the mean across items from get_items() and to log the items
+# used to compute the mean
+mean_across <- function(.prefix, .measure, .subscale, name, exclude) {
+  
+  # Get items
+  items <- get_items(.prefix, .measure, .subscale)
+  
+  # If items are not unique, throw an error
+  if(length(items) != length(unique(items))) stop("Item(s) are repeated and will bias mean")
+  
+  # Exclude items if argument is provided
+  if(!missing(exclude)) {
+    
+    if(!all(exclude %in% items)) stop("Some items in `exclude` not in item list")
+    
+    items <- setdiff(items, exclude)
+    
+  }
+  
+  # Take mean across items, dropping NA values
+  mean <- mean(
+    c_across(
+      all_of(
+        items
+      )
+    ),
+    na.rm = T
+  )
+  
+  # Log the items used to compute the mean in list stored in global environment
+  log$mean_items[[name]]$items   <<- items
+  log$mean_items[[name]]$n_items <<- length(items)
+  
+  return(mean)
+  
+}
+
+# Function to take the sum (count) across items from get_items() and to log the items
+# used to compute the mean
+count_across <- function(.prefix, .measure, .subscale, name, exclude) {
+  
+  # Get items
+  items <- get_items(.prefix, .measure, .subscale)
+  
+  # If items are not unique, throw an error
+  if(length(items) != length(unique(items))) stop("Item(s) are repeated and will bias mean")
+  
+  # Exclude items if argument is provided
+  if(!missing(exclude)) {
+    
+    if(!all(exclude %in% items)) stop("Some items in `exclude` not in item list")
+    
+    items <- setdiff(items, exclude)
+    
+  }
+  
+  # Take mean across items, dropping NA values
+  count <- sum(
+    c_across(
+      all_of(
+        items
+      )
+    ),
+    na.rm = T
+  )
+  
+  # Log the items used to compute the mean in list stored in global environment
+  log$mean_items[[name]]$items   <<- items
+  log$mean_items[[name]]$n_items <<- length(items)
+  
+  return(count)
+  
+}
 
 # Function to check that values of categorical items are as expected
 check_values <- function(.data, .item) {
+  
+  # Ensure item is in codebook and data
+  if(!.item %in% colnames(.data)) stop(".item not in .data")
+  if(!.item %in% codebook$item) stop(".item not in codebook")
 
   # Expected range
   expected_min <- codebook$minimum[codebook$item == .item]
