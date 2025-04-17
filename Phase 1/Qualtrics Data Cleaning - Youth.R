@@ -27,7 +27,7 @@ yb_remote_raw <- read_survey(raw_data_dir %+% "dp5_b_child_remote_p1_numeric.csv
 y3m_raw <- read_survey(raw_data_dir %+% "dp5_3m_child_p1_numeric.csv")
 
 # Load item-level codebook file
-codebook_path <- here("Phase 1", "Track to Treat P1 Codebook.xlsx")   # TODO: Revised by JE
+codebook_path <- here("Phase 1", "Track to Treat P1 Codebook.xlsx")
 sheet_name <- "Individual Variables"
 (sheet_last_row <- nrow(openxlsx::read.xlsx(codebook_path, sheet_name)) + 1) # Add 1 for header row
 
@@ -138,6 +138,9 @@ y_merged <- full_join(
 
 
 ## Clean columns
+# Data collected but not included here: 
+# - Prognostic Pessimism for Depression scale (PPD)
+# - Pubertal Development Scale (PDS)
 y_clean <- y_merged %>%
   
   # Remove click, page time variables
@@ -247,7 +250,7 @@ y_clean <- y_merged %>%
     y3m_scsc_mean = mean_across("y3m", "scsc", name = "y3m_scsc_mean"),
     
     
-    ## BADS (Bvioral Activation for Depression Scale)
+    ## BADS (Behavioral Activation for Depression Scale)
     # Activation subscale
     yb_bads_ac_mean = mean_across("yb", "bads", "AC", name = "yb_bads_ac_mean"),
     y3m_bads_ac_mean = mean_across("y3m", "bads", "AC", name = "y3m_bads_ac_mean"),

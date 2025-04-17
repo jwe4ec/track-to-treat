@@ -64,7 +64,7 @@ pb_remote_raw$pb_siblings_2 <- as.character(pb_remote_raw$pb_siblings_2)
 # Note on variable overlap: 
 # - No variables appear in the in-person dataset only
 # - Variables that appear in the remote dataset only include "password_parent", 
-#   click information, and COVID-related variables)
+#   click and time on page information, and COVID-related variables)
 pb_raw <- bind_rows(
   list(
     "in-person" = pb_in_person_raw, 
@@ -134,9 +134,11 @@ p_merged <- full_join(
 # - Data regarding parent's care taking responsibilities
 # - Parental demographics
 # - Additional caregiver demographics
+# - Child demographics at 3 months
 # - COVID-19-related variables
 # - Parent attitudes towards therapy
 # - Child birth order (requires manual coding)
+# - Parent Prognostic Pessimism for Depression scale (PPD)
 # These can be cleaned if needed but I'm not sure we have plans for them...
 p_clean <- p_merged %>%
   
@@ -180,7 +182,7 @@ p_clean <- p_merged %>%
     p3m_duration = EndDate.p3m - StartDate.p3m,
     
     
-    ## Demographics
+    ## Demographics at baseline
     # Child age: Does not need further cleaning
     
     # Child sex

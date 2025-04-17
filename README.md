@@ -31,10 +31,13 @@ Data cleaning notes:
   * Merge datasets (across waves, etc.)
   * Clean columns
   * Manually correct IDs as necessary
-* In the Qualtrics data, items used to compute means via mean_across() are logged in Mean Items Log list files (confirm the items are correct before analyzing the means)
+    * Note: LifePak IDs here are 6 digits (5-digit IDs elsewhere have a leading 0 here; take care when comparing/selecting IDs)
+* In the Qualtrics data, a Log list file is created to:
+  * Log items used to compute item completion rates via `compute_item_completion_rate()` (see `log$item_completion_rate`)
+  * Log items used to compute means via `mean_across()` (see `log$mean_items` and confirm the items are correct before analyzing the means)
 * In the Qualtrics data, on the parent-report SCARED, one item (`scared_c_1`) was entered into the survey incorrectly and is excluded from composite variables
 * In the Qualtrics data, on the child-report SCARED, one item (`scared_c_11`) was not included on the in-person baseline survey and is excluded from composite variables
-* Clean LifePak data includes EMA survey data only (i.e., excludes "feedback surveys")
+* Clean LifePak data includes EMA survey data only (i.e., excludes "feedback surveys", which were administered after EMA surveys)
 * In the LifePak data, there are some negative values for `interest`; it's unclear how or why
 * In the LifePak data, some participants got their first notification after 7:30; it's unclear how or why
 * In the LifePak data, most participants have 105 total notifications, but some have fewer and one has more; it's unclear why

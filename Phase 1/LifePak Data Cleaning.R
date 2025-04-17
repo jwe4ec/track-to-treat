@@ -216,7 +216,7 @@ nis_clean <- nis_combined %>%
     
   ) %>%
   
-  # Filter to only EMA data (not "feedback" surveys)
+  # Filter to only EMA data (not "feedback" surveys, which were administered after EMA surveys)
   filter(survey_type == "EMA") %>%
   
   # Arrange by lifepak ID, then notification datetime
