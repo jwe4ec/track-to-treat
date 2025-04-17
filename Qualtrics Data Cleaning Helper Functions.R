@@ -225,6 +225,8 @@ mean_across <- function(.prefix, .measure, .subscale, name) {
     na.rm = T
   )
   
+  if (is.nan(mean)) mean <- NA
+  
   # Log the items used to compute the mean in list stored in global environment
   log$mean_items[[name]]$items   <<- items
   log$mean_items[[name]]$n_items <<- length(items)
