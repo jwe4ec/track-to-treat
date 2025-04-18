@@ -20,6 +20,7 @@ source(here("Qualtrics Data Cleaning Helper Functions.R"))
 # Save directories
 raw_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\Qualtrics Data\\Raw Data\\"
 clean_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\Clean Data (Isaac)\\"
+clean_data_staging_dir <- clean_data_dir %+% "staging\\"
 
 # Load datasets
 yb_in_person_raw <- read_survey(raw_data_dir %+% "dp5_b_child_p1_numeric.csv")
@@ -471,5 +472,5 @@ y_clean$lifepak_id[y_clean$lsmh_id == "LSMH00416"] <- "946021"
 
 
 ####  Save Data and Log  ####
-saveRDS(y_clean, clean_data_dir %+% "Phase 1 Youth Qualtrics Clean Data.rds")
-saveRDS(log, clean_data_dir %+% "Phase 1 Youth Qualtrics Log.rds")
+saveRDS(y_clean, clean_data_staging_dir %+% "Phase 1 Youth Qualtrics Clean Data.rds")
+saveRDS(log, clean_data_staging_dir %+% "Phase 1 Youth Qualtrics Clean Data Log.rds")

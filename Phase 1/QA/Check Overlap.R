@@ -4,10 +4,11 @@
 
 ## Load data
 clean_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\Clean Data (Isaac)\\"
+clean_data_staging_dir <- clean_data_dir %+% "staging\\"
 
-qualtrics_y <- readRDS(clean_data_dir %+% "Phase 1 Youth Qualtrics Clean Data.rds")
-qualtrics_p <- readRDS(clean_data_dir %+% "Phase 1 Parent Qualtrics Clean Data.rds")
-lifepak_y <- readRDS(clean_data_dir %+% "Phase 1 LifePak Clean Data.rds")
+qualtrics_y <- readRDS(clean_data_staging_dir %+% "Phase 1 Youth Qualtrics Clean Data.rds")
+qualtrics_p <- readRDS(clean_data_staging_dir %+% "Phase 1 Parent Qualtrics Clean Data.rds")
+lifepak_y <- readRDS(clean_data_staging_dir %+% "Phase 1 LifePak Clean Data.rds")
 
 
 ## Check overlap: youth Qualtrics to LifePak

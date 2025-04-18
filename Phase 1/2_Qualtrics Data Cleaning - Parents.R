@@ -20,6 +20,7 @@ source(here("Qualtrics Data Cleaning Helper Functions.R"))
 # Save directory
 raw_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\Qualtrics Data\\Raw Data\\"
 clean_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\Clean Data (Isaac)\\"
+clean_data_staging_dir <- clean_data_dir %+% "staging\\"
 
 # Load datasets in the following format: [respondent][wave]_[administration]_raw
 pb_in_person_raw <- read_survey(raw_data_dir %+% "dp5_b_parent_p1_numeric.csv")
@@ -549,5 +550,5 @@ walk(
 
 
 ####  Save Data and Log  ####
-saveRDS(p_clean, clean_data_dir %+% "Phase 1 Parent Qualtrics Clean Data.rds")
-saveRDS(log, clean_data_dir %+% "Phase 1 Parent Qualtrics Log.rds")
+saveRDS(p_clean, clean_data_staging_dir %+% "Phase 1 Parent Qualtrics Clean Data.rds")
+saveRDS(log, clean_data_staging_dir %+% "Phase 1 Parent Qualtrics Log.rds")

@@ -10,7 +10,9 @@ groundhog.library(
 ## Load data
 # Mine
 clean_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\Clean Data (Isaac)\\"
-nis_valid <- readRDS(clean_data_dir %+% "Phase 1 LifePak Clean Data.rds")
+clean_data_staging_dir <- clean_data_dir %+% "staging\\"
+
+nis_valid <- readRDS(clean_data_staging_dir %+% "Phase 1 LifePak Clean Data.rds")
 lp_me <- nis_valid %>%
   mutate(lifepak_id = as.numeric(lifepak_id))
 
