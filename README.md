@@ -13,9 +13,9 @@ File organization:
 * Phase 1/
   * README.md
   * Track to Treat P1 Codebook.xlsx (an item-level codebook used to clean the Qualtrics data)
-  * Qualtrics Data Cleaning - Youth.R
-  * Qualtrics Data Cleaning - Parents.R
-  * LifePak Data Cleaning.R
+  * 1_Qualtrics Data Cleaning - Youth.R
+  * 2_Qualtrics Data Cleaning - Parents.R
+  * 3_LifePak Data Cleaning.R
   * QA/
     * Check Overlap.R (checking ID overlap across datasets)
     * Compare Clean LifePak Datasets.R (checking clean LifePak data to previous versions)
@@ -25,6 +25,7 @@ File organization:
 
 Data cleaning notes:
 
+* Scripts are numbered in the order to be run
 * Scripts generally follow the same flow:
   * Load data
   * Remove invalid and duplicated responses
