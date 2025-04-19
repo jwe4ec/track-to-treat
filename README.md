@@ -42,4 +42,5 @@ Data cleaning notes:
 * In the LifePak data, there are some negative values for `interest`; it's unclear how or why
 * In the LifePak data, some participants got their first notification after 7:30; it's unclear how or why
 * In the LifePak data, most participants have 105 total notifications, but some have fewer and one has more; it's unclear why
-* When items are reverse-coded, the data cleaning script puts them back in the right direction (retaining the original item name)
+* When Qualtrics items are reverse-coded, the data cleaning script puts them back in the right direction (retaining the original item name)
+  * Note: By contrast, in the LifePak data, when items are reversed the suffix "_rev" is appended to the item name.
