@@ -79,11 +79,14 @@ yb_raw <- bind_rows(
 )
 
 
-## Confirm that all IDs match "validate" columns
+## Confirm that all IDs match "validate" columns and then remove "validate" columns
 all(yb_raw$yb_lsmh_id == yb_raw$`yb_lsmh_id_ validate`, na.rm = TRUE)
 all(yb_raw$`yb_LifePak ID` == yb_raw$`yb_LifePak ID Verify`, na.rm = TRUE)
 all(yb_raw$yb_phone == yb_raw$yb_phone_validate, na.rm = TRUE)
 all(y3m_raw$y3m_lsmh_id == y3m_raw$`y3_lsmh_id_ validate`, na.rm = TRUE)
+
+yb_raw[, c("yb_lsmh_id_ validate", "yb_LifePak ID Verify", "yb_phone_validate")] <- NULL
+y3m_raw[, "y3_lsmh_id_ validate"] <- NULL
 
 
 ## Remove invalid responses

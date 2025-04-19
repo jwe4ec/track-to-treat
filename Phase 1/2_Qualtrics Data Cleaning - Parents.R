@@ -84,9 +84,12 @@ pb_raw <- bind_rows(
 )
 
 
-## Confirm that all IDs match "validate" columns
+## Confirm that all IDs match "validate" columns and then remove "validate" columns
 all(pb_raw$pb_lsmh_id == pb_raw$`pb_lsmh_id_validate`, na.rm = TRUE)
-all(p3m_raw$p3m_lsmh_id == p3m_raw$`y3_lsmh_id_validate`, na.rm = TRUE)
+all(p3m_raw$p3m_lsmh_id == p3m_raw$p3m_lsmh_id_validate, na.rm = TRUE)
+
+pb_raw[, "pb_lsmh_id_validate"] <- NULL
+p3m_raw[, "p3m_lsmh_id_validate"] <- NULL
 
 
 ## Remove invalid responses
