@@ -117,6 +117,9 @@ y3m_valid_ids <- compute_item_completion_rate(y3m_valid_ids, "y3m")
 identify_duplicates(yb_valid_ids, yb_lsmh_id)
 identify_duplicates(y3m_valid_ids, y3m_lsmh_id)
 
+# Check that each LSMH ID has <= 1 LifePak ID (before filling LifePak ID across duplicates)
+check_lifepak_id(yb_valid_ids, "yb_lsmh_id")
+
 # Remove duplicates using helper function
 yb_deduplicated <- remove_duplicates(yb_valid_ids, yb_lsmh_id)
 y3m_deduplicated <- remove_duplicates(y3m_valid_ids, y3m_lsmh_id)

@@ -123,6 +123,25 @@ identify_duplicates <- function(data, id) {
   
 }
 
+# Function to check that each LSMH ID has <= 1 LifePak ID (before filling LifePak ID across duplicates)
+check_lifepak_id <- function(data, id) {
+  
+  # Find LifePak ID column and throw error if > 1 exists
+  lifepak_id <- grep("LifePak ID", names(data), value = TRUE)
+  if (length(lifepak_id) > 1) stop("Data has > 1 column name containing 'LifePak ID'")
+  
+  # Compute number of unique, non-NA LifePak IDs for each LSMH ID
+  n_unique_lifepak_ids <- tapply(data[[lifepak_id]], data[[id]], function(lifepak_ids) {
+    sum(!is.na(unique(lifepak_ids)))
+  })
+  
+  # Throw error if any LSMH ID has > 1 unique LifePak ID
+  if (any(n_unique_lifepak_ids) > 1) {
+    stop("LSMH IDs and LifePak IDs are one to many (resolve before filling LifePak IDs across duplicates)")
+  }
+  
+}
+
 # Function to deduplicate datasets, keeping first (most) complete response and
 # filling LifePak ID before filtering (there is at least one case where a respondent
 # provided their LifePak ID only in a duplicated, noncomplete response)
