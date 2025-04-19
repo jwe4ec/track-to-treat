@@ -5,9 +5,11 @@
 ####  Startup  ####
 ## Load packages
 library(groundhog) # 3.2.2
+groundhog_date <- "2025-03-28"
+meta.groundhog(groundhog_date)
 groundhog.library(
   pkg = c("tidyverse", "lubridate"),
-  date = "2025-03-28"
+  date = groundhog_date
 )
 `%+%` <- paste0
 

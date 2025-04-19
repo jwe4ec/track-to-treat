@@ -1,11 +1,16 @@
 ## Compare my clean LifePak data to Michael's
 # R version 4.4.3
-`%+%` <- paste0
+
+## Load packages
 library(groundhog) # 3.2.2
+groundhog_date <- "2025-03-28"
+meta.groundhog(groundhog_date)
 groundhog.library(
   pkg = "tidyverse",
-  date = "2025-03-28"
+  date = groundhog_date
 )
+`%+%` <- paste0
+
 
 ## Load data
 # Mine
