@@ -103,7 +103,17 @@ pb_valid_ids <- remove_invalid_responses(pb_raw, pb_lsmh_id)
 p3m_valid_ids <- remove_invalid_responses(p3m_raw, p3m_lsmh_id)
 
 
-### TODO: Remove surveys outside of assessment window (per procedure involving youth Qualtrics data)
+### Remove surveys outside of assessment window
+# TODO: Check that baseline survey was completed before EMA start date (get from youth Qualtrics data)
+
+
+
+
+
+# TODO: Remove 3-month surveys outside assessment window (get from youth Qualtrics data)
+
+
+
 
 
 ### Create lists for logging (a) items used to compute item completion rates below via

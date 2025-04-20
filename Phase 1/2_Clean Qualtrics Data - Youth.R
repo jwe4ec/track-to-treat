@@ -118,7 +118,30 @@ yb_valid_ids$`yb_LifePak ID`[yb_valid_ids$yb_lsmh_id == "LSMH00416"] <- "946021"
 yb_valid_ids <- fill_lifepak_id(yb_valid_ids, yb_lsmh_id)
 
 
-### TODO: Remove surveys outside of assessment window (per procedure involving LifePak data)
+### Remove surveys outside of assessment window
+# TODO: Obtain EMA start date from LifePak data
+
+
+
+
+
+# TODO: Check that baseline survey was completed before EMA start date
+
+
+
+
+
+# TODO: Compute assessment window start and end dates for 3-month survey (i.e., 
+# starting 21 days + 3 months after EMA start date and ending 1 month later)
+
+
+
+
+
+# TODO: Remove 3-month surveys outside assessment window
+
+
+
 
 
 ### Create lists for logging (a) items used to compute item completion rates below via
