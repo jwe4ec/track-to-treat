@@ -23,11 +23,15 @@ source(here("Qualtrics Data Cleaning Helper Functions.R"))
 raw_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\Qualtrics Data\\Raw Data\\"
 clean_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\Clean Data (Isaac)\\"
 clean_data_staging_dir <- clean_data_dir %+% "staging\\"
+clean_data_staging_intermediate_dir <- clean_data_staging_dir %+% "intermediate\\"
 
-# Load datasets
+# Load raw Qualtrics datasets in this format: [respondent][wave]_[administration]_raw
 yb_in_person_raw <- read_survey(raw_data_dir %+% "dp5_b_child_p1_numeric.csv")
 yb_remote_raw <- read_survey(raw_data_dir %+% "dp5_b_child_remote_p1_numeric.csv")
 y3m_raw <- read_survey(raw_data_dir %+% "dp5_3m_child_p1_numeric.csv")
+
+# Load intermediate LifePak data
+nis_valid <- readRDS(clean_data_staging_intermediate_dir %+% "Phase 1 LifePak Clean Data Without LSMH ID.rds")
 
 # Load item-level codebook file
 codebook_path <- here("Phase 1", "Track to Treat P1 Codebook.xlsx")
@@ -62,7 +66,7 @@ codebook <- openxlsx::read.xlsx(
 
 
 ####  Clean Data  ####
-## Combine in-person and remote administrations
+### Combine in-person and remote administrations
 # Note on variable overlap: 
 # - No variables appear in the in-person dataset only
 # - yb_scared_c_11 appears in the remote dataset only; because mean_across() 
@@ -79,7 +83,7 @@ yb_raw <- bind_rows(
 )
 
 
-## Confirm that all IDs match "validate" columns and then remove "validate" columns
+### Confirm that all IDs match "validate" columns and then remove "validate" columns
 all(yb_raw$yb_lsmh_id == yb_raw$`yb_lsmh_id_ validate`, na.rm = TRUE)
 all(yb_raw$`yb_LifePak ID` == yb_raw$`yb_LifePak ID Verify`, na.rm = TRUE)
 all(yb_raw$yb_phone == yb_raw$yb_phone_validate, na.rm = TRUE)
@@ -89,7 +93,7 @@ yb_raw[, c("yb_lsmh_id_ validate", "yb_LifePak ID Verify", "yb_phone_validate")]
 y3m_raw[, "y3_lsmh_id_ validate"] <- NULL
 
 
-## Remove invalid responses
+### Remove invalid responses
 # Invalid IDs: Tests or survey previews
 invalid_ids <- c("LSMH00000", "LSMH00000000111", "LSMH00001", "LSMH00062", "LSMH000", "LSMH000000")
 
@@ -97,17 +101,20 @@ invalid_ids <- c("LSMH00000", "LSMH00000000111", "LSMH00001", "LSMH00062", "LSMH
 yb_valid_ids <- remove_invalid_responses(yb_raw, yb_lsmh_id)
 y3m_valid_ids <- remove_invalid_responses(y3m_raw, y3m_lsmh_id)
 
-# Manually correct IDs that was entered incorrectly at 3m
+# Manually correct ID that was entered incorrectly at 3m
 y3m_valid_ids$y3m_lsmh_id[y3m_valid_ids$y3m_lsmh_id == "LSMH00196"] <- "LSMH00169"
 
 
-## Create lists for logging (a) items used to compute item completion rates below via
-## compute_item_completion_rate() and (b) items used to compute means via mean_across()
+### Create lists for logging (a) items used to compute item completion rates below via
+### compute_item_completion_rate() and (b) items used to compute means via mean_across()
 log <- list(item_completion_rate = list(),
             mean_items = list())
 
 
-## Deduplicate
+### TODO: Remove surveys outside of assessment window (per procedure involving LifePak data)
+
+
+### Deduplicate
 # Compute item completion rate using helper function (given that Qualtrics's "Progress" 
 # and "Finished" variables reflect only clicking through survey, not completing items)
 yb_valid_ids <- compute_item_completion_rate(yb_valid_ids, "yb")
@@ -129,7 +136,7 @@ identify_duplicates(yb_deduplicated, yb_lsmh_id)
 identify_duplicates(y3m_deduplicated, y3m_lsmh_id)
 
 
-## Merge data by LSMH ID
+### Merge data by LSMH ID
 # IDs in baseline not 3m
 setdiff(yb_deduplicated$yb_lsmh_id, y3m_deduplicated$y3m_lsmh_id)
 
@@ -146,7 +153,7 @@ y_merged <- full_join(
 )
 
 
-## Clean columns
+### Clean columns
 ## Correct misspelled item prefixes in the data and codebook
 # Data: Before
 prefixes_data <- str_extract(colnames(y_merged), "^.*?(?=_)")
@@ -439,7 +446,7 @@ y_clean <- y_merged %>%
   )
 
 
-## Check that values are in expected range
+### Check that values are in expected range
 items_to_check <- y_clean %>%
   select(
     matches("_cdi_"),
@@ -470,7 +477,7 @@ walk(
 )
 
 
-## Manually add or change LifePak IDs as needed, per readme_ttt_p1
+### Manually add or change LifePak IDs as needed, per readme_ttt_p1
 y_clean$lifepak_id[y_clean$lsmh_id == "LSMH00097"] <- "092521"
 y_clean$lifepak_id[y_clean$lsmh_id == "LSMH00457"] <- "292656"
 y_clean$lifepak_id[y_clean$lsmh_id == "LSMH00483"] <- "558692"
@@ -479,6 +486,7 @@ y_clean$lifepak_id[y_clean$lsmh_id == "LSMH00306"] <- "130294"
 y_clean$lifepak_id[y_clean$lsmh_id == "LSMH00416"] <- "946021"
 
 
-####  Save Data and Log  ####
+
+####  Save Clean Qualtrics Data and Log  ####
 saveRDS(y_clean, clean_data_staging_dir %+% "Phase 1 Youth Qualtrics Clean Data.rds")
 saveRDS(log, clean_data_staging_dir %+% "Phase 1 Youth Qualtrics Clean Data Log.rds")

@@ -19,6 +19,7 @@ groundhog.library(
 raw_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\LifePak Raw Data (Do Not Modify)\\"
 clean_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\Clean Data (Isaac)\\"
 clean_data_staging_dir <- clean_data_dir %+% "staging\\"
+clean_data_staging_intermediate_dir <- clean_data_staging_dir %+% "intermediate\\"
 
 # Load NIS ("notification-initiated survey") datasets
 nis_1 <- read.csv(raw_data_dir %+% "3T_P1_V1_NIS_2020_Mar_02.csv")
@@ -290,15 +291,6 @@ nis_valid <- nis_deduplicated %>%
   )
 
 
-## Add LSMH ID
-clean_qualtrics_data <- readRDS(clean_data_staging_dir %+% "Phase 1 Youth Qualtrics Clean Data.rds")
-
-lsmh_id_lookup <- clean_qualtrics_data %>%
-  distinct(lifepak_id, lsmh_id)
-
-nis_valid_with_lsmh_id <- nis_valid %>%
-  left_join(lsmh_id_lookup, by = "lifepak_id", relationship = "many-to-one")
-
 
 ####  Save Data  ####
-saveRDS(nis_valid_with_lsmh_id, clean_data_staging_dir %+% "Phase 1 LifePak Clean Data.rds")
+saveRDS(nis_valid, clean_data_staging_intermediate_dir %+% "Phase 1 LifePak Clean Data Without LSMH ID.rds")

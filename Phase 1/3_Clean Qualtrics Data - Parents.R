@@ -23,11 +23,15 @@ source(here("Qualtrics Data Cleaning Helper Functions.R"))
 raw_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\Qualtrics Data\\Raw Data\\"
 clean_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\Clean Data (Isaac)\\"
 clean_data_staging_dir <- clean_data_dir %+% "staging\\"
+clean_data_staging_intermediate_dir <- clean_data_staging_dir %+% "intermediate\\"
 
-# Load datasets in the following format: [respondent][wave]_[administration]_raw
+# Load raw Qualtrics datasets in this format: [respondent][wave]_[administration]_raw
 pb_in_person_raw <- read_survey(raw_data_dir %+% "dp5_b_parent_p1_numeric.csv")
 pb_remote_raw <- read_survey(raw_data_dir %+% "dp5_b_parent_remote_p1_numeric.csv")
 p3m_raw <- read_survey(raw_data_dir %+% "dp5_3m_parent_p1_numeric.csv")
+
+# Load intermediate LifePak data
+nis_valid <- readRDS(clean_data_staging_intermediate_dir %+% "Phase 1 LifePak Clean Data Without LSMH ID.rds")
 
 # Load item-level codebook file
 codebook_path <- here("Phase 1", "Track to Treat P1 Codebook.xlsx")
@@ -61,9 +65,8 @@ codebook <- openxlsx::read.xlsx(
 
 
 
-
 ####  Clean Data  ####
-## Combine in-person and remote administrations
+### Combine in-person and remote administrations
 # First, need to recode pb_siblings_2 as character in the remote dataset, to 
 # conform with the in-person dataset
 pb_remote_raw$pb_siblings_2 <- as.character(pb_remote_raw$pb_siblings_2)
@@ -84,7 +87,7 @@ pb_raw <- bind_rows(
 )
 
 
-## Confirm that all IDs match "validate" columns and then remove "validate" columns
+### Confirm that all IDs match "validate" columns and then remove "validate" columns
 all(pb_raw$pb_lsmh_id == pb_raw$`pb_lsmh_id_validate`, na.rm = TRUE)
 all(p3m_raw$p3m_lsmh_id == p3m_raw$p3m_lsmh_id_validate, na.rm = TRUE)
 
@@ -92,7 +95,7 @@ pb_raw[, "pb_lsmh_id_validate"] <- NULL
 p3m_raw[, "p3m_lsmh_id_validate"] <- NULL
 
 
-## Remove invalid responses
+### Remove invalid responses
 # Invalid IDs: Tests or survey previews
 invalid_ids <- c("LSMH00000", "LSMH00000000111", "LSMH00001", "LSMH00062", "LSMH000", "LSMH000000")
 
@@ -101,10 +104,13 @@ pb_valid_ids <- remove_invalid_responses(pb_raw, pb_lsmh_id)
 p3m_valid_ids <- remove_invalid_responses(p3m_raw, p3m_lsmh_id)
 
 
-## Create lists for logging (a) items used to compute item completion rates below via
-## compute_item_completion_rate() and (b) items used to compute means via mean_across()
+### Create lists for logging (a) items used to compute item completion rates below via
+### compute_item_completion_rate() and (b) items used to compute means via mean_across()
 log <- list(item_completion_rate = list(),
             mean_items = list())
+
+
+### TODO: Remove surveys outside of assessment window (per procedure involving LifePak data)
 
 
 ### Deduplicate
@@ -143,7 +149,7 @@ p_merged <- full_join(
 )
 
 
-## Clean columns
+### Clean columns
 ## Correct misspelled item prefixes in the data and codebook
 # Data: Before
 prefixes_data <- str_extract(colnames(p_merged), "^.*?(?=_)")
@@ -530,7 +536,7 @@ p_clean <- p_merged %>%
   )
 
 
-## Check that values are in expected range
+### Check that values are in expected range
 items_to_check <- p_clean %>%
   select(
     matches("_child_aces_"),
@@ -554,6 +560,7 @@ walk(
 )
 
 
-####  Save Data and Log  ####
+
+####  Save Clean Qualtrics Data and Log  ####
 saveRDS(p_clean, clean_data_staging_dir %+% "Phase 1 Parent Qualtrics Clean Data.rds")
 saveRDS(log, clean_data_staging_dir %+% "Phase 1 Parent Qualtrics Clean Data Log.rds")
