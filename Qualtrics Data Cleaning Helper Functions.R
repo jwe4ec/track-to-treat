@@ -32,6 +32,40 @@ remove_invalid_responses <- function(data, id) {
   
 }
 
+# Function to fill LifePak ID across duplicates (there is at least one case where a 
+# respondent provided their LifePak ID only in a duplicated, noncomplete response)
+fill_lifepak_id <- function(data, id) {
+  
+  ## Check that each LSMH ID has <= 1 LifePak ID
+  # Convert "id" from symbol to character for use outside tidyverse
+  id_as_char <- as.character(ensym(id))
+  
+  # Find LifePak ID column and throw error if > 1 exists
+  lifepak_id <- grep("LifePak ID", names(data), value = TRUE)
+  if (length(lifepak_id) > 1) stop("Data has > 1 column name containing 'LifePak ID'")
+  
+  # Compute number of unique, non-NA LifePak IDs for each LSMH ID
+  n_unique_lifepak_ids <- tapply(data[[lifepak_id]], data[[id_as_char]], function(lifepak_ids) {
+    sum(!is.na(unique(lifepak_ids)))
+  })
+  
+  # Throw error if any LSMH ID has > 1 unique LifePak ID
+  if (any(n_unique_lifepak_ids) > 1) {
+    stop("LSMH IDs and LifePak IDs are one to many (resolve before filling LifePak IDs across duplicates)")
+  }
+  
+  ## Fill LifePak ID across duplicates
+  # Taking the data...
+  data %>%
+    # ... group by ID ...
+    group_by({{id}}) %>%
+    # ... then, fill LifePak ID down-up across participant responses...
+    fill(all_of(lifepak_id), .direction = "downup") %>%
+    ungroup() %>%
+    return()
+  
+}
+
 # Function to compute item completion rate
 compute_item_completion_rate <- function(data, survey_prefix) {
   
@@ -123,28 +157,7 @@ identify_duplicates <- function(data, id) {
   
 }
 
-# Function to check that each LSMH ID has <= 1 LifePak ID (before filling LifePak ID across duplicates)
-check_lifepak_id <- function(data, id) {
-  
-  # Find LifePak ID column and throw error if > 1 exists
-  lifepak_id <- grep("LifePak ID", names(data), value = TRUE)
-  if (length(lifepak_id) > 1) stop("Data has > 1 column name containing 'LifePak ID'")
-  
-  # Compute number of unique, non-NA LifePak IDs for each LSMH ID
-  n_unique_lifepak_ids <- tapply(data[[lifepak_id]], data[[id]], function(lifepak_ids) {
-    sum(!is.na(unique(lifepak_ids)))
-  })
-  
-  # Throw error if any LSMH ID has > 1 unique LifePak ID
-  if (any(n_unique_lifepak_ids) > 1) {
-    stop("LSMH IDs and LifePak IDs are one to many (resolve before filling LifePak IDs across duplicates)")
-  }
-  
-}
-
-# Function to deduplicate datasets, keeping first (most) complete response and
-# filling LifePak ID before filtering (there is at least one case where a respondent
-# provided their LifePak ID only in a duplicated, noncomplete response)
+# Function to deduplicate datasets, keeping first (most) complete response
 remove_duplicates <- function(data, id) {
   
   # Taking the data...
@@ -159,8 +172,6 @@ remove_duplicates <- function(data, id) {
       desc(Progress),
       StartDate
     ) %>%
-    # ... then, fill the LifePak ID variable down-up across participant responses...
-    fill(contains("LifePak ID"), .direction = "downup") %>%
     # ... finally, take only the top response
     slice_head(n = 1) %>%
     ungroup() %>%

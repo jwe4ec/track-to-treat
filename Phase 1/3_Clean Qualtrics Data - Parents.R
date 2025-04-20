@@ -23,15 +23,14 @@ source(here("Qualtrics Data Cleaning Helper Functions.R"))
 raw_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\Qualtrics Data\\Raw Data\\"
 clean_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\Clean Data (Isaac)\\"
 clean_data_staging_dir <- clean_data_dir %+% "staging\\"
-clean_data_staging_intermediate_dir <- clean_data_staging_dir %+% "intermediate\\"
 
-# Load raw Qualtrics datasets in this format: [respondent][wave]_[administration]_raw
+# Load raw parent Qualtrics datasets in this format: [respondent][wave]_[administration]_raw
 pb_in_person_raw <- read_survey(raw_data_dir %+% "dp5_b_parent_p1_numeric.csv")
 pb_remote_raw <- read_survey(raw_data_dir %+% "dp5_b_parent_remote_p1_numeric.csv")
 p3m_raw <- read_survey(raw_data_dir %+% "dp5_3m_parent_p1_numeric.csv")
 
-# Load intermediate LifePak data
-nis_valid <- readRDS(clean_data_staging_intermediate_dir %+% "Phase 1 LifePak Clean Data Without LSMH ID.rds")
+# Load clean youth Qualtrics data
+y_clean <- readRDS(clean_data_staging_dir %+% "Phase 1 Youth Qualtrics Clean Data.rds")
 
 # Load item-level codebook file
 codebook_path <- here("Phase 1", "Track to Treat P1 Codebook.xlsx")
@@ -104,13 +103,13 @@ pb_valid_ids <- remove_invalid_responses(pb_raw, pb_lsmh_id)
 p3m_valid_ids <- remove_invalid_responses(p3m_raw, p3m_lsmh_id)
 
 
+### TODO: Remove surveys outside of assessment window (per procedure involving youth Qualtrics data)
+
+
 ### Create lists for logging (a) items used to compute item completion rates below via
 ### compute_item_completion_rate() and (b) items used to compute means via mean_across()
 log <- list(item_completion_rate = list(),
             mean_items = list())
-
-
-### TODO: Remove surveys outside of assessment window (per procedure involving LifePak data)
 
 
 ### Deduplicate
@@ -561,6 +560,6 @@ walk(
 
 
 
-####  Save Clean Qualtrics Data and Log  ####
+####  Save Clean Parent Qualtrics Data and Log  ####
 saveRDS(p_clean, clean_data_staging_dir %+% "Phase 1 Parent Qualtrics Clean Data.rds")
 saveRDS(log, clean_data_staging_dir %+% "Phase 1 Parent Qualtrics Clean Data Log.rds")

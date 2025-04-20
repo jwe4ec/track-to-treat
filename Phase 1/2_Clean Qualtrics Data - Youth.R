@@ -101,17 +101,30 @@ invalid_ids <- c("LSMH00000", "LSMH00000000111", "LSMH00001", "LSMH00062", "LSMH
 yb_valid_ids <- remove_invalid_responses(yb_raw, yb_lsmh_id)
 y3m_valid_ids <- remove_invalid_responses(y3m_raw, y3m_lsmh_id)
 
+
+### Correct IDs
 # Manually correct ID that was entered incorrectly at 3m
 y3m_valid_ids$y3m_lsmh_id[y3m_valid_ids$y3m_lsmh_id == "LSMH00196"] <- "LSMH00169"
+
+# Manually add or change LifePak IDs as needed, per readme_ttt_p1
+yb_valid_ids$`yb_LifePak ID`[yb_valid_ids$yb_lsmh_id == "LSMH00097"] <- "092521"
+yb_valid_ids$`yb_LifePak ID`[yb_valid_ids$yb_lsmh_id == "LSMH00457"] <- "292656"
+yb_valid_ids$`yb_LifePak ID`[yb_valid_ids$yb_lsmh_id == "LSMH00483"] <- "558692"
+yb_valid_ids$`yb_LifePak ID`[yb_valid_ids$yb_lsmh_id == "LSMH00617"] <- "479327"
+yb_valid_ids$`yb_LifePak ID`[yb_valid_ids$yb_lsmh_id == "LSMH00306"] <- "130294"
+yb_valid_ids$`yb_LifePak ID`[yb_valid_ids$yb_lsmh_id == "LSMH00416"] <- "946021"
+
+# Fill LifePak ID across duplicates
+yb_valid_ids <- fill_lifepak_id(yb_valid_ids, yb_lsmh_id)
+
+
+### TODO: Remove surveys outside of assessment window (per procedure involving LifePak data)
 
 
 ### Create lists for logging (a) items used to compute item completion rates below via
 ### compute_item_completion_rate() and (b) items used to compute means via mean_across()
 log <- list(item_completion_rate = list(),
             mean_items = list())
-
-
-### TODO: Remove surveys outside of assessment window (per procedure involving LifePak data)
 
 
 ### Deduplicate
@@ -123,9 +136,6 @@ y3m_valid_ids <- compute_item_completion_rate(y3m_valid_ids, "y3m")
 # Identify duplicates using helper function
 identify_duplicates(yb_valid_ids, yb_lsmh_id)
 identify_duplicates(y3m_valid_ids, y3m_lsmh_id)
-
-# Check that each LSMH ID has <= 1 LifePak ID (before filling LifePak ID across duplicates)
-check_lifepak_id(yb_valid_ids, "yb_lsmh_id")
 
 # Remove duplicates using helper function
 yb_deduplicated <- remove_duplicates(yb_valid_ids, yb_lsmh_id)
@@ -475,15 +485,6 @@ walk(
     .item = .x
   )
 )
-
-
-### Manually add or change LifePak IDs as needed, per readme_ttt_p1
-y_clean$lifepak_id[y_clean$lsmh_id == "LSMH00097"] <- "092521"
-y_clean$lifepak_id[y_clean$lsmh_id == "LSMH00457"] <- "292656"
-y_clean$lifepak_id[y_clean$lsmh_id == "LSMH00483"] <- "558692"
-y_clean$lifepak_id[y_clean$lsmh_id == "LSMH00617"] <- "479327"
-y_clean$lifepak_id[y_clean$lsmh_id == "LSMH00306"] <- "130294"
-y_clean$lifepak_id[y_clean$lsmh_id == "LSMH00416"] <- "946021"
 
 
 
