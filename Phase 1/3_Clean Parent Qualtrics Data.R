@@ -1,5 +1,5 @@
 ## Track-to-Treat Phase 1 Data Cleaning
-## Qualtrics data (parents)
+## Clean parent Qualtrics data
 # R version 4.4.3
 
 ####  Startup  ####

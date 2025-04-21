@@ -1,5 +1,5 @@
 ## Track-to-Treat Phase 1 Data Cleaning
-## Qualtrics data (youth)
+## Clean youth Qualtrics data and add LSMH ID to LifePak Data
 # R version 4.4.3
 
 ####  Startup  ####
@@ -114,12 +114,26 @@ yb_valid_ids$`yb_LifePak ID`[yb_valid_ids$yb_lsmh_id == "LSMH00617"] <- "479327"
 yb_valid_ids$`yb_LifePak ID`[yb_valid_ids$yb_lsmh_id == "LSMH00306"] <- "130294"
 yb_valid_ids$`yb_LifePak ID`[yb_valid_ids$yb_lsmh_id == "LSMH00416"] <- "946021"
 
-# Fill LifePak ID across duplicates
+# Fill LifePak ID across duplicates using helper function
 yb_valid_ids <- fill_lifepak_id(yb_valid_ids, yb_lsmh_id)
 
 
+### Add LSMH ID to LifePak Data
+# If any more LSMH ID issues emerge later in this script or in cleaning parent 
+# Qualtrics data, fix them before this step
+lsmh_id_lookup <- yb_valid_ids %>%
+  rename(
+    lifepak_id = `yb_LifePak ID`,
+    lsmh_id = yb_lsmh_id
+  ) %>%
+  distinct(lifepak_id, lsmh_id)
+
+nis_valid_with_lsmh_id <- nis_valid %>%
+  left_join(lsmh_id_lookup, by = "lifepak_id", relationship = "many-to-one")
+
+
 ### Remove surveys outside of assessment window
-# TODO: Obtain EMA start date from LifePak data
+# TODO: Obtain EMA start date from LifePak data using helper function
 
 
 
@@ -511,6 +525,8 @@ walk(
 
 
 
-####  Save Clean Qualtrics Data and Log  ####
+####  Save Clean Qualtrics Data and Log and Clean LifePak Data  ####
 saveRDS(y_clean, clean_data_staging_dir %+% "Phase 1 Youth Qualtrics Clean Data.rds")
 saveRDS(log, clean_data_staging_dir %+% "Phase 1 Youth Qualtrics Clean Data Log.rds")
+
+saveRDS(nis_valid_with_lsmh_id, clean_data_staging_dir %+% "Phase 1 LifePak Clean Data.rds")

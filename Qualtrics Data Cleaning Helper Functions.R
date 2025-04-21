@@ -49,7 +49,7 @@ fill_lifepak_id <- function(data, id) {
     sum(!is.na(unique(lifepak_ids)))
   })
   
-  # Throw error if any LSMH ID has > 1 unique LifePak ID
+  # Throw error if LSMH IDs and LifePak IDs are one to many
   if (any(n_unique_lifepak_ids) > 1) {
     stop("LSMH IDs and LifePak IDs are one to many (resolve before filling LifePak IDs across duplicates)")
   }
