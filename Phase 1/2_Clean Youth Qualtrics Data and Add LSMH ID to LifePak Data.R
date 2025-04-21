@@ -178,7 +178,7 @@ ax_window_dates <- ema_notif_dates %>%
 
 ### Create lists for logging (a) items used to compute item completion rates below via
 ### compute_item_completion_rate(), (b) items used to compute means via mean_across(),
-### and (c) clean codebook (edited below)
+### and (c) clean codebook (edited and added to log below)
 log <- list(item_completion_rate = list(),
             mean_items = list())
 

@@ -117,7 +117,8 @@ p3m_valid_ids <- remove_invalid_responses(p3m_raw, p3m_lsmh_id)
 
 
 ### Create lists for logging (a) items used to compute item completion rates below via
-### compute_item_completion_rate() and (b) items used to compute means via mean_across()
+### compute_item_completion_rate(), (b) items used to compute means via mean_across(),
+### and (c) clean codebook (edited and added to log below)
 log <- list(item_completion_rate = list(),
             mean_items = list())
 
