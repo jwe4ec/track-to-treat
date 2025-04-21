@@ -8,7 +8,7 @@ library(groundhog) # 3.2.2
 groundhog_date <- "2025-03-28"
 meta.groundhog(groundhog_date)
 groundhog.library(
-  pkg = c("tidyverse", "qualtRics", "here", "openxlsx"),
+  pkg = c("tidyverse", "lubridate", "qualtRics", "here", "openxlsx"),
   date = groundhog_date
 )
 `%+%` <- paste0
@@ -133,26 +133,44 @@ nis_valid_with_lsmh_id <- nis_valid %>%
 
 
 ### Remove surveys outside of assessment window
-# TODO: Obtain EMA start date from LifePak data using helper function
+## Obtain EMA notification dates from LifePak data
+ema_notif_dates <- nis_valid_with_lsmh_id %>%
+  group_by(lifepak_id) %>%
+  summarise(
+    lsmh_id = unique(lsmh_id),
+    first_ema_notif_date = min(notification_date),
+    last_ema_notif_date = max(notification_date),
+    diff_ema_notif_dates = last_ema_notif_date - first_ema_notif_date,
+    .groups = "drop"
+  )
+
+# Throw error if any EMA periods were longer than planned
+if (!all(ema_notif_dates$diff_ema_notif_dates <= 21)) {
+  stop ("Not all participants' EMA periods are <= 21 days")
+}
+
+## Compute assessment window dates for Qualtrics surveys
+
+# TODO: JE asked AG how "month" was defined (use safe month addition, "%m+%", for now)
 
 
 
 
 
-# TODO: Check that baseline survey was completed before EMA start date
+ax_window_dates <- ema_notif_dates %>%
+  select(-last_ema_notif_date, -diff_ema_notif_dates) %>%
+  rename(start_date_ema = first_ema_notif_date) %>%
+  mutate(start_date_3m = start_date_ema + days(21),
+         start_date_3m = start_date_3m %m+% months(3),
+         end_date_3m = start_date_3m %m+% months(1))
+
+## TODO: Check that baseline survey was completed before EMA start date
 
 
 
 
 
-# TODO: Compute assessment window start and end dates for 3-month survey (i.e., 
-# starting 21 days + 3 months after EMA start date and ending 1 month later)
-
-
-
-
-
-# TODO: Remove 3-month surveys outside assessment window
+## TODO: Remove 3-month surveys outside assessment window
 
 
 
