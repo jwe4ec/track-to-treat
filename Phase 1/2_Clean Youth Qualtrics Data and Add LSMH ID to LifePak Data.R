@@ -177,7 +177,8 @@ ax_window_dates <- ema_notif_dates %>%
 
 
 ### Create lists for logging (a) items used to compute item completion rates below via
-### compute_item_completion_rate() and (b) items used to compute means via mean_across()
+### compute_item_completion_rate(), (b) items used to compute means via mean_across(),
+### and (c) clean codebook (edited below)
 log <- list(item_completion_rate = list(),
             mean_items = list())
 
@@ -243,6 +244,9 @@ codebook$item <- gsub("^y3n_", "y3m_", codebook$item)
 # Codebook: After
 prefixes_codebook <- str_extract(codebook$item, "^.*?(?=_)")
 table(prefixes_codebook)
+
+# Add clean codebook to log
+log$codebook_clean <- codebook
 
 # Data collected but not included here:
 # - Self-Referential Encoding Task (SRET)

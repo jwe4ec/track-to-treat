@@ -182,6 +182,8 @@ codebook$item <- gsub("^p3_", "p3m_", codebook$item)
 prefixes_codebook <- str_extract(codebook$item, "^.*?(?=_)")
 table(prefixes_codebook)
 
+# Add clean codebook to log
+log$codebook_clean <- codebook
 
 # Data collected but not included here: 
 # - Data regarding child's current medications
