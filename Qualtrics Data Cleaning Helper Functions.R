@@ -66,6 +66,45 @@ fill_lifepak_id <- function(data, id) {
   
 }
 
+# Function to compute indicators of (a) baseline survey completion before EMA start 
+# date and (b) 3-month follow-up survey completion in assessment window
+mark_done_in_ax_window <- function(data, id_as_char, survey_prefix, ax_windows) {
+  
+  # Add assessment window dates to data
+  names(ax_windows)[names(ax_windows) == "lsmh_id"] <- id_as_char
+  
+  data <- data %>%
+    left_join(ax_windows, by = id_as_char, relationship = "many-to-one")
+  
+  # Compute indicator of survey completion in assessment window
+  if (survey_prefix %in% c("yb", "pb")) {
+    data$in_window_b <- NA
+    data$in_window_b <- ifelse(data$EndDate < data$first_ema_notif_date, TRUE, FALSE)
+  } else if (survey_prefix %in% c("y3m", "p3m")) {
+    data$in_window_3m_v1 <- NA
+    data$in_window_3m_v1 <- ifelse(data$EndDate >= data$start_window_3m_v1 & 
+                                     data$EndDate <= data$end_window_3m_v1, TRUE, FALSE)
+    data$in_window_3m_v2 <- NA
+    data$in_window_3m_v2 <- ifelse(data$EndDate >= data$start_window_3m_v2 & 
+                                     data$EndDate <= data$end_window_3m_v2, TRUE, FALSE)
+    data$in_window_3m_v3 <- NA
+    data$in_window_3m_v3 <- ifelse(data$EndDate >= data$start_window_3m_v3 & 
+                                     data$EndDate <= data$end_window_3m_v3, TRUE, FALSE)
+    data$in_window_3m_v4 <- NA
+    data$in_window_3m_v4 <- ifelse(data$EndDate >= data$start_window_3m_v4 & 
+                                     data$EndDate <= data$end_window_3m_v4, TRUE, FALSE)
+    data$in_window_3m_v5 <- NA
+    data$in_window_3m_v5 <- ifelse(data$EndDate >= data$start_window_3m_v5 & 
+                                     data$EndDate <= data$end_window_3m_v5, TRUE, FALSE)
+    data$in_window_3m_v6 <- NA
+    data$in_window_3m_v6 <- ifelse(data$EndDate >= data$start_window_3m_v6 & 
+                                     data$EndDate <= data$end_window_3m_v6, TRUE, FALSE)
+  }
+  
+  return(data)
+  
+}
+
 # Function to compute item completion rate
 compute_item_completion_rate <- function(data, survey_prefix) {
   

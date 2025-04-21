@@ -149,25 +149,142 @@ if (!all(ema_notif_dates$diff_ema_notif_dates <= 21)) {
   stop ("Not all participants' EMA periods are <= 21 days")
 }
 
-## Compute assessment window dates for Qualtrics surveys
 
-# TODO: JE asked AG how "month" was defined (use safe month addition, "%m+%", for now)
+## Compute potential assessment window dates for Qualtrics surveys
+# - Define EMA period as 21 days
+# - Note: Excel formulas were used to compute assessment windows by adding months 
+#   (e.g., "=DATE(YEAR(A1), MONTH(A1) + 3, DAY(A1))"). When adding months yields
+#   a date that is not real (due to 28-31 days in a month), Excel rolls to the next
+#   real date, whereas R rolls to the last real date (when using "%m+%") or yields 
+#   an error (if using "+"). Thus, consider some leeway in assessment windows.
+ema_period <- days(21)
+
+# Compute potential assessment windows based on EMA start date
+ax_windows <- ema_notif_dates %>%
+  select(-lifepak_id, -diff_ema_notif_dates) %>%
+  
+  mutate(start_window_3m_v1 = first_ema_notif_date + ema_period,
+         start_window_3m_v1 = start_window_3m_v1 %m+% months(3),
+         end_window_3m_v1 = start_window_3m_v1 %m+% months(1),
+         
+         start_window_3m_v2 = first_ema_notif_date %m+% months(3),
+         end_window_3m_v2 = start_window_3m_v2 %m+% months(1),
+         
+         start_window_3m_v3 = start_window_3m_v2 - days(1),
+         end_window_3m_v3 = end_window_3m_v2 + days(1))
+
+# Compute additional potential windows based on baseline survey completion date
+# (for now, do this only for participants without duplicate surveys at baseline)
+ax_windows <- yb_valid_ids %>%
+  select(yb_lsmh_id, StartDate, EndDate) %>%
+  rename(lsmh_id = yb_lsmh_id,
+         StartDate_yb = StartDate,
+         EndDate_yb = EndDate) %>%
+  
+  filter(!(lsmh_id %in% c("LSMH00190", "LSMH00355"))) %>% # Those with baseline duplicates from identify_duplicates() below
+  left_join(ax_windows, by = "lsmh_id", relationship = "many-to-one") %>%
+  
+  mutate(start_window_3m_v4 = EndDate_yb + ema_period,
+         start_window_3m_v4 = start_window_3m_v4 %m+% months(3),
+         end_window_3m_v4 = start_window_3m_v4 %m+% months(1),
+         
+         start_window_3m_v5 = EndDate_yb %m+% months(3),
+         end_window_3m_v5 = start_window_3m_v5 %m+% months(1),
+         
+         start_window_3m_v6 = start_window_3m_v5 - days(1),
+         end_window_3m_v6 = end_window_3m_v5 + days(1))
+
+
+## Compute indicators of (a) baseline survey completion before EMA start date and
+## (b) follow-up survey completion in assessment window using helper function
+yb_valid_ids <- mark_done_in_ax_window(yb_valid_ids, "yb_lsmh_id", "yb", ax_windows)
+y3m_valid_ids <- mark_done_in_ax_window(y3m_valid_ids, "y3m_lsmh_id", "y3m", ax_windows)
+
+# TODO: Consider which ax_window to use, focusing on participants with no duplicates
 
 
 
 
 
-ax_window_dates <- ema_notif_dates %>%
-  select(-last_ema_notif_date, -diff_ema_notif_dates) %>%
-  rename(start_date_ema = first_ema_notif_date) %>%
-  mutate(start_date_3m = start_date_ema + days(21),
-         start_date_3m = start_date_3m %m+% months(3),
-         end_date_3m = start_date_3m %m+% months(1))
+yb_dup <- identify_duplicates(yb_valid_ids, yb_lsmh_id)
+yb_dup_ids <- yb_dup$yb_lsmh_id[yb_dup$total > 1]
 
-## TODO: Check that baseline survey was completed before EMA start date
+y3m_dup <- identify_duplicates(y3m_valid_ids, y3m_lsmh_id)
+y3m_dup_ids <- y3m_dup$y3m_lsmh_id[y3m_dup$total > 1]
 
+dup_ids <- c(yb_dup_ids, y3m_dup_ids)
 
+test_3m_one <- y3m_valid_ids[!(y3m_valid_ids$y3m_lsmh_id %in% dup_ids), ]
+test_3m_one <- test_3m_one[, c("y3m_lsmh_id", "StartDate", "EndDate", 
+                               "first_ema_notif_date", "last_ema_notif_date",
+                               "start_window_3m_v1", "end_window_3m_v1", "in_window_3m_v1",
+                               "start_window_3m_v2", "end_window_3m_v2", "in_window_3m_v2",
+                               "start_window_3m_v3", "end_window_3m_v3", "in_window_3m_v3",
+                               "start_window_3m_v4", "end_window_3m_v4", "in_window_3m_v4",
+                               "start_window_3m_v5", "end_window_3m_v5", "in_window_3m_v5",
+                               "start_window_3m_v6", "end_window_3m_v6", "in_window_3m_v6")]
 
+nrow(test_3m_one) == 60 # 60 participants without duplicates at baseline or 3 months
+
+sum(!test_3m_one$in_window_3m_v1) == 54 # 21 days + 3 months after first EMA notification                 (clearly wrong)
+sum(!test_3m_one$in_window_3m_v2) == 12 # 3 months after first EMA notification
+sum(!test_3m_one$in_window_3m_v3) == 6  # 3 months after first EMA notification +/- 1 day on window dates
+sum(!test_3m_one$in_window_3m_v4) == 53 # 21 days + 3 months after baseline completion                    (clearly wrong)
+sum(!test_3m_one$in_window_3m_v5) == 10 # 3 months after baseline completion
+sum(!test_3m_one$in_window_3m_v6) == 6  # 3 months after baseline completion +/- 1 day on window dates    (makes sense if Excel rolls forward but R rolls back)
+
+test_3m_one$diff_from_start_v1 <- as.Date(test_3m_one$EndDate) - test_3m_one$start_window_3m_v1 # Should be positive
+too_early_v1 <- test_3m_one$diff_from_start_v1[test_3m_one$diff_from_start_v1 < 0]
+length(too_early_v1) == 50        # 50 finished 1-22 days before start_window_3m_v1
+range(too_early_v1) == c(-22, -1)            
+test_3m_one$diff_from_end_v1 <- as.Date(test_3m_one$EndDate) - test_3m_one$end_window_3m_v1     # Should be negative
+too_late_v1 <- test_3m_one$diff_from_end_v1[test_3m_one$diff_from_end_v1 > 0]
+length(too_late_v1) == 3          # 3 finished 8-33 days after end_window_3m_v1
+range(too_late_v1) == c(8, 33)
+
+test_3m_one$diff_from_start_v2 <- as.Date(test_3m_one$EndDate) - test_3m_one$start_window_3m_v2 # Should be positive
+too_early_v2 <- test_3m_one$diff_from_start_v2[test_3m_one$diff_from_start_v2 < 0]
+length(too_early_v2) == 4         # 4 finished 1 day before start_window_3m_v2
+range(too_early_v2) == c(-1, -1)            
+test_3m_one$diff_from_end_v2 <- as.Date(test_3m_one$EndDate) - test_3m_one$end_window_3m_v2     # Should be negative
+too_late_v2 <- test_3m_one$diff_from_end_v2[test_3m_one$diff_from_end_v2 > 0]
+length(too_late_v2) == 6          # 6 finished 12-53 days after end_window_3m_v2
+range(too_late_v2) == c(12, 53)
+
+test_3m_one$diff_from_start_v3 <- as.Date(test_3m_one$EndDate) - test_3m_one$start_window_3m_v3 # Should be positive
+too_early_v3 <- test_3m_one$diff_from_start_v3[test_3m_one$diff_from_start_v3 < 0]
+length(too_early_v3) == 0         # 0 finished before start_window_3m_v3
+test_3m_one$diff_from_end_v3 <- as.Date(test_3m_one$EndDate) - test_3m_one$end_window_3m_v3     # Should be negative
+too_late_v3 <- test_3m_one$diff_from_end_v3[test_3m_one$diff_from_end_v3 > 0]
+length(too_late_v3) == 6          # 6 finished 11-52 days after end_window_3m_v3
+range(too_late_v3) == c(11, 52)
+(test_3m_one$y3m_lsmh_id[test_3m_one$diff_from_start_v3 < 0 | test_3m_one$diff_from_end_v3 > 0]) # IDs (same as for v6 below)
+
+test_3m_one$diff_from_start_v4 <- as.Date(test_3m_one$EndDate) - as.Date(test_3m_one$start_window_3m_v4) # Should be positive
+too_early_v4 <- test_3m_one$diff_from_start_v4[test_3m_one$diff_from_start_v4 < 0]
+length(too_early_v4) == 47        # 47 finished 1-21 days before start_window_3m_v4
+range(too_early_v4) == c(-21, -1)
+test_3m_one$diff_from_end_v4 <- as.Date(test_3m_one$EndDate) - as.Date(test_3m_one$end_window_3m_v4)     # Should be negative
+too_late_v4 <- test_3m_one$diff_from_end_v4[test_3m_one$diff_from_end_v4 > 0]
+length(too_late_v4) == 4          # 4 finished 1-33 days after end_window_3m_v4
+range(too_late_v4) == c(1, 33)
+
+test_3m_one$diff_from_start_v5 <- as.Date(test_3m_one$EndDate) - as.Date(test_3m_one$start_window_3m_v5) # Should be positive
+too_early_v5 <- test_3m_one$diff_from_start_v5[test_3m_one$diff_from_start_v5 < 0]
+length(too_early_v5) == 0        # 0 finished before start_window_3m_v5
+test_3m_one$diff_from_end_v5 <- as.Date(test_3m_one$EndDate) - as.Date(test_3m_one$end_window_3m_v5)     # Should be negative
+too_late_v5 <- test_3m_one$diff_from_end_v5[test_3m_one$diff_from_end_v5 > 0]
+length(too_late_v5) == 7         # 7 finished 1-54 days after end_window_3m_v5
+range(too_late_v5) == c(1, 54)
+
+test_3m_one$diff_from_start_v6 <- as.Date(test_3m_one$EndDate) - as.Date(test_3m_one$start_window_3m_v6) # Should be positive
+too_early_v6 <- test_3m_one$diff_from_start_v6[test_3m_one$diff_from_start_v6 < 0]
+length(too_early_v6) == 0        # 0 finished before start_window_3m_v6
+test_3m_one$diff_from_end_v6 <- as.Date(test_3m_one$EndDate) - as.Date(test_3m_one$end_window_3m_v6)     # Should be negative
+too_late_v6 <- test_3m_one$diff_from_end_v6[test_3m_one$diff_from_end_v6 > 0]
+length(too_late_v6) == 6         # 6 finished 12-53 days after end_window_3m_v6
+range(too_late_v6) == c(12, 53)
+(test_3m_one$y3m_lsmh_id[test_3m_one$diff_from_start_v6 < 0 | test_3m_one$diff_from_end_v6 > 0]) # IDs (same as for v3 above)
 
 
 ## TODO: Remove 3-month surveys outside assessment window
@@ -193,9 +310,13 @@ y3m_valid_ids <- compute_item_completion_rate(y3m_valid_ids, "y3m")
 identify_duplicates(yb_valid_ids, yb_lsmh_id)
 identify_duplicates(y3m_valid_ids, y3m_lsmh_id)
 
-# Remove duplicates using helper function
+# TODO (JE to revise after removing surveys outside assessment window above): Remove duplicates using helper function
 yb_deduplicated <- remove_duplicates(yb_valid_ids, yb_lsmh_id)
 y3m_deduplicated <- remove_duplicates(y3m_valid_ids, y3m_lsmh_id)
+
+
+
+
 
 # Double-check work
 identify_duplicates(yb_deduplicated, yb_lsmh_id)
@@ -547,8 +668,10 @@ walk(
 
 
 
-####  Save Clean Qualtrics Data and Log and Clean LifePak Data  ####
+####  Save Clean Qualtrics Data and Log, Assessment Windows, and Clean LifePak Data  ####
 saveRDS(y_clean, clean_data_staging_dir %+% "Phase 1 Youth Qualtrics Clean Data.rds")
 saveRDS(log, clean_data_staging_dir %+% "Phase 1 Youth Qualtrics Clean Data Log.rds")
+
+saveRDS(ax_windows, clean_data_staging_intermediate_dir %+% "Phase 1 Assessment Windows.rds")
 
 saveRDS(nis_valid_with_lsmh_id, clean_data_staging_dir %+% "Phase 1 LifePak Clean Data.rds")

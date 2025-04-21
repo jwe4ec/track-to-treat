@@ -23,14 +23,15 @@ source(here("Qualtrics Data Cleaning Helper Functions.R"))
 raw_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\Qualtrics Data\\Raw Data\\"
 clean_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\Clean Data (Isaac)\\"
 clean_data_staging_dir <- clean_data_dir %+% "staging\\"
+clean_data_staging_intermediate_dir <- clean_data_staging_dir %+% "intermediate\\"
 
 # Load raw parent Qualtrics datasets in this format: [respondent][wave]_[administration]_raw
 pb_in_person_raw <- read_survey(raw_data_dir %+% "dp5_b_parent_p1_numeric.csv")
 pb_remote_raw <- read_survey(raw_data_dir %+% "dp5_b_parent_remote_p1_numeric.csv")
 p3m_raw <- read_survey(raw_data_dir %+% "dp5_3m_parent_p1_numeric.csv")
 
-# Load clean youth Qualtrics data
-y_clean <- readRDS(clean_data_staging_dir %+% "Phase 1 Youth Qualtrics Clean Data.rds")
+# Load assessment windows computed when cleaning youth Qualtrics data
+ax_windows <- readRDS(clean_data_staging_intermediate_dir %+% "Phase 1 Assessment Windows.rds")
 
 # Load item-level codebook file
 codebook_path <- here("Phase 1", "Track to Treat P1 Codebook.xlsx")
@@ -104,13 +105,18 @@ p3m_valid_ids <- remove_invalid_responses(p3m_raw, p3m_lsmh_id)
 
 
 ### Remove surveys outside of assessment window
-# TODO: Check that baseline survey was completed before EMA start date (get from youth Qualtrics data)
+## Compute indicators of (a) baseline survey completion before youth EMA start date and
+## (b) follow-up survey completion in assessment window using helper function
+pb_valid_ids <- mark_done_in_ax_window(pb_valid_ids, "pb_lsmh_id", "pb", ax_windows)
+p3m_valid_ids <- mark_done_in_ax_window(p3m_valid_ids, "p3m_lsmh_id", "p3m", ax_windows)
+
+# TODO: Consider which ax_window to use, focusing on participants with no duplicates
 
 
 
 
 
-# TODO: Remove 3-month surveys outside assessment window (get from youth Qualtrics data)
+# TODO: Remove 3-month surveys outside assessment window
 
 
 
