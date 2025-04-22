@@ -233,14 +233,11 @@ sum(!test_3m_one$in_window_3m_v4) == 53 # 21 days + 3 months after baseline comp
 sum(!test_3m_one$in_window_3m_v5) == 10 # 3 months after baseline completion
 sum(!test_3m_one$in_window_3m_v6) == 6  # 3 months after baseline completion +/- 1 day on window dates    (makes sense if Excel rolls forward but R rolls back)
 
-test_3m_one$diff_from_start_v1 <- as.Date(test_3m_one$EndDate) - test_3m_one$start_window_3m_v1 # Should be positive
-too_early_v1 <- test_3m_one$diff_from_start_v1[test_3m_one$diff_from_start_v1 < 0]
-length(too_early_v1) == 50        # 50 finished 1-22 days before start_window_3m_v1
-range(too_early_v1) == c(-22, -1)            
-test_3m_one$diff_from_end_v1 <- as.Date(test_3m_one$EndDate) - test_3m_one$end_window_3m_v1     # Should be negative
-too_late_v1 <- test_3m_one$diff_from_end_v1[test_3m_one$diff_from_end_v1 > 0]
-length(too_late_v1) == 3          # 3 finished 8-33 days after end_window_3m_v1
-range(too_late_v1) == c(8, 33)
+# TODO: Check discrepancies in numbers above vs. below (may be due to time zones). Check tz handling.
+
+
+
+
 
 test_3m_one$diff_from_start_v2 <- as.Date(test_3m_one$EndDate) - test_3m_one$start_window_3m_v2 # Should be positive
 too_early_v2 <- test_3m_one$diff_from_start_v2[test_3m_one$diff_from_start_v2 < 0]
@@ -259,15 +256,7 @@ too_late_v3 <- test_3m_one$diff_from_end_v3[test_3m_one$diff_from_end_v3 > 0]
 length(too_late_v3) == 6          # 6 finished 11-52 days after end_window_3m_v3
 range(too_late_v3) == c(11, 52)
 (test_3m_one$y3m_lsmh_id[test_3m_one$diff_from_start_v3 < 0 | test_3m_one$diff_from_end_v3 > 0]) # IDs (same as for v6 below)
-
-test_3m_one$diff_from_start_v4 <- as.Date(test_3m_one$EndDate) - as.Date(test_3m_one$start_window_3m_v4) # Should be positive
-too_early_v4 <- test_3m_one$diff_from_start_v4[test_3m_one$diff_from_start_v4 < 0]
-length(too_early_v4) == 47        # 47 finished 1-21 days before start_window_3m_v4
-range(too_early_v4) == c(-21, -1)
-test_3m_one$diff_from_end_v4 <- as.Date(test_3m_one$EndDate) - as.Date(test_3m_one$end_window_3m_v4)     # Should be negative
-too_late_v4 <- test_3m_one$diff_from_end_v4[test_3m_one$diff_from_end_v4 > 0]
-length(too_late_v4) == 4          # 4 finished 1-33 days after end_window_3m_v4
-range(too_late_v4) == c(1, 33)
+  # "LSMH00039", "LSMH00306", "LSMH00516" (also for p3m), "LSMH00492", "LSMH00661" (also for p3m), "LSMH00604"
 
 test_3m_one$diff_from_start_v5 <- as.Date(test_3m_one$EndDate) - as.Date(test_3m_one$start_window_3m_v5) # Should be positive
 too_early_v5 <- test_3m_one$diff_from_start_v5[test_3m_one$diff_from_start_v5 < 0]
@@ -285,6 +274,7 @@ too_late_v6 <- test_3m_one$diff_from_end_v6[test_3m_one$diff_from_end_v6 > 0]
 length(too_late_v6) == 6         # 6 finished 12-53 days after end_window_3m_v6
 range(too_late_v6) == c(12, 53)
 (test_3m_one$y3m_lsmh_id[test_3m_one$diff_from_start_v6 < 0 | test_3m_one$diff_from_end_v6 > 0]) # IDs (same as for v3 above)
+  # "LSMH00039", "LSMH00306", "LSMH00516" (also for p3m), "LSMH00492", "LSMH00661" (also for p3m), "LSMH00604"
 
 
 ## TODO: Remove 3-month surveys outside assessment window
