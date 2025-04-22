@@ -22,11 +22,11 @@ clean_data_staging_dir <- clean_data_dir %+% "staging\\"
 clean_data_staging_intermediate_dir <- clean_data_staging_dir %+% "intermediate\\"
 
 # Load NIS ("notification-initiated survey") datasets
-nis_1 <- read.csv(raw_data_dir %+% "3T_P1_V1_NIS_2020_Mar_02.csv")
-nis_2 <- read.csv(raw_data_dir %+% "3T_P1_V2_NIS_2020_Mar_13.csv")
-nis_3 <- read.csv(raw_data_dir %+% "3T_P1_V2_NIS_21200_958251_Download2.csv")
-nis_4 <- read.csv(raw_data_dir %+% "3T_P1_V2_NIS_21200_958251_Download3.csv")
-nis_5 <- read.csv(raw_data_dir %+% "3T_P1_V4_NIS.csv")
+nis_1 <- read.csv(raw_data_dir %+% "3T_P1_V1_NIS_2020_Mar_02.csv")            # Survey "TRACK to TREAT P1"
+nis_2 <- read.csv(raw_data_dir %+% "3T_P1_V2_NIS_2020_Mar_13.csv")            # Survey "TRACK to TREAT P1 - V2"
+nis_3 <- read.csv(raw_data_dir %+% "3T_P1_V2_NIS_21200_958251_Download2.csv") # Survey "TRACK to TREAT - 00347"
+nis_4 <- read.csv(raw_data_dir %+% "3T_P1_V2_NIS_21200_958251_Download3.csv") # Survey "TRACK to TREAT P1 - 00347 V2"
+nis_5 <- read.csv(raw_data_dir %+% "3T_P1_V4_NIS.csv")                        # Survey "TRACK to TREAT P1 - V4"
 
 
 
@@ -107,7 +107,7 @@ nis_clean <- nis_combined %>%
       "3T Project Night" ~ "Night"
     ),
     
-    # Notification date and datetime
+    # Notification date and datetime (in participant devices' local times)
     notification_datetime = as_datetime(Notification.Time),
     notification_date = as_date(notification_datetime),
     

@@ -26,9 +26,10 @@ clean_data_staging_dir <- clean_data_dir %+% "staging\\"
 clean_data_staging_intermediate_dir <- clean_data_staging_dir %+% "intermediate\\"
 
 # Load raw parent Qualtrics datasets in this format: [respondent][wave]_[administration]_raw
-pb_in_person_raw <- read_survey(raw_data_dir %+% "dp5_b_parent_p1_numeric.csv")
-pb_remote_raw <- read_survey(raw_data_dir %+% "dp5_b_parent_remote_p1_numeric.csv")
-p3m_raw <- read_survey(raw_data_dir %+% "dp5_3m_parent_p1_numeric.csv")
+# - Note: Use "timeZone" specified for date columns (e.g., "StartDate") in third row of raw CSV
+pb_in_person_raw <- read_survey(raw_data_dir %+% "dp5_b_parent_p1_numeric.csv", time_zone = "America/Denver")
+pb_remote_raw <- read_survey(raw_data_dir %+% "dp5_b_parent_remote_p1_numeric.csv", time_zone = "America/Denver")
+p3m_raw <- read_survey(raw_data_dir %+% "dp5_3m_parent_p1_numeric.csv", time_zone = "America/Denver")
 
 # Load assessment windows computed when cleaning youth Qualtrics data
 ax_windows <- readRDS(clean_data_staging_intermediate_dir %+% "Phase 1 Assessment Windows.rds")

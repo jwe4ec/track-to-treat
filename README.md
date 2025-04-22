@@ -44,3 +44,7 @@ Data cleaning notes:
 * In the LifePak data, most participants have 105 total notifications, but some have fewer and one has more; it's unclear why
 * When Qualtrics items are reverse-coded, the data cleaning script puts them back in the right direction (retaining the original item name)
   * Note: By contrast, in the LifePak data, when items are reversed the suffix "_rev" is appended to the item name.
+* Take care when comparing timestamps between datasets
+  * In the LifePak data, raw `Notification.Time` is in local time zones of participants' devices (per LifeData support)
+    * The clean timestamp stores these local times in UTC (the actual time zones would need to be derived from LifePak GPS data, which is missing for some observations)
+  * In the Qualtrics data, raw timestamps are in "America/Denver" time zone for Phase I and in "America/Chicago" for Phase II

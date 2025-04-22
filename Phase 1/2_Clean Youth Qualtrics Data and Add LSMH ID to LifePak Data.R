@@ -26,9 +26,10 @@ clean_data_staging_dir <- clean_data_dir %+% "staging\\"
 clean_data_staging_intermediate_dir <- clean_data_staging_dir %+% "intermediate\\"
 
 # Load raw Qualtrics datasets in this format: [respondent][wave]_[administration]_raw
-yb_in_person_raw <- read_survey(raw_data_dir %+% "dp5_b_child_p1_numeric.csv")
-yb_remote_raw <- read_survey(raw_data_dir %+% "dp5_b_child_remote_p1_numeric.csv")
-y3m_raw <- read_survey(raw_data_dir %+% "dp5_3m_child_p1_numeric.csv")
+# - Note: Use "timeZone" specified for date columns (e.g., "StartDate") in third row of raw CSV
+yb_in_person_raw <- read_survey(raw_data_dir %+% "dp5_b_child_p1_numeric.csv", time_zone = "America/Denver")
+yb_remote_raw <- read_survey(raw_data_dir %+% "dp5_b_child_remote_p1_numeric.csv", time_zone = "America/Denver")
+y3m_raw <- read_survey(raw_data_dir %+% "dp5_3m_child_p1_numeric.csv", time_zone = "America/Denver")
 
 # Load intermediate LifePak data
 nis_valid <- readRDS(clean_data_staging_intermediate_dir %+% "Phase 1 LifePak Clean Data Without LSMH ID.rds")
@@ -233,7 +234,9 @@ sum(!test_3m_one$in_window_3m_v4) == 53 # 21 days + 3 months after baseline comp
 sum(!test_3m_one$in_window_3m_v5) == 10 # 3 months after baseline completion
 sum(!test_3m_one$in_window_3m_v6) == 6  # 3 months after baseline completion +/- 1 day on window dates    (makes sense if Excel rolls forward but R rolls back)
 
-# TODO: Check discrepancies in numbers above vs. below (may be due to time zones). Check tz handling.
+# TODO: Check discrepancies in numbers above vs. below (may be due to time zones).
+# Qualtrics data is in "America/Denver" time zone. LifePak data is in participants'
+# local time zones.
 
 
 
