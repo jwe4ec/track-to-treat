@@ -66,9 +66,36 @@ fill_lifepak_id <- function(data, id) {
   
 }
 
-# Function to compute indicators of (a) baseline survey completion before EMA start 
-# date and (b) 3-month follow-up survey completion in assessment window
-mark_done_in_ax_window <- function(data, id_as_char, survey_prefix, ax_windows) {
+# Function to compute indicator of baseline survey completion in assessment window
+mark_b_done_in_ax_window <- function(data, id_as_char, ema_notif_dates) {
+  
+  # Add EMA notification dates to data
+  names(ema_notif_dates)[names(ema_notif_dates) == "lsmh_id"] <- id_as_char
+  
+  data <- data %>%
+    left_join(ema_notif_dates, by = id_as_char, relationship = "many-to-one")
+  
+  # Compute indicator of survey completion before first EMA notification
+    # Note: Given that "EndDate" and "first_ema_notif_date" are in different time
+    # zones ("America/Denver" for Phase I vs. participants' local times stored as 
+    # UTC, respectively), this comparison is approximate. To rule out the role of
+    # time zone differences, derive actual time zones for "first_ema_notif_date"
+    # from LifePak GPS data (although GPS data are missing for some observations)
+  data$in_window_b <- NA
+  data$in_window_b <- ifelse(as_date(data$EndDate) < data$first_ema_notif_date, TRUE, FALSE)
+    
+  # Throw warning if any surveys were not completed in this window (in which case 
+  # further analysis to rule out role of differing time zones is warranted)
+  if (any(data$in_window_b == FALSE)) {
+    warning("Not all baseline surveys are in window. Rule out role of differing time zones.")
+  }
+
+  return(data)
+  
+}
+
+# Function to compute indicators of follow-up survey completion in assessment window
+mark_3m_done_in_ax_window <- function(data, id_as_char, ax_windows) {
   
   # Add assessment window dates to data
   names(ax_windows)[names(ax_windows) == "lsmh_id"] <- id_as_char
@@ -77,21 +104,12 @@ mark_done_in_ax_window <- function(data, id_as_char, survey_prefix, ax_windows) 
     left_join(ax_windows, by = id_as_char, relationship = "many-to-one")
   
   # Compute indicator of survey completion in assessment window
-  if (survey_prefix %in% c("yb", "pb")) {
-    # Note: Given that "EndDate" and "first_ema_notif_date" are in different time
-    # zones ("America/Denver" for Phase I vs. participants' local times stored as 
-    # UTC, respectively), this comparison is approximate
-    
-    data$in_window_b <- NA
-    data$in_window_b <- ifelse(as_date(data$EndDate) < data$first_ema_notif_date, TRUE, FALSE)
-  } else if (survey_prefix %in% c("y3m", "p3m")) {
-    data$in_window_3m_v5 <- NA
-    data$in_window_3m_v5 <- ifelse(as_date(data$EndDate) >= data$start_window_3m_v5 & 
-                                     as_date(data$EndDate) <= data$end_window_3m_v5, TRUE, FALSE)
-    data$in_window_3m_v6 <- NA
-    data$in_window_3m_v6 <- ifelse(as_date(data$EndDate) >= data$start_window_3m_v6 & 
-                                     as_date(data$EndDate) <= data$end_window_3m_v6, TRUE, FALSE)
-  }
+  data$in_window_3m_v5 <- NA
+  data$in_window_3m_v5 <- ifelse(as_date(data$EndDate) >= data$start_window_3m_v5 & 
+                                   as_date(data$EndDate) <= data$end_window_3m_v5, TRUE, FALSE)
+  data$in_window_3m_v6 <- NA
+  data$in_window_3m_v6 <- ifelse(as_date(data$EndDate) >= data$start_window_3m_v6 & 
+                                   as_date(data$EndDate) <= data$end_window_3m_v6, TRUE, FALSE)
   
   return(data)
   
@@ -195,13 +213,11 @@ remove_duplicates <- function(data, id) {
   data %>%
     # ... group by ID ...
     group_by({{id}}) %>%
-    # ... by ID, arrange first by Finished (putting completed responses at the top),
-    # then by Progress (putting more completed responses at the top), then by StartDate
-    # (putting first/oldest responses at the top)...
+    # ... by ID, arrange first by item_completion_rate (putting more completed 
+    # responses at top), then by EndDate (putting first/oldest responses at top)...
     arrange(
-      desc(Finished),
-      desc(Progress),
-      StartDate
+      desc(item_completion_rate),
+      EndDate
     ) %>%
     # ... finally, take only the top response
     slice_head(n = 1) %>%

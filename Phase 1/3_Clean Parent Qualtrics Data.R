@@ -105,34 +105,66 @@ pb_valid_ids <- remove_invalid_responses(pb_raw, pb_lsmh_id)
 p3m_valid_ids <- remove_invalid_responses(p3m_raw, p3m_lsmh_id)
 
 
-### Remove surveys outside of assessment window
-## Compute indicators of (a) baseline survey completion before youth EMA start date and
-## (b) follow-up survey completion in assessment window using helper function
-pb_valid_ids <- mark_done_in_ax_window(pb_valid_ids, "pb_lsmh_id", "pb", ax_windows)
-p3m_valid_ids <- mark_done_in_ax_window(p3m_valid_ids, "p3m_lsmh_id", "p3m", ax_windows)
-
-# TODO: Consider which ax_window to use, focusing on participants with no duplicates
+### Create lists for logging (a) items used to compute item completion rates below via
+### compute_item_completion_rate(), (b) items used to compute means via mean_across(),
+### and (c) clean codebook (edited and added to log below)
+log <- list(item_completion_rate = list(),
+            mean_items = list())
 
 
+### Identify duplicates and compute item completion rate for removing duplicates
+# Identify duplicates using helper function
+identify_duplicates(pb_valid_ids, pb_lsmh_id)
+identify_duplicates(p3m_valid_ids, p3m_lsmh_id)
+
+# Compute item completion rate using helper function (given that Qualtrics's "Progress" 
+# and "Finished" variables reflect only clicking through survey, not completing items)
+pb_valid_ids <- compute_item_completion_rate(pb_valid_ids, "pb")
+p3m_valid_ids <- compute_item_completion_rate(p3m_valid_ids, "p3m")
+
+
+### Remove any baseline surveys (a) outside assessment window or (b) duplicated in window
+# Obtain EMA notification dates from assessment windows computed when cleaning youth Qualtrics data
+ema_notif_dates <- ax_windows[, c("lsmh_id", "first_ema_notif_date", "last_ema_notif_date", "end_ema_period")]
+
+# Compute indicator of baseline survey completion in window using helper function
+pb_valid_ids <- mark_b_done_in_ax_window(pb_valid_ids, "pb_lsmh_id", ema_notif_dates)
+
+# TODO: Remove any baseline surveys outside window (0) using helper function
 
 
 
-pb_dup <- identify_duplicates(pb_valid_ids, pb_lsmh_id) 
-pb_dup_ids <- pb_dup$pb_lsmh_id[pb_dup$total > 1] # None
+
+
+# Remove any baseline duplicates (0) using helper function
+pb_deduplicated <- remove_duplicates(pb_valid_ids, pb_lsmh_id)
+
+# Double-check deduplication
+identify_duplicates(pb_deduplicated, pb_lsmh_id)
+
+
+### Remove any follow-up surveys (a) outside assessment window or (b) duplicated in window
+# Assessment windows were computed when cleaning youth Qualtrics data
+
+# Compute indicators of 3-month survey completion in window using helper function
+p3m_valid_ids <- mark_3m_done_in_ax_window(p3m_valid_ids, "p3m_lsmh_id", ax_windows)
+
+# TODO: Decide which ax_window to use, focusing on participants with no 3m duplicates
+
+
+
+
 
 p3m_dup <- identify_duplicates(p3m_valid_ids, p3m_lsmh_id)
 p3m_dup_ids <- p3m_dup$p3m_lsmh_id[p3m_dup$total > 1]
 
-dup_ids <- c(pb_dup_ids, p3m_dup_ids)
-
-test_3m_one <- p3m_valid_ids[!(p3m_valid_ids$p3m_lsmh_id %in% dup_ids |
-                                 p3m_valid_ids$p3m_lsmh_id == "LSMH00190"), ]
+test_3m_one <- p3m_valid_ids[!(p3m_valid_ids$p3m_lsmh_id %in% p3m_dup_ids), ]
 test_3m_one <- test_3m_one[, c("p3m_lsmh_id", "StartDate", "EndDate", 
                                "first_ema_notif_date", "last_ema_notif_date",
                                "start_window_3m_v5", "end_window_3m_v5", "in_window_3m_v5",
                                "start_window_3m_v6", "end_window_3m_v6", "in_window_3m_v6")]
 
-nrow(test_3m_one) == 86 # 86 participants without duplicates at baseline or 3 months
+nrow(test_3m_one) == 87 # 87 participants without duplicates at 3 months
 
 sum(!test_3m_one$in_window_3m_v5) == 6 # 3 months after baseline completion
 sum(!test_3m_one$in_window_3m_v6) == 5 # 3 months after baseline completion +/- 1 day on window dates    (makes sense if Excel rolls forward but R rolls back)
@@ -156,35 +188,15 @@ sort(too_late_v6) == c(4, 16, 18, 24, 27)
 (test_3m_one$p3m_lsmh_id[test_3m_one$diff_from_start_v6 < 0 | test_3m_one$diff_from_end_v6 > 0]) # IDs (unsorted)
   # "LSMH00005", "LSMH00449", "LSMH00516" (also for y3m), "LSMH00612", "LSMH00661" (also for y3m)
 
-# TODO: Remove 3-month surveys outside assessment window
+# TODO: Remove 3-month surveys outside assessment window using helper function
 
 
 
 
-
-### Create lists for logging (a) items used to compute item completion rates below via
-### compute_item_completion_rate(), (b) items used to compute means via mean_across(),
-### and (c) clean codebook (edited and added to log below)
-log <- list(item_completion_rate = list(),
-            mean_items = list())
-
-
-### Deduplicate
-# Compute item completion rate using helper function (given that Qualtrics's "Progress" 
-# and "Finished" variables reflect only clicking through survey, not completing items)
-pb_valid_ids <- compute_item_completion_rate(pb_valid_ids, "pb")
-p3m_valid_ids <- compute_item_completion_rate(p3m_valid_ids, "p3m")
-
-# Identify duplicates using helper function
-identify_duplicates(pb_valid_ids, pb_lsmh_id)
-identify_duplicates(p3m_valid_ids, p3m_lsmh_id)
-
-# Remove duplicates using helper function
-pb_deduplicated <- remove_duplicates(pb_valid_ids, pb_lsmh_id)
+# Remove 3-month duplicates using helper function
 p3m_deduplicated <- remove_duplicates(p3m_valid_ids, p3m_lsmh_id)
 
-# Double-check work
-identify_duplicates(pb_deduplicated, pb_lsmh_id)
+# Double-check deduplication
 identify_duplicates(p3m_deduplicated, p3m_lsmh_id)
 
 

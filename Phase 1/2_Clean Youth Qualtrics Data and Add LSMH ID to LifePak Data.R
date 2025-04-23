@@ -133,8 +133,26 @@ nis_valid_with_lsmh_id <- nis_valid %>%
   left_join(lsmh_id_lookup, by = "lifepak_id", relationship = "many-to-one")
 
 
-### Remove surveys outside of assessment window
-## Obtain EMA notification dates from LifePak data and compute end of EMA period
+### Create lists for logging (a) items used to compute item completion rates below via
+### compute_item_completion_rate(), (b) items used to compute means via mean_across(),
+### and (c) clean codebook (edited and added to log below)
+log <- list(item_completion_rate = list(),
+            mean_items = list())
+
+
+### Identify duplicates and compute item completion rate for removing duplicates
+# Identify duplicates using helper function
+identify_duplicates(yb_valid_ids, yb_lsmh_id)
+identify_duplicates(y3m_valid_ids, y3m_lsmh_id)
+
+# Compute item completion rate using helper function (given that Qualtrics's "Progress" 
+# and "Finished" variables reflect only clicking through survey, not completing items)
+yb_valid_ids <- compute_item_completion_rate(yb_valid_ids, "yb")
+y3m_valid_ids <- compute_item_completion_rate(y3m_valid_ids, "y3m")
+
+
+### Remove any baseline surveys (a) outside assessment window or (b) duplicated in window
+# Obtain EMA notification dates from LifePak data and compute end of EMA period
 ema_notif_dates <- nis_valid_with_lsmh_id %>%
   group_by(lifepak_id) %>%
   summarise(
@@ -145,58 +163,61 @@ ema_notif_dates <- nis_valid_with_lsmh_id %>%
     .groups = "drop"
   )
 
+# Compute indicator of baseline survey completion in window using helper function
+yb_valid_ids <- mark_b_done_in_ax_window(yb_valid_ids, "yb_lsmh_id", ema_notif_dates)
 
-## Compute potential assessment window dates for Qualtrics surveys
+# TODO: Remove any baseline surveys outside window (0) using helper function
+
+
+
+
+
+# Remove baseline duplicates using helper function
+yb_deduplicated <- remove_duplicates(yb_valid_ids, yb_lsmh_id)
+
+# Double-check deduplication
+identify_duplicates(yb_deduplicated, yb_lsmh_id)
+
+
+### Remove any follow-up surveys (a) outside assessment window or (b) duplicated in window
+# Compute potential assessment windows based on baseline survey completion date
 # - Note: Excel formulas were used to compute assessment windows by adding months 
 #   (e.g., "=DATE(YEAR(A1), MONTH(A1) + 3, DAY(A1))"). When adding months yields
 #   a date that is not real (due to 28-31 days in a month), Excel rolls to the next
 #   real date, whereas R rolls to the last real date (when using "%m+%") or yields 
 #   an error (if using "+"). Thus, consider some leeway in assessment windows.
 
-# Compute potential assessment windows based on baseline survey completion date
-# (for now, do this only for participants without duplicate surveys at baseline)
-ax_windows <- yb_valid_ids %>%
-  select(yb_lsmh_id, StartDate, EndDate) %>%
+ax_windows <- yb_deduplicated %>%
+  select(yb_lsmh_id, StartDate, EndDate,
+         first_ema_notif_date, last_ema_notif_date, end_ema_period) %>%
   rename(lsmh_id = yb_lsmh_id,
          StartDate_yb = StartDate,
          EndDate_yb = EndDate) %>%
   
-  filter(!(lsmh_id %in% c("LSMH00190", "LSMH00355"))) %>% # Those with baseline duplicates from identify_duplicates() below
-  left_join(ema_notif_dates, by = "lsmh_id", relationship = "many-to-one") %>%
-  
-  mutate(start_window_3m_v5 = as_date(EndDate_yb) %m+% months(3),
+  mutate(start_window_3m_v5 = as_date(EndDate_yb) %m+% months(3),        # TODO: JE TO RENAME VARS
          end_window_3m_v5 = start_window_3m_v5 %m+% months(1),
          
          start_window_3m_v6 = start_window_3m_v5 - days(1),
          end_window_3m_v6 = end_window_3m_v5 + days(1))
 
+# Compute indicators of 3-month survey completion in window using helper function
+y3m_valid_ids <- mark_3m_done_in_ax_window(y3m_valid_ids, "y3m_lsmh_id", ax_windows)
 
-## Compute indicators of (a) baseline survey completion before EMA start date and
-## (b) follow-up survey completion in assessment window using helper function
-yb_valid_ids <- mark_done_in_ax_window(yb_valid_ids, "yb_lsmh_id", "yb", ax_windows)
-y3m_valid_ids <- mark_done_in_ax_window(y3m_valid_ids, "y3m_lsmh_id", "y3m", ax_windows)
-
-# TODO: Consider which ax_window to use, focusing on participants with no duplicates
+# TODO: Decide which ax_window to use, focusing on participants with no 3m duplicates
 
 
 
 
-
-yb_dup <- identify_duplicates(yb_valid_ids, yb_lsmh_id)
-yb_dup_ids <- yb_dup$yb_lsmh_id[yb_dup$total > 1]
 
 y3m_dup <- identify_duplicates(y3m_valid_ids, y3m_lsmh_id)
 y3m_dup_ids <- y3m_dup$y3m_lsmh_id[y3m_dup$total > 1]
 
-dup_ids <- c(yb_dup_ids, y3m_dup_ids)
-
-test_3m_one <- y3m_valid_ids[!(y3m_valid_ids$y3m_lsmh_id %in% dup_ids), ]
+test_3m_one <- y3m_valid_ids[!(y3m_valid_ids$y3m_lsmh_id %in% y3m_dup_ids), ]
 test_3m_one <- test_3m_one[, c("y3m_lsmh_id", "StartDate", "EndDate", 
-                               "first_ema_notif_date", "last_ema_notif_date",
                                "start_window_3m_v5", "end_window_3m_v5", "in_window_3m_v5",
                                "start_window_3m_v6", "end_window_3m_v6", "in_window_3m_v6")]
 
-nrow(test_3m_one) == 60 # 60 participants without duplicates at baseline or 3 months
+nrow(test_3m_one) == 60 # 60 participants without duplicates at 3 months
 
 sum(!test_3m_one$in_window_3m_v5) == 6 # 3 months after baseline completion
 sum(!test_3m_one$in_window_3m_v6) == 6 # 3 months after baseline completion +/- 1 day on window dates    (makes sense if Excel rolls forward but R rolls back)
@@ -220,40 +241,16 @@ sort(too_late_v6) == c(11, 16, 18, 30, 49, 53)
 (test_3m_one$y3m_lsmh_id[test_3m_one$diff_from_start_v6 < 0 | test_3m_one$diff_from_end_v6 > 0]) # IDs (unsorted)
   # "LSMH00039", "LSMH00306", "LSMH00516" (also for p3m), "LSMH00492", "LSMH00661" (also for p3m), "LSMH00604"
 
-
-## TODO: Remove 3-month surveys outside assessment window
-
+# TODO: Remove 3-month surveys outside assessment window using helper function
 
 
 
 
-### Create lists for logging (a) items used to compute item completion rates below via
-### compute_item_completion_rate(), (b) items used to compute means via mean_across(),
-### and (c) clean codebook (edited and added to log below)
-log <- list(item_completion_rate = list(),
-            mean_items = list())
 
-
-### Deduplicate
-# Compute item completion rate using helper function (given that Qualtrics's "Progress" 
-# and "Finished" variables reflect only clicking through survey, not completing items)
-yb_valid_ids <- compute_item_completion_rate(yb_valid_ids, "yb")
-y3m_valid_ids <- compute_item_completion_rate(y3m_valid_ids, "y3m")
-
-# Identify duplicates using helper function
-identify_duplicates(yb_valid_ids, yb_lsmh_id)
-identify_duplicates(y3m_valid_ids, y3m_lsmh_id)
-
-# TODO (JE to revise after removing surveys outside assessment window above): Remove duplicates using helper function
-yb_deduplicated <- remove_duplicates(yb_valid_ids, yb_lsmh_id)
+# Remove 3-month duplicates using helper function
 y3m_deduplicated <- remove_duplicates(y3m_valid_ids, y3m_lsmh_id)
 
-
-
-
-
-# Double-check work
-identify_duplicates(yb_deduplicated, yb_lsmh_id)
+# Double-check deduplication
 identify_duplicates(y3m_deduplicated, y3m_lsmh_id)
 
 
