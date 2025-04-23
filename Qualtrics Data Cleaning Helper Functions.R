@@ -199,7 +199,8 @@ identify_duplicates <- function(data, id) {
   duplicates <- sum(out$total > 1)
   completed_duplicates <- sum(out$complete > 1)
   
-  message("Out of " %+% ids %+% " IDs, " %+% duplicates %+% " had multiple responses, while " %+% completed_duplicates %+% " had multiple completed responses")
+  message("Out of " %+% ids %+% " IDs, " %+% duplicates %+% " had multiple responses, while " %+% completed_duplicates %+% " had multiple completed responses.\n" %+%
+            "(Note: 'complete' only means clicked through survey, not completed all items.)")
   
   # Return the summary table with duplicated rows at the top
   return(out)
