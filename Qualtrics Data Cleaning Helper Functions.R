@@ -78,27 +78,19 @@ mark_done_in_ax_window <- function(data, id_as_char, survey_prefix, ax_windows) 
   
   # Compute indicator of survey completion in assessment window
   if (survey_prefix %in% c("yb", "pb")) {
+    # Note: Given that "EndDate" and "first_ema_notif_date" are in different time
+    # zones ("America/Denver" for Phase I vs. participants' local times stored as 
+    # UTC, respectively), this comparison is approximate
+    
     data$in_window_b <- NA
-    data$in_window_b <- ifelse(data$EndDate < data$first_ema_notif_date, TRUE, FALSE)
+    data$in_window_b <- ifelse(as_date(data$EndDate) < data$first_ema_notif_date, TRUE, FALSE)
   } else if (survey_prefix %in% c("y3m", "p3m")) {
-    data$in_window_3m_v1 <- NA
-    data$in_window_3m_v1 <- ifelse(data$EndDate >= data$start_window_3m_v1 & 
-                                     data$EndDate <= data$end_window_3m_v1, TRUE, FALSE)
-    data$in_window_3m_v2 <- NA
-    data$in_window_3m_v2 <- ifelse(data$EndDate >= data$start_window_3m_v2 & 
-                                     data$EndDate <= data$end_window_3m_v2, TRUE, FALSE)
-    data$in_window_3m_v3 <- NA
-    data$in_window_3m_v3 <- ifelse(data$EndDate >= data$start_window_3m_v3 & 
-                                     data$EndDate <= data$end_window_3m_v3, TRUE, FALSE)
-    data$in_window_3m_v4 <- NA
-    data$in_window_3m_v4 <- ifelse(data$EndDate >= data$start_window_3m_v4 & 
-                                     data$EndDate <= data$end_window_3m_v4, TRUE, FALSE)
     data$in_window_3m_v5 <- NA
-    data$in_window_3m_v5 <- ifelse(data$EndDate >= data$start_window_3m_v5 & 
-                                     data$EndDate <= data$end_window_3m_v5, TRUE, FALSE)
+    data$in_window_3m_v5 <- ifelse(as_date(data$EndDate) >= data$start_window_3m_v5 & 
+                                     as_date(data$EndDate) <= data$end_window_3m_v5, TRUE, FALSE)
     data$in_window_3m_v6 <- NA
-    data$in_window_3m_v6 <- ifelse(data$EndDate >= data$start_window_3m_v6 & 
-                                     data$EndDate <= data$end_window_3m_v6, TRUE, FALSE)
+    data$in_window_3m_v6 <- ifelse(as_date(data$EndDate) >= data$start_window_3m_v6 & 
+                                     as_date(data$EndDate) <= data$end_window_3m_v6, TRUE, FALSE)
   }
   
   return(data)
