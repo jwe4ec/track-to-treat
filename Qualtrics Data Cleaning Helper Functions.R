@@ -66,52 +66,36 @@ fill_lifepak_id <- function(data, id) {
   
 }
 
-# Function to compute indicator of baseline survey completion in assessment window
-mark_b_done_in_ax_window <- function(data, id_as_char, ema_notif_dates) {
+# Function to identify duplicates
+identify_duplicates <- function(data, id) {
   
-  # Add EMA notification dates to data
-  names(ema_notif_dates)[names(ema_notif_dates) == "lsmh_id"] <- id_as_char
+  # Taking the data...
+  out <- data %>%
+    # ... filter out cases where the ID is missing or in invalid_ids...
+    filter(
+      !is.na({{id}}),
+      !{{id}} %in% invalid_ids
+    ) %>%
+    # ... then, grouping by the ID variable...
+    group_by({{id}}) %>%
+    # ... count the total number of rows and the number of rows with completed responses.
+    summarize(
+      total = n(),
+      complete = sum(Finished)
+    ) %>%
+    # Finally, arrange the dataset such that duplicates are at the top
+    arrange(desc(complete), desc(total))
   
-  data <- data %>%
-    left_join(ema_notif_dates, by = id_as_char, relationship = "many-to-one")
+  # Print a message about how many rows were duplicated
+  ids <- nrow(out)
+  duplicates <- sum(out$total > 1)
+  completed_duplicates <- sum(out$complete > 1)
   
-  # Compute indicator of survey completion before first EMA notification
-    # Note: Given that "EndDate" and "first_ema_notif_date" are in different time
-    # zones ("America/Denver" for Phase I vs. participants' local times stored as 
-    # UTC, respectively), this comparison is approximate. To rule out the role of
-    # time zone differences, derive actual time zones for "first_ema_notif_date"
-    # from LifePak GPS data (although GPS data are missing for some observations)
-  data$in_window_b <- NA
-  data$in_window_b <- ifelse(as_date(data$EndDate) < data$first_ema_notif_date, TRUE, FALSE)
-    
-  # Throw warning if any surveys were not completed in this window (in which case 
-  # further analysis to rule out role of differing time zones is warranted)
-  if (any(data$in_window_b == FALSE)) {
-    warning("Not all baseline surveys are in window. Rule out role of differing time zones.")
-  }
-
-  return(data)
+  message("Out of " %+% ids %+% " IDs, " %+% duplicates %+% " had multiple responses, while " %+% completed_duplicates %+% " had multiple completed responses.\n" %+%
+            "(Note: 'complete' only means clicked through survey, not completed all items.)")
   
-}
-
-# Function to compute indicators of follow-up survey completion in assessment window
-mark_3m_done_in_ax_window <- function(data, id_as_char, ax_windows) {
-  
-  # Add assessment window dates to data
-  names(ax_windows)[names(ax_windows) == "lsmh_id"] <- id_as_char
-  
-  data <- data %>%
-    left_join(ax_windows, by = id_as_char, relationship = "many-to-one")
-  
-  # Compute indicator of survey completion in assessment window
-  data$in_window_3m_v5 <- NA
-  data$in_window_3m_v5 <- ifelse(as_date(data$EndDate) >= data$start_window_3m_v5 & 
-                                   as_date(data$EndDate) <= data$end_window_3m_v5, TRUE, FALSE)
-  data$in_window_3m_v6 <- NA
-  data$in_window_3m_v6 <- ifelse(as_date(data$EndDate) >= data$start_window_3m_v6 & 
-                                   as_date(data$EndDate) <= data$end_window_3m_v6, TRUE, FALSE)
-  
-  return(data)
+  # Return the summary table with duplicated rows at the top
+  return(out)
   
 }
 
@@ -119,13 +103,13 @@ mark_3m_done_in_ax_window <- function(data, id_as_char, ax_windows) {
 compute_item_completion_rate <- function(data, survey_prefix) {
   
   # Define columns to ignore when computing completion rate
-    # Columns with click and time on page information
+  # Columns with click and time on page information
   time_cols <- names(data)[grepl("time", names(data)) & grepl("Click|Submit", names(data))]
   
-    # Columns with specified responses for response options of "Other" (or similar)
+  # Columns with specified responses for response options of "Other" (or similar)
   text_cols <- names(data)[grepl("_TEXT", names(data))]
   
-    # Columns for metadata
+  # Columns for metadata
   meta_cols <- c("StartDate", "EndDate", "Status", "IPAddress", "Progress", 
                  "Duration (in seconds)", "Finished", "RecordedDate", "ResponseId", 
                  "RecipientLastName", "RecipientFirstName", "RecipientEmail", 
@@ -174,36 +158,52 @@ compute_item_completion_rate <- function(data, survey_prefix) {
   
 }
 
-# Function to identify duplicates
-identify_duplicates <- function(data, id) {
+# Function to compute indicator of baseline survey completion in assessment window
+mark_b_done_in_ax_window <- function(data, id_as_char, ema_notif_dates) {
   
-  # Taking the data...
-  out <- data %>%
-    # ... filter out cases where the ID is missing or in invalid_ids...
-    filter(
-      !is.na({{id}}),
-      !{{id}} %in% invalid_ids
-    ) %>%
-    # ... then, grouping by the ID variable...
-    group_by({{id}}) %>%
-    # ... count the total number of rows and the number of rows with completed responses.
-    summarize(
-      total = n(),
-      complete = sum(Finished)
-    ) %>%
-    # Finally, arrange the dataset such that duplicates are at the top
-    arrange(desc(complete), desc(total))
+  # Add EMA notification dates to data
+  names(ema_notif_dates)[names(ema_notif_dates) == "lsmh_id"] <- id_as_char
   
-  # Print a message about how many rows were duplicated
-  ids <- nrow(out)
-  duplicates <- sum(out$total > 1)
-  completed_duplicates <- sum(out$complete > 1)
+  data <- data %>%
+    left_join(ema_notif_dates, by = id_as_char, relationship = "many-to-one")
   
-  message("Out of " %+% ids %+% " IDs, " %+% duplicates %+% " had multiple responses, while " %+% completed_duplicates %+% " had multiple completed responses.\n" %+%
-            "(Note: 'complete' only means clicked through survey, not completed all items.)")
+  # Compute indicator of survey completion before first EMA notification
+    # Note: Given that "EndDate" and "first_ema_notif_date" are in different time
+    # zones ("America/Denver" for Phase I vs. participants' local times stored as 
+    # UTC, respectively), this comparison is approximate. To rule out the role of
+    # time zone differences, derive actual time zones for "first_ema_notif_date"
+    # from LifePak GPS data (although GPS data are missing for some observations)
+  data$in_window_b <- NA
+  data$in_window_b <- ifelse(as_date(data$EndDate) < data$first_ema_notif_date, TRUE, FALSE)
+    
+  # Throw warning if any surveys were not completed in this window (in which case 
+  # further analysis to rule out role of differing time zones is warranted)
+  if (any(data$in_window_b == FALSE)) {
+    warning("Not all baseline surveys are in window. Rule out role of differing time zones.")
+  }
+
+  return(data)
   
-  # Return the summary table with duplicated rows at the top
-  return(out)
+}
+
+# Function to compute indicators of follow-up survey completion in assessment window
+mark_3m_done_in_ax_window <- function(data, id_as_char, ax_windows) {
+  
+  # Add assessment window dates to data
+  names(ax_windows)[names(ax_windows) == "lsmh_id"] <- id_as_char
+  
+  data <- data %>%
+    left_join(ax_windows, by = id_as_char, relationship = "many-to-one")
+  
+  # Compute indicator of survey completion in assessment window
+  data$in_window_3m_v5 <- NA
+  data$in_window_3m_v5 <- ifelse(as_date(data$EndDate) >= data$start_window_3m_v5 & 
+                                   as_date(data$EndDate) <= data$end_window_3m_v5, TRUE, FALSE)
+  data$in_window_3m_v6 <- NA
+  data$in_window_3m_v6 <- ifelse(as_date(data$EndDate) >= data$start_window_3m_v6 & 
+                                   as_date(data$EndDate) <= data$end_window_3m_v6, TRUE, FALSE)
+  
+  return(data)
   
 }
 
@@ -329,7 +329,7 @@ mean_across <- function(.prefix, .measure, .subscale, name, exclude) {
   
   # If items are not unique, throw an error
   if(length(items) != length(unique(items))) stop("Item(s) are repeated and will bias mean")
-  
+
   # Exclude items if argument is provided
   if(!missing(exclude)) {
     
