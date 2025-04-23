@@ -106,10 +106,11 @@ p3m_valid_ids <- remove_invalid_responses(p3m_raw, p3m_lsmh_id)
 
 
 ### Create lists for logging (a) items used to compute item completion rates below via
-### compute_item_completion_rate(), (b) items used to compute means via mean_across(),
-### and (c) clean codebook (edited and added to log below)
+### compute_item_completion_rate(), items used to compute (b) means via mean_across() and
+### (c) counts via count_across(), and (d) clean codebook (edited and added to log below)
 log <- list(item_completion_rate = list(),
-            mean_items = list())
+            mean_items = list(),
+            count_items = list())
 
 
 ### Identify duplicates and compute item completion rate for removing duplicates
@@ -470,14 +471,14 @@ p_clean <- p_merged %>%
     
     ## Child ACES
     # Overall mean score
-    pb_child_aces_count = count_across("pb", "ace_y", name = "pb_child_aces_mean"), # count_across() from helper function script
-    p3m_child_aces_count = count_across("p3m", "ace_y", name = "p3m_child_aces_mean"),
+    pb_child_aces_count = count_across("pb", "ace_y", name = "pb_child_aces_count"), # count_across() from helper function script
+    p3m_child_aces_count = count_across("p3m", "ace_y", name = "p3m_child_aces_count"),
     
     
     ## Parent ACES
     # Overall mean score
-    pb_parent_aces_count = count_across("pb", "ace_p", name = "pb_parent_aces_mean"),
-    p3m_parent_aces_count = count_across("p3m", "ace_p", name = "p3m_parent_aces_mean"),
+    pb_parent_aces_count = count_across("pb", "ace_p", name = "pb_parent_aces_count"),
+    p3m_parent_aces_count = count_across("p3m", "ace_p", name = "p3m_parent_aces_count"),
     
     
     ## CDI-2 (Children's Depression Inventory - 2)

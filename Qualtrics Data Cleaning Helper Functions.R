@@ -323,14 +323,14 @@ mean_across <- function(.prefix, .measure, .subscale, name, exclude) {
 }
 
 # Function to take the sum (count) across items from get_items() and to log the items
-# used to compute the mean
+# used to compute the sum
 count_across <- function(.prefix, .measure, .subscale, name, exclude) {
   
   # Get items
   items <- get_items(.prefix, .measure, .subscale)
   
   # If items are not unique, throw an error
-  if(length(items) != length(unique(items))) stop("Item(s) are repeated and will bias mean")
+  if(length(items) != length(unique(items))) stop("Item(s) are repeated and will bias sum")
   
   # Exclude items if argument is provided
   if(!missing(exclude)) {
@@ -341,7 +341,7 @@ count_across <- function(.prefix, .measure, .subscale, name, exclude) {
     
   }
   
-  # Take mean across items, dropping NA values
+  # Take sum across items, dropping NA values
   count <- sum(
     c_across(
       all_of(
@@ -351,9 +351,9 @@ count_across <- function(.prefix, .measure, .subscale, name, exclude) {
     na.rm = T
   )
   
-  # Log the items used to compute the mean in list stored in global environment
-  log$mean_items[[name]]$items   <<- items
-  log$mean_items[[name]]$n_items <<- length(items)
+  # Log the items used to compute the sum in list stored in global environment
+  log$count_items[[name]]$items   <<- items
+  log$count_items[[name]]$n_items <<- length(items)
   
   return(count)
   
