@@ -195,13 +195,68 @@ mark_3m_done_in_ax_window <- function(data, id_as_char, ax_windows) {
   data <- data %>%
     left_join(ax_windows, by = id_as_char, relationship = "many-to-one")
   
-  # Compute indicator of survey completion in assessment window
-  data$in_window_3m_v5 <- NA
-  data$in_window_3m_v5 <- ifelse(as_date(data$EndDate) >= data$start_window_3m_v5 & 
-                                   as_date(data$EndDate) <= data$end_window_3m_v5, TRUE, FALSE)
-  data$in_window_3m_v6 <- NA
-  data$in_window_3m_v6 <- ifelse(as_date(data$EndDate) >= data$start_window_3m_v6 & 
-                                   as_date(data$EndDate) <= data$end_window_3m_v6, TRUE, FALSE)
+  # Compute indicators of survey completion in originally intended assessment window
+  # (consider both v1 and v2) and extended window with later end date (v3)
+  data$in_window_3m_v1 <- NA
+  data$in_window_3m_v1 <- ifelse(as_date(data$EndDate) >= data$start_window_3m_v1 & 
+                                   as_date(data$EndDate) <= data$end_window_3m_v1, TRUE, FALSE)
+  data$in_window_3m_v2 <- NA
+  data$in_window_3m_v2 <- ifelse(as_date(data$EndDate) >= data$start_window_3m_v2 & 
+                                   as_date(data$EndDate) <= data$end_window_3m_v2, TRUE, FALSE)
+  
+  data$in_window_3m_v3 <- NA
+  data$in_window_3m_v3 <- ifelse(as_date(data$EndDate) >= data$start_window_3m_v3 & 
+                                   as_date(data$EndDate) <= data$end_window_3m_v3, TRUE, FALSE)
+  
+  # If done early, compute days before start of originally intended window (only need to consider
+  # one version) and throw a warning to consider whether extended window needs earlier start date
+  data$days_before_start_window_3m_v2 <- ifelse(as_date(data$EndDate) < data$start_window_3m_v2,
+                                                as_date(data$EndDate) - data$start_window_3m_v2, NA)
+  
+  if (any(!is.na(data$days_before_start_window_3m_v2))) {
+    warning("Survey(s) completed before Window v2. Consider earlier start date for extended window.")
+  }
+
+  # If done late, compute days after end of originally intended window (consider both versions)
+  data$days_after_end_window_3m_v1 <- ifelse(as_date(data$EndDate) > data$end_window_3m_v1,
+                                             as_date(data$EndDate) - data$end_window_3m_v1, NA)
+  data$days_after_end_window_3m_v2 <- ifelse(as_date(data$EndDate) > data$end_window_3m_v2,
+                                             as_date(data$EndDate) - data$end_window_3m_v2, NA)
+
+  return(data)
+  
+}
+
+# Function to remove surveys outside assessment window
+remove_out_of_ax_window <- function(data, id_as_char, survey_prefix) {
+  
+  if (survey_prefix %in% c("yb, pb")) {
+    # TODO
+    
+    
+    
+    
+  } else if (survey_prefix %in% c("y3m", "p3m")) {
+    rm_surveys <- data[data$in_window_3m_v3 == FALSE,
+                       c(id_as_char, "StartDate", "EndDate", 
+                         "start_window_3m_v2", "end_window_3m_v2", "in_window_3m_v2",
+                         "days_before_start_window_3m_v2", "days_after_end_window_3m_v2",
+                         "start_window_3m_v3", "end_window_3m_v3", "in_window_3m_v3",
+                         "item_completion_rate")]
+    
+    rm_surveys <- rm_surveys[order(rm_surveys[[id_as_char]], rm_surveys[["EndDate"]]), ]
+    
+    data <- data[data$in_window_3m_v3 == TRUE, ]
+  }
+  
+  # Print removed surveys
+  rm_surveys_ids <- sort(unique(rm_surveys[[id_as_char]]))
+  
+  message("Removed the " %+% nrow(rm_surveys) %+% 
+            " surveys below (some of which may be duplicates) for these " %+% 
+            length(rm_surveys_ids) %+% " LSMH IDs:\n" %+% 
+            paste0(rm_surveys_ids, collapse = ", "))
+  print(as.data.frame(rm_surveys))
   
   return(data)
   
