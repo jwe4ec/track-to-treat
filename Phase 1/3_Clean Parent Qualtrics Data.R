@@ -131,11 +131,8 @@ ema_notif_dates <- ax_windows[, c("lsmh_id", "first_ema_notif_date", "last_ema_n
 # Compute indicator of baseline survey completion in window using helper function
 pb_valid_ids <- mark_b_done_in_ax_window(pb_valid_ids, "pb_lsmh_id", ema_notif_dates)
 
-# TODO: Remove any baseline surveys outside window (0) using helper function
-
-
-
-
+# Remove any baseline surveys outside window (0) using helper function
+pb_valid_ids <- remove_out_of_ax_window(pb_valid_ids, "pb_lsmh_id", "pb")
 
 # Remove any baseline duplicates (0) using helper function
 pb_deduplicated <- remove_duplicates(pb_valid_ids, pb_lsmh_id)

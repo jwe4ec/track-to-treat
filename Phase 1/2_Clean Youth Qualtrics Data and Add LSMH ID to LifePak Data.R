@@ -166,11 +166,8 @@ ema_notif_dates <- nis_valid_with_lsmh_id %>%
 # Compute indicator of baseline survey completion in window using helper function
 yb_valid_ids <- mark_b_done_in_ax_window(yb_valid_ids, "yb_lsmh_id", ema_notif_dates)
 
-# TODO: Remove any baseline surveys outside window (0) using helper function
-
-
-
-
+# Remove any baseline surveys outside window (0) using helper function
+yb_valid_ids <- remove_out_of_ax_window(yb_valid_ids, "yb_lsmh_id", "yb")
 
 # Remove baseline duplicates using helper function
 yb_deduplicated <- remove_duplicates(yb_valid_ids, yb_lsmh_id)

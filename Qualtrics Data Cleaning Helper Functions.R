@@ -230,12 +230,16 @@ mark_3m_done_in_ax_window <- function(data, id_as_char, ax_windows) {
 # Function to remove surveys outside assessment window
 remove_out_of_ax_window <- function(data, id_as_char, survey_prefix) {
   
+  # Obtain any to-be-removed surveys for printing and remove surveys outside window
+  rm_surveys <- NULL
+
   if (survey_prefix %in% c("yb, pb")) {
-    # TODO
-    
-    
-    
-    
+    rm_surveys <- data[data$in_window_b == FALSE,
+                       c(id_as_char, "StartDate", "EndDate", 
+                         "first_ema_notif_date", "in_window_b",
+                         "item_completion_rate")]
+
+    data <- data[data$in_window_b == TRUE, ]
   } else if (survey_prefix %in% c("y3m", "p3m")) {
     rm_surveys <- data[data$in_window_3m_v3 == FALSE,
                        c(id_as_char, "StartDate", "EndDate", 
@@ -244,19 +248,20 @@ remove_out_of_ax_window <- function(data, id_as_char, survey_prefix) {
                          "start_window_3m_v3", "end_window_3m_v3", "in_window_3m_v3",
                          "item_completion_rate")]
     
-    rm_surveys <- rm_surveys[order(rm_surveys[[id_as_char]], rm_surveys[["EndDate"]]), ]
-    
     data <- data[data$in_window_3m_v3 == TRUE, ]
   }
   
-  # Print removed surveys
-  rm_surveys_ids <- sort(unique(rm_surveys[[id_as_char]]))
-  
-  message("Removed the " %+% nrow(rm_surveys) %+% 
-            " surveys below (some of which may be duplicates) for these " %+% 
-            length(rm_surveys_ids) %+% " LSMH IDs:\n" %+% 
-            paste0(rm_surveys_ids, collapse = ", "))
-  print(as.data.frame(rm_surveys))
+  # Print any removed surveys
+  if (!is.null(rm_surveys)) {
+    rm_surveys <- rm_surveys[order(rm_surveys[[id_as_char]], rm_surveys[["EndDate"]]), ]
+    rm_surveys_ids <- unique(rm_surveys[[id_as_char]])
+    
+    message("Removed the " %+% nrow(rm_surveys) %+% 
+              " surveys below (some of which may be duplicates) for these " %+% 
+              length(rm_surveys_ids) %+% " LSMH IDs:\n" %+% 
+              paste0(rm_surveys_ids, collapse = ", "))
+    print(as.data.frame(rm_surveys))
+  }
   
   return(data)
   
