@@ -207,7 +207,7 @@ mark_3m_done_in_ax_window <- function(data, id_as_char, ax_windows) {
   data$in_window_3m_v3 <- NA
   data$in_window_3m_v3 <- ifelse(as_date(data$EndDate) >= data$start_window_3m_v3 & 
                                    as_date(data$EndDate) <= data$end_window_3m_v3, TRUE, FALSE)
-  
+
   # If done early, compute days before start of originally intended window (only need to consider
   # one version) and throw a warning to consider whether extended window needs earlier start date
   data$days_before_start_window_3m_v2 <- ifelse(as_date(data$EndDate) < data$start_window_3m_v2,

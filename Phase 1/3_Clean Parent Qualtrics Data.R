@@ -140,91 +140,28 @@ pb_valid_ids <- mark_b_done_in_ax_window(pb_valid_ids, "pb_lsmh_id", ema_notif_d
 # Remove any baseline duplicates (0) using helper function
 pb_deduplicated <- remove_duplicates(pb_valid_ids, pb_lsmh_id)
 
-# Double-check deduplication
+# Double-check baseline deduplication
 identify_duplicates(pb_deduplicated, pb_lsmh_id)
 
 
 ### Remove any follow-up surveys (a) outside assessment window or (b) duplicated in window
-# Assessment windows were computed when cleaning youth Qualtrics data
+# Note: Assessment windows were computed when cleaning youth Qualtrics data
 
 # Compute indicators of 3-month survey completion in window using helper function
 p3m_valid_ids <- mark_3m_done_in_ax_window(p3m_valid_ids, "p3m_lsmh_id", ax_windows)
 
-# TODO: Decide which ax_window to use
-
-
-
-
-
-  # Consider participants with 3m duplicates
-
-p3m_dup <- identify_duplicates(p3m_valid_ids, p3m_lsmh_id)
-p3m_dup_ids <- p3m_dup$p3m_lsmh_id[p3m_dup$total > 1]
-
-test3m <- p3m_valid_ids[p3m_valid_ids$p3m_lsmh_id %in% p3m_dup_ids, ]
-
-test3m <- test3m[, c("p3m_lsmh_id", "StartDate", "EndDate", 
-                     "start_window_3m_v2", "end_window_3m_v2", "in_window_3m_v2", "days_after_end_window_3m_v2",
-                     "start_window_3m_v3", "end_window_3m_v3", "in_window_3m_v3",
-                     "item_completion_rate")]
-
-attr(test3m$p3m_lsmh_id, "label") <- NULL
-# View(test3m[order(test3m$p3m_lsmh_id, -test3m$item_completion_rate, test3m$StartDate), ]) # Keeping first most complete in
-                                                                                            # window (and extending window 2
-                                                                                            # weeks) keeps those reasonable
-
-  # Consider participants with no 3m duplicates
-
-test_3m_one <- p3m_valid_ids[!(p3m_valid_ids$p3m_lsmh_id %in% p3m_dup_ids), ]
-test_3m_one <- test_3m_one[, c("p3m_lsmh_id", "StartDate", "EndDate", 
-                               "first_ema_notif_date", "last_ema_notif_date",
-                               "start_window_3m_v1", "end_window_3m_v1", "in_window_3m_v1",
-                               "start_window_3m_v2", "end_window_3m_v2", "in_window_3m_v2",
-                               "start_window_3m_v3", "end_window_3m_v3", "in_window_3m_v3")]
-
-nrow(test_3m_one) == 87 # 87 participants without duplicates at 3 months
-
-sum(!test_3m_one$in_window_3m_v1) == 6 # 3 months after baseline completion
-sum(!test_3m_one$in_window_3m_v2) == 5 # 3 months after baseline completion +/- 1 day on window dates    (makes sense if Excel rolls forward but R rolls back)
-
-test_3m_one$diff_from_start_v1 <- as_date(test_3m_one$EndDate) - as_date(test_3m_one$start_window_3m_v1) # Should be positive
-too_early_v1 <- test_3m_one$diff_from_start_v1[test_3m_one$diff_from_start_v1 < 0]
-length(too_early_v1) == 0        # 0 finished before start_window_3m_v1
-test_3m_one$diff_from_end_v1 <- as_date(test_3m_one$EndDate) - as_date(test_3m_one$end_window_3m_v1)     # Should be negative
-too_late_v1 <- test_3m_one$diff_from_end_v1[test_3m_one$diff_from_end_v1 > 0]
-length(too_late_v1) == 6         # 6 finished 1-28 days after end_window_3m_v1
-sort(too_late_v1) == c(1, 5, 17, 19, 25, 28)
-
-test_3m_one$diff_from_start_v2 <- as_date(test_3m_one$EndDate) - as_date(test_3m_one$start_window_3m_v2) # Should be positive
-too_early_v2 <- test_3m_one$diff_from_start_v2[test_3m_one$diff_from_start_v2 < 0]
-length(too_early_v2) == 0        # 0 finished before start_window_3m_v2
-test_3m_one$diff_from_end_v2 <- as_date(test_3m_one$EndDate) - as_date(test_3m_one$end_window_3m_v2)     # Should be negative
-too_late_v2 <- test_3m_one$diff_from_end_v2[test_3m_one$diff_from_end_v2 > 0]
-length(too_late_v2) == 5         # 5 finished 4-27 days after end_window_3m_v2
-sort(too_late_v2) == c(4, 16, 18, 24, 27)
-
-(test_3m_one$p3m_lsmh_id[test_3m_one$diff_from_start_v2 < 0 | test_3m_one$diff_from_end_v2 > 0]) # IDs (unsorted)
-  # "LSMH00005", "LSMH00449", "LSMH00516" (also for y3m), "LSMH00612", "LSMH00661" (also for y3m)
-
-test_3m_one$diff_from_start_v3 <- as_date(test_3m_one$EndDate) - as_date(test_3m_one$start_window_3m_v3) # Should be positive
-too_early_v3 <- test_3m_one$diff_from_start_v3[test_3m_one$diff_from_start_v3 < 0]
-length(too_early_v3) == 0        # 0 finished before start_window_3m_v3
-test_3m_one$diff_from_end_v3 <- as_date(test_3m_one$EndDate) - as_date(test_3m_one$end_window_3m_v3)     # Should be negative
-too_late_v3 <- test_3m_one$diff_from_end_v3[test_3m_one$diff_from_end_v3 > 0]
-length(too_late_v3) == 4         # 4 finished after end_window_3m_v3
-
-
-
-
-
-# Remove 3-month surveys outside extended assessment window (v3) using helper function
+# Remove 3-month surveys outside extended window (v3) using helper function
 p3m_valid_ids <- remove_out_of_ax_window(p3m_valid_ids, "p3m_lsmh_id", "p3m")
 
 # Remove 3-month duplicates using helper function
 p3m_deduplicated <- remove_duplicates(p3m_valid_ids, p3m_lsmh_id)
 
-# Double-check deduplication
+# Double-check follow-up deduplication
 identify_duplicates(p3m_deduplicated, p3m_lsmh_id)
+
+# Remove columns redundant with baseline dataset
+p3m_deduplicated <- p3m_deduplicated %>%
+  select(-first_ema_notif_date, -last_ema_notif_date, -end_ema_period)
 
 
 ### Merge data by LSMH ID
@@ -324,6 +261,13 @@ p_clean <- p_merged %>%
     pb_duration = EndDate.pb - StartDate.pb,
     p3m_date = EndDate.p3m,
     p3m_duration = EndDate.p3m - StartDate.p3m,
+    
+    # Follow-up survey completion in original (v2) and extended (v3) assessment 
+    # windows and days survey was completed before/after original window
+    p3m_in_window_v2 = in_window_3m_v2,
+    p3m_in_window_v3 = in_window_3m_v3,
+    p3m_days_before_start_window_3m_v2 = days_before_start_window_3m_v2,
+    p3m_days_after_end_window_3m_v2 = days_after_end_window_3m_v2,
     
     
     ## Demographics at baseline
@@ -601,6 +545,14 @@ p_clean <- p_merged %>%
     pb_duration,
     p3m_date,
     p3m_duration,
+    start_window_3m_v2,
+    end_window_3m_v2,
+    start_window_3m_v3,
+    end_window_3m_v3,
+    p3m_in_window_v2,
+    p3m_in_window_v3,
+    p3m_days_before_start_window_3m_v2,
+    p3m_days_after_end_window_3m_v2,
     
     # Parent characteristics
     
