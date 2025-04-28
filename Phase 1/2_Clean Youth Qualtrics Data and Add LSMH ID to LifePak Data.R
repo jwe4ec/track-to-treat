@@ -414,10 +414,9 @@ y_clean <- y_merged %>%
     
     
     ## IDAS-II (Inventory of Depression and Anxiety Symptoms - II)
-    # Overall mean score
-    yb_idas_mean = mean_across("yb", "idas", name = "yb_idas_mean"),
-    y3m_idas_mean = mean_across("y3m", "idas", name = "y3m_idas_mean"),
-    
+    # Given that scoring likely depends on intended use, we output items but do 
+    # not score them (see Table 1 of https://doi.org/f4b85p for scale info)
+
     
     ## SCARED (Screen for Child Anxiety and Related Disorders)
     # Overall mean score
