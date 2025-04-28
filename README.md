@@ -48,3 +48,8 @@ Data cleaning notes:
   * In the LifePak data, raw `Notification.Time` is in local time zones of participants' devices (per LifeData support)
     * The clean timestamp stores these local times in UTC (the actual time zones would need to be derived from LifePak GPS data, which is missing for some observations)
   * In the Qualtrics data, raw timestamps are in "America/Denver" time zone for Phase I and in "America/Chicago" for Phase II
+  
+TODO:
+
+* In the clean LifePak data, these free-response columns need to be deidentified as needed:
+  * `most_pleasant`, `most_unpleasant`, `other_night`
