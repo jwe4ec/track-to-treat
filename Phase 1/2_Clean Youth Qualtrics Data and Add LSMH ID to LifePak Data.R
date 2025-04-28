@@ -239,7 +239,7 @@ y_merged <- full_join(
 
 
 ### Clean columns
-## Correct misspelled item prefixes in the data and codebook
+## Correct misspelled youth item prefixes in the data and codebook
 # Data: Before
 prefixes_data <- str_extract(colnames(y_merged), "^.*?(?=_)")
 table(prefixes_data)
@@ -264,8 +264,8 @@ codebook$item <- gsub("^y3n_", "y3m_", codebook$item)
 prefixes_codebook <- str_extract(codebook$item, "^.*?(?=_)")
 table(prefixes_codebook)
 
-# Add clean codebook to log
-log$codebook_clean <- codebook
+# Add codebook with clean youth items to log (parent items cleaned in separate script)
+log$y_codebook_clean <- codebook
 
 # Data collected but not included here:
 # - Self-Referential Encoding Task (SRET)
