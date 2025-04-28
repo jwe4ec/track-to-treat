@@ -70,11 +70,10 @@ codebook <- openxlsx::read.xlsx(
 ### Combine in-person and remote administrations
 # Note on variable overlap: 
 # - No variables appear in the in-person dataset only
-# - yb_scared_c_11 appears in the remote dataset only; because mean_across() 
-#   drops NAs, this item is excluded from scales in the remote dataset
+# - "yb_scared_c_11" appears in the remote dataset only, so we exclude "scared_c_11" 
+#   from composite variables computed with mean_across() below
 # - Other variables appear in the remote dataset only, but are less important
-#   ("password_child", click and time on page information, yb_interview, 
-#   and yb_scared_c_11)
+#   ("password_child", click and time on page information, "yb_interview")
 yb_raw <- bind_rows(
   list(
     "in-person" = yb_in_person_raw, 
