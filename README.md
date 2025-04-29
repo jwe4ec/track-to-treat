@@ -30,7 +30,8 @@ Data cleaning notes:
   * Load data
   * Remove invalid and duplicated responses
   * Merge datasets (across waves, etc.)
-  * Clean columns
+  * Clean selected columns
+    * Note: In the Qualtrics data, the Clean Columns section lists raw data available that have not yet been cleaned
   * Manually correct IDs as necessary
     * Note: LifePak IDs here are 6 digits (5-digit IDs elsewhere have a leading 0 here; take care when comparing/selecting IDs)
 * In the Qualtrics data, a Log list file is created to:
