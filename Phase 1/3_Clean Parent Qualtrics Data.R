@@ -419,14 +419,17 @@ p_clean <- p_merged %>%
     ),
     
     # Parent educational attainment
-    pb_caregiver1_education = case_match(
-      pb_caregiver1_7,
-      1 ~ "Less than high school",
-      2 ~ "Attended high school",
-      3 ~ "Graduated high school",
-      4 ~ "Attended college",
-      5 ~ "Bachelor's degree",
-      6 ~ "Graduate/professional degree"
+    pb_caregiver1_education = ordered(
+      pb_caregiver1_7, 
+      levels = 1:6,
+      labels = c(
+        "Less than high school",
+        "Attended high school",
+        "Graduated high school",
+        "Attended college",
+        "Bachelor's degree",
+        "Graduate/professional degree"
+      )
     ),
 
     
@@ -554,6 +557,13 @@ p_clean <- p_merged %>%
     p3m_days_after_end_window_3m_v2,
     
     # Parent characteristics
+    pb_caregiver1_age,
+    pb_parent_sex,
+    pb_parent_gender,
+    pb_parent_ethnicity,
+    pb_caregiver1_relationship_to_child,
+    pb_caregiver1_relationship_status,
+    pb_caregiver1_education,
     
     # Child demographics
     pb_child_age,
