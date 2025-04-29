@@ -418,6 +418,13 @@ p_clean <- p_merged %>%
       6 ~ "Living with Partner"
     ),
     
+    # Single parent status
+    pb_parent_single_parent = case_match(
+      pb_single_parent,
+      1 ~ "Yes",
+      2 ~ "No"
+    ),
+    
     # Parent educational attainment
     pb_caregiver1_education = ordered(
       pb_caregiver1_7, 
@@ -563,6 +570,7 @@ p_clean <- p_merged %>%
     pb_parent_ethnicity,
     pb_caregiver1_relationship_to_child,
     pb_caregiver1_relationship_status,
+    pb_parent_single_parent,
     pb_caregiver1_education,
     
     # Child demographics
