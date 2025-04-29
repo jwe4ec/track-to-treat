@@ -205,6 +205,8 @@ table(prefixes_codebook)
 # Add codebook with clean parent items to log (youth items cleaned in separate script)
 log$p_codebook_clean <- codebook
 
+
+
 # Data collected but not included here: 
 # - Data regarding child's current medications
 # - Data regarding child's school accommodations
@@ -309,7 +311,7 @@ p_clean <- p_merged %>%
     # Child n/siblings
     pb_n_sisters = case_when(
       pb_siblings_1 == "1-3" ~ 2,
-      T ~ as.numeric(pb_siblings_1)
+      T ~ suppressWarnings(as.numeric(pb_siblings_1))
     ),
     pb_n_brothers = as.numeric(pb_siblings_2),
     pb_n_siblings = pb_n_sisters + pb_n_brothers,
