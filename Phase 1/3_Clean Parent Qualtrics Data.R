@@ -360,7 +360,7 @@ p_clean <- p_merged %>%
     
     ## Parent characteristics
     # Parent age
-    pb_caregiver1_age = pb_caregiver1_1,
+    pb_parent_age = pb_caregiver1_1,
     
     # Parent sex
     pb_parent_sex = case_match(
@@ -398,7 +398,7 @@ p_clean <- p_merged %>%
     ),
     
     # Parent relationship to child
-    pb_caregiver1_relationship_to_child = case_match(
+    pb_parent_relationship_to_child = case_match(
       pb_caregiver1_5,
       1 ~ "Biological Parent",
       2 ~ "Step-Parent",
@@ -408,7 +408,7 @@ p_clean <- p_merged %>%
     ),
     
     # Parent relationship status
-    pb_caregiver1_relationship_status = case_match(
+    pb_parent_relationship_status = case_match(
       pb_caregiver1_6,
       1 ~ "Married",
       2 ~ "Widowed",
@@ -426,7 +426,7 @@ p_clean <- p_merged %>%
     ),
     
     # Parent educational attainment
-    pb_caregiver1_education = ordered(
+    pb_parent_education = ordered(
       pb_caregiver1_7, 
       levels = 1:6,
       labels = c(
@@ -564,14 +564,14 @@ p_clean <- p_merged %>%
     p3m_days_after_end_window_3m_v2,
     
     # Parent characteristics
-    pb_caregiver1_age,
+    pb_parent_age,
     pb_parent_sex,
     pb_parent_gender,
     pb_parent_ethnicity,
-    pb_caregiver1_relationship_to_child,
-    pb_caregiver1_relationship_status,
+    pb_parent_relationship_to_child,
+    pb_parent_relationship_status,
     pb_parent_single_parent,
-    pb_caregiver1_education,
+    pb_parent_education,
     
     # Child demographics
     pb_child_age,
