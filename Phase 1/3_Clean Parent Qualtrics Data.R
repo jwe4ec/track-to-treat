@@ -294,6 +294,7 @@ p_clean <- p_merged %>%
       9 ~ "Woman",
       10 ~ "Other"
     ),
+    pb_child_gender_other = pb_childgender_10_TEXT,
 
     # Child ethnicity
     pb_child_ethnicity = case_match(
@@ -577,6 +578,7 @@ p_clean <- p_merged %>%
     pb_child_age,
     pb_child_sex,
     pb_child_gender,
+    pb_child_gender_other,
     pb_child_ethnicity,
     pb_n_sisters,
     pb_n_brothers,
