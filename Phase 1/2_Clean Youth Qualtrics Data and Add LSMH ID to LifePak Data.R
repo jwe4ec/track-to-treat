@@ -578,7 +578,7 @@ walk(
 )
 
 
-### Check for duplicate responses to primary outcome (youth CDI-2) items over time
+### Check for duplicate primary outcome (youth CDI-2) item responses over time using helper function
 check_dups_over_time(y_clean, c("yb", "y3m"), "CDI-2 SR")
 
 
