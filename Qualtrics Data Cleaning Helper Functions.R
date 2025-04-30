@@ -442,3 +442,70 @@ check_values <- function(.data, .item) {
   print(.item %+% " confirmed: All values in anticipated range")
   
 }
+
+# Function to check for duplicate responses to measure's (or subscale's) items over time
+# - Note: If excluding items, provide the items' names at every time point
+check_dups_over_time <- function(data, prefixes, .measure, .subscale, exclude) {
+
+  ## Get list of sorted items for each time point (.prefix)
+  items_ls <- vector("list", length(prefixes))
+  names(items_ls) <- prefixes
+  
+  for (.prefix in prefixes) {
+    items <- get_items(.prefix, .measure, .subscale)
+    
+    items_ls[[.prefix]] <- sort(items)
+  }
+  
+  ## Exclude items if argument is provided
+  if(!missing(exclude)) {
+    if (length(setdiff(exclude, unlist(items_ls))) > 0) {
+      stop("Some items in `exclude` not in item list")
+    }
+    
+    items_ls <- lapply(items_ls, function(x) setdiff(x, exclude))
+  }
+  
+  ## Confirm that number of items is the same over time
+  n_items <- sapply(items_ls, length)
+  
+  if (length(unique(n_items)) != 1) {
+    print(items_ls)
+    print(n_items)
+    stop("Different number of items above over time")
+  }
+  
+  ## Confirm that, apart from .prefix, items are named identically over time
+  items_ls_no_prefix <- lapply(items_ls, function(x) sub("^[^_]+_", "", x))
+  
+  if (length(unique(items_ls_no_prefix)) != 1) {
+    print(items_ls_no_prefix)
+    stop("Items above are not named identically over time when ignoring prefix")
+  }
+  
+  ## Check that no corresponding items have duplicate responses over time
+  # Restrict data to relevant columns
+  item_cols <- unlist(items_ls, use.names = FALSE)
+  data <- data[, c("lsmh_id", item_cols)]
+  
+  # Convert to long format
+  item_cols_no_prefix <- unique(unlist(items_ls_no_prefix, use.names = FALSE))
+  
+  data <- data %>%
+    pivot_longer(cols = all_of(item_cols), 
+                 names_to = c("survey", "item"),
+                 names_pattern = "(^[^_]+)_(.*)",
+                 values_to = "value") %>%
+    pivot_wider(names_from = "item", values_from = "value")
+
+  # Check for duplicate responses over time
+  dup_ids <- unique(data$lsmh_id[duplicated(data)])
+  
+  if (length(dup_ids) == 0) {
+    cat("No duplicated responses over time")
+  } else {
+    cat("Duplicated responses over time for these IDs (see below): ", dup_ids, "\n\n")
+    print(data[data$lsmh_id %in% dup_ids, ])
+  }
+
+}

@@ -578,6 +578,10 @@ walk(
 )
 
 
+### Check for duplicate responses to primary outcome (youth CDI-2) items over time
+check_dups_over_time(y_clean, c("yb", "y3m"), "CDI-2 SR")
+
+
 
 ####  Save Clean Qualtrics Data and Log, Assessment Windows, and Clean LifePak Data  ####
 saveRDS(y_clean, clean_data_staging_dir %+% "Phase 1 Youth Qualtrics Clean Data.rds")
