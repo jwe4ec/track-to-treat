@@ -35,8 +35,8 @@ p3m_raw <- read_survey(raw_data_dir %+% "dp5_3m_parent_p1_numeric.csv", time_zon
 ax_windows <- readRDS(clean_data_staging_intermediate_dir %+% "Phase 1 Assessment Windows.rds")
 
 # Load item-level codebook file
-codebook_path <- here("Phase 1", "Track to Treat P1 Codebook.xlsx")
-sheet_name <- "Individual Variables"
+codebook_path <- here("Phase 1", "2025.05.01 Track to Treat P1 Codebook.xlsx")
+sheet_name <- "Qualtrics Variables"
 (sheet_last_row <- nrow(openxlsx::read.xlsx(codebook_path, sheet_name)) + 1) # Add 1 for header row
 
 codebook <- openxlsx::read.xlsx(
@@ -202,7 +202,7 @@ codebook$item <- gsub("^p3_", "p3m_", codebook$item)
 prefixes_codebook <- str_extract(codebook$item, "^.*?(?=_)")
 table(prefixes_codebook)
 
-# Add codebook with clean parent items to log (youth items cleaned in separate script)
+# Add codebook with clean parent items to log (youth items cleaned in youth script)
 log$p_codebook_clean <- codebook
 
 
@@ -533,8 +533,8 @@ p_clean <- p_merged %>%
     p3m_scared_sep_mean = mean_across("p3m", "scared", "SEP", name = "p3m_scared_sep_mean"),
     
     # Social phobic disorder subscale
-    pb_scared_soc_mean = mean_across("pb", "scared", "SOC", name = "pb_scared_soc_mean"),
-    p3m_scared_soc_mean = mean_across("p3m", "scared", "SOC", name = "p3m_scared_soc_mean"),
+    pb_scared_soc_mean = mean_across("pb", "scared", "SOC", name = "pb_scared_soc_mean", exclude = "pb_scared_c_1"),
+    p3m_scared_soc_mean = mean_across("p3m", "scared", "SOC", name = "p3m_scared_soc_mean", exclude = "p3m_scared_c_1"),
     
     # Significant school avoidance symptoms
     pb_scared_sch_mean = mean_across("pb", "scared", "SCH", name = "pb_scared_sch_mean"),

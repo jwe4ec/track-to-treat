@@ -35,8 +35,8 @@ y3m_raw <- read_survey(raw_data_dir %+% "dp5_3m_child_p1_numeric.csv", time_zone
 nis_valid <- readRDS(clean_data_staging_intermediate_dir %+% "Phase 1 LifePak Clean Data Without LSMH ID.rds")
 
 # Load item-level codebook file
-codebook_path <- here("Phase 1", "Track to Treat P1 Codebook.xlsx")
-sheet_name <- "Individual Variables"
+codebook_path <- here("Phase 1", "2025.05.01 Track to Treat P1 Codebook.xlsx")
+sheet_name <- "Qualtrics Variables"
 (sheet_last_row <- nrow(openxlsx::read.xlsx(codebook_path, sheet_name)) + 1) # Add 1 for header row
 
 codebook <- openxlsx::read.xlsx(
@@ -263,7 +263,7 @@ codebook$item <- gsub("^y3n_", "y3m_", codebook$item)
 prefixes_codebook <- str_extract(codebook$item, "^.*?(?=_)")
 table(prefixes_codebook)
 
-# Add codebook with clean youth items to log (parent items cleaned in separate script)
+# Add codebook with clean youth items to log (parent items cleaned in parent script)
 log$y_codebook_clean <- codebook
 
 # Data collected but not included here:
