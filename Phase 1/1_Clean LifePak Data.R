@@ -83,8 +83,8 @@ nis_combined <- lst(
 
 
 ## Clean columns
-# Other variables not currently included: feedback variables (e.g,. intro_feedback_1),
-# five_times_a_day, notice_change, aware_mood, aware_felt_worse, aware_felt_better
+# Other variables not currently included: feedback variables (e.g,. intro_feedback_1,
+# five_times_a_day, notice_change, aware_mood, aware_felt_worse, aware_felt_better)
 # Note that if we aren't using feedback data, we can remove those rows!
 nis_clean <- nis_combined %>%
   mutate(
@@ -148,6 +148,7 @@ nis_clean <- nis_combined %>%
       time_of_day == "Night" ~ interest_night,
       is.na(time_of_day) ~ NA_real_
     ),
+    interest = if_else(interest < 0, 0, interest),
     
     energy = case_when(
       time_of_day == "Day" ~ energy_day,

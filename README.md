@@ -40,7 +40,9 @@ Data cleaning notes:
 * In the Qualtrics data, on the parent-report SCARED, one item (`scared_c_1`) was entered into the survey incorrectly and is excluded from composite variables
 * In the Qualtrics data, on the child-report SCARED, one item (`scared_c_11`) was not included on the in-person baseline survey and is excluded from composite variables
 * Clean LifePak data includes EMA survey data only (i.e., excludes "feedback surveys", which were administered after EMA surveys)
-* In the LifePak data, there are some negative values for `interest`; it's unclear how or why
+* In the LifePak data "3T_P1_V1_NIS_2020_Mar_02.csv" from survey "TRACK to TREAT P1", there are some negative values (-2, -1) for `interest`
+  * This survey's response options for this item were accidentally set from -2 to 100
+  * These negative values are recoded as 0 in the clean data
 * In the LifePak data, some participants got their first notification after 7:30; it's unclear how or why
 * In the LifePak data, most participants have 105 total notifications, but some have fewer and one has more; it's unclear why
 * When Qualtrics items are reverse-coded, the data cleaning script puts them back in the right direction (retaining the original item name)
