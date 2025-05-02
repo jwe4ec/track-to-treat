@@ -13,9 +13,10 @@ File organization:
 * Phase 1/
   * README.md
   * Track to Treat P1 Codebook.xlsx (an item-level codebook used to clean the Qualtrics data)
-  * 1_Qualtrics Data Cleaning - Youth.R
-  * 2_Qualtrics Data Cleaning - Parents.R
-  * 3_LifePak Data Cleaning.R
+  * 1_Clean LifePak Data.R
+  * 2_Clean Youth Qualtrics Data and Add LSMH ID to LifePak Data.R
+  * 3_Clean Parent Qualtrics Data.R
+  * 4_Create Clean Data Release.R
   * QA/
     * Check Overlap.R (checking ID overlap across datasets)
     * Compare Clean LifePak Datasets.R (checking clean LifePak data to previous versions)
@@ -31,27 +32,34 @@ Data cleaning notes:
   * Remove invalid and duplicated responses
   * Merge datasets (across waves, etc.)
   * Clean selected columns
-    * Note: In the Qualtrics data, the Clean Columns section lists raw data available that have not yet been cleaned
   * Manually correct IDs as necessary
-    * Note: LifePak IDs here are 6 digits (5-digit IDs elsewhere have a leading 0 here; take care when comparing/selecting IDs)
-* In the Qualtrics data, a Log list file is created to:
-  * Log items used to compute item completion rates via `compute_item_completion_rate()` (see `log$item_completion_rate`)
-  * Log items used to compute means via `mean_across()` (see `log$mean_items` and confirm the items are correct before analyzing the means)
-* In the Qualtrics data, on the parent-report SCARED, one item (`scared_c_1`) was entered into the survey incorrectly and is excluded from composite variables
-* In the Qualtrics data, on the child-report SCARED, one item (`scared_c_11`) was not included on the in-person baseline survey and is excluded from composite variables
-* Clean LifePak data includes EMA survey data only (i.e., excludes "feedback surveys", which were administered after EMA surveys)
-* In the LifePak data "3T_P1_V1_NIS_2020_Mar_02.csv" from survey "TRACK to TREAT P1", there are some negative values (-2, -1) for `interest`
-  * This survey's response options for this item were accidentally set from -2 to 100 for `Session.Name` "3T Project Day"
-  * These negative values are recoded as 0 in the clean data
-* In the LifePak data, some participants got their first notification after 7:30; it's unclear how or why
-* In the LifePak data, most participants have 105 total notifications, but some have fewer and one has more; it's unclear why
-* When Qualtrics items are reverse-coded, the data cleaning script puts them back in the right direction (retaining the original item name)
-  * Note: By contrast, in the LifePak data, when items are reversed the suffix "_rev" is appended to the item name.
-* Take care when comparing timestamps between datasets
-  * In the LifePak data, raw `Notification.Time` is in local time zones of participants' devices (per LifeData support)
-    * The clean timestamp stores these local times in UTC (the actual time zones would need to be derived from LifePak GPS data, which is missing for some observations)
-  * In the Qualtrics data, raw timestamps are in "America/Denver" time zone for Phase I and in "America/Chicago" for Phase II
-  
+
+* LifePak data
+  * LifePak IDs here are 6 digits (5-digit IDs elsewhere have a leading 0 here; take care when comparing/selecting IDs)
+  * Clean data includes EMA survey data only (i.e., excludes "feedback surveys", which were administered after EMA surveys)
+  * In "3T_P1_V1_NIS_2020_Mar_02.csv" from survey "TRACK to TREAT P1", there are some negative values (-2, -1) for `interest`
+    * This survey's response options for this item were accidentally set from -2 to 100 for `Session.Name` "3T Project Day"
+    * These negative values are recoded as 0 in the clean data
+  * Some participants got their first notification after 7:30 am; it's unclear how or why
+  * Most participants have 105 total notifications, but some have fewer and one has more; it's unclear why
+  * Raw `Notification.Time` is in local time zones of participants' devices (per LifeData support)
+    * Clean timestamp stores these in UTC (actual time zones could be derived from LifePak GPS data for rows with such data)
+
+* Qualtrics data
+  * Clean Columns section lists raw data available that have not yet been cleaned
+  * When items are reverse-coded, cleaning scripts put them back in the right direction (retaining the original item name)
+    * By contrast, in LifePak data, when items are reversed the suffix "_rev" is appended to the item name
+  * Item exclusions
+    * On parent-report SCARED, item `scared_c_1` was entered into survey incorrectly and is excluded from composite variables
+    * On child-report SCARED, item `scared_c_11` was absent from in-person baseline survey and is excluded from composites
+  * A log list file is created to:
+    * Log items used to compute item completion rates via `compute_item_completion_rate()` (see `log$item_completion_rate`)
+    * Log items used to compute means via `mean_across()` and `count_across()` (see `log$mean_items` and `log$count_items`)
+      * Confirm the items are correct before analyzing the means and sums
+    * Log clean codebook
+  * Raw timestamps are in "America/Denver" time zone for Phase I and in "America/Chicago" for Phase II
+    * Take care when comparing timestamps between LifePak/Qualtrics datasets
+
 TODO:
 
 * In the clean LifePak data, these free-response columns need to be deidentified as needed:
