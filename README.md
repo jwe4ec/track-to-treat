@@ -51,6 +51,8 @@ Data cleaning notes:
   * Item exclusions
     * Parent item `scared_c_1` was entered into survey incorrectly and is excluded from composite variables
     * Child item `scared_c_11` was absent from in-person baseline survey and is excluded from composites
+  * Some item names differ between youth and parent data (compare item content before comparing responses)
+    * E.g., parent item `scared_b_16` corresponds to youth item `scared_c_1`
   * Log list files are created to log:
     * Items used to compute item completion rates (see `log$item_completion_rate`)
     * Items used to compute means and counts (see `log$mean_items` and `log$count_items`)
