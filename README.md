@@ -38,7 +38,7 @@ Data cleaning notes:
   * LifePak IDs here are 6 digits (5-digit IDs elsewhere have leading 0 here; take care when comparing IDs)
   * Clean data includes EMA surveys only (excludes "feedback surveys", which were given after EMA surveys)
   * Negative values for `interest` are recoded as 0 in the clean data
-    * "3T_P1_V1_NIS_2020_Mar_02.csv" from survey "TRACK to TREAT P1" had some negative values (-2, -1) for `Session.Name` "3T Project Day", whose response options for this item were accidentally set from -2 to 100
+    * "3T_P1_V1_NIS_2020_Mar_02.csv" from survey "TRACK to TREAT P1" had some negative values for `Session.Name` "3T Project Day", whose response options for this item were set from -2 to 100
   * Some participants got their first notification after 7:30 am; it's unclear how or why
   * Most participants have 105 total notifications, but some have fewer and one has more; it's unclear why
   * Raw `Notification.Time` is in local time zones of participants' devices (per LifeData support)
