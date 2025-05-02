@@ -2,7 +2,7 @@
 
 Centralized data cleaning code for Track to Treat. Data are stored in the local repository on /resfiles.
 
-Old data cleaning code, including documentation (some of which informed the code in this repository), is available here:
+Old data cleaning code, including documentation (some of which informed the code in this repository), is here:
 
 * Phase 1: https://github.com/jwe4ec/ttt-p1-main-analysis [URL may change]
 * Phase 2: https://github.com/jwe4ec/ttt-p2-cleaning [URL may change]
@@ -35,28 +35,27 @@ Data cleaning notes:
   * Manually correct IDs as necessary
 
 * LifePak data
-  * LifePak IDs here are 6 digits (5-digit IDs elsewhere have a leading 0 here; take care when comparing/selecting IDs)
-  * Clean data includes EMA survey data only (i.e., excludes "feedback surveys", which were administered after EMA surveys)
-  * In "3T_P1_V1_NIS_2020_Mar_02.csv" from survey "TRACK to TREAT P1", there are some negative values (-2, -1) for `interest`
-    * This survey's response options for this item were accidentally set from -2 to 100 for `Session.Name` "3T Project Day"
-    * These negative values are recoded as 0 in the clean data
+  * LifePak IDs here are 6 digits (5-digit IDs elsewhere have leading 0 here; take care when comparing IDs)
+  * Clean data includes EMA surveys only (excludes "feedback surveys", which were given after EMA surveys)
+  * Negative values for `interest` are recoded as 0 in the clean data
+    * "3T_P1_V1_NIS_2020_Mar_02.csv" from survey "TRACK to TREAT P1" had some negative values (-2, -1) for `Session.Name` "3T Project Day", whose response options for this item were accidentally set from -2 to 100
   * Some participants got their first notification after 7:30 am; it's unclear how or why
   * Most participants have 105 total notifications, but some have fewer and one has more; it's unclear why
   * Raw `Notification.Time` is in local time zones of participants' devices (per LifeData support)
-    * Clean timestamp stores these in UTC (actual time zones could be derived from LifePak GPS data for rows with such data)
+    * Clean timestamp stores these in UTC (actual time zones could be derived from [incomplete] GPS data)
 
 * Qualtrics data
   * Clean Columns section lists raw data available that have not yet been cleaned
-  * When items are reverse-coded, cleaning scripts put them back in the right direction (retaining the original item name)
+  * When items are reverse-coded, cleaning scripts unreverse them (while retaining the original item name)
     * By contrast, in LifePak data, when items are reversed the suffix "_rev" is appended to the item name
   * Item exclusions
-    * On parent-report SCARED, item `scared_c_1` was entered into survey incorrectly and is excluded from composite variables
-    * On child-report SCARED, item `scared_c_11` was absent from in-person baseline survey and is excluded from composites
-  * A log list file is created to:
-    * Log items used to compute item completion rates via `compute_item_completion_rate()` (see `log$item_completion_rate`)
-    * Log items used to compute means via `mean_across()` and `count_across()` (see `log$mean_items` and `log$count_items`)
-      * Confirm the items are correct before analyzing the means and sums
-    * Log clean codebook
+    * Parent item `scared_c_1` was entered into survey incorrectly and is excluded from composite variables
+    * Child item `scared_c_11` was absent from in-person baseline survey and is excluded from composites
+  * Log list files are created to log:
+    * Items used to compute item completion rates (see `log$item_completion_rate`)
+    * Items used to compute means and counts (see `log$mean_items` and `log$count_items`)
+      * Confirm the items are correct before analyzing the means and counts
+    * Clean youth and parent codebooks
   * Raw timestamps are in "America/Denver" time zone for Phase I and in "America/Chicago" for Phase II
     * Take care when comparing timestamps between LifePak/Qualtrics datasets
 
