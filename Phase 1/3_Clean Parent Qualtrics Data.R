@@ -261,12 +261,12 @@ p_clean <- p_merged %>%
     p3m_date = EndDate.p3m,
     p3m_duration = EndDate.p3m - StartDate.p3m,
     
-    # Follow-up survey completion in original (v2) and extended (v3) assessment 
+    # Follow-up survey completion in original and extended assessment 
     # windows and days survey was completed before/after original window
-    p3m_in_window_v2 = in_window_3m_v2,
-    p3m_in_window_v3 = in_window_3m_v3,
-    p3m_days_before_start_window_3m_v2 = days_before_start_window_3m_v2,
-    p3m_days_after_end_window_3m_v2 = days_after_end_window_3m_v2,
+    p3m_in_window_org = in_window_3m_org,
+    p3m_in_window_ext = in_window_3m_ext,
+    p3m_days_before_start_window_3m_org = days_before_start_window_3m_org,
+    p3m_days_after_end_window_3m_org = days_after_end_window_3m_org,
     
     
     ## Demographics at baseline
@@ -555,14 +555,14 @@ p_clean <- p_merged %>%
     pb_duration,
     p3m_date,
     p3m_duration,
-    start_window_3m_v2,
-    end_window_3m_v2,
-    start_window_3m_v3,
-    end_window_3m_v3,
-    p3m_in_window_v2,
-    p3m_in_window_v3,
-    p3m_days_before_start_window_3m_v2,
-    p3m_days_after_end_window_3m_v2,
+    start_window_3m_org,
+    end_window_3m_org,
+    start_window_3m_ext,
+    end_window_3m_ext,
+    p3m_in_window_org,
+    p3m_in_window_ext,
+    p3m_days_before_start_window_3m_org,
+    p3m_days_after_end_window_3m_org,
     
     # Parent characteristics
     pb_parent_age,

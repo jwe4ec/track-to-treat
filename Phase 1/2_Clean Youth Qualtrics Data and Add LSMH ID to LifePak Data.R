@@ -177,11 +177,17 @@ identify_duplicates(yb_deduplicated, yb_lsmh_id)
 
 ### Remove any follow-up surveys (a) outside assessment window or (b) duplicated in window
 # Compute potential assessment windows based on baseline survey completion date
-# - Note: Excel formulas were used to compute assessment windows by adding months 
-#   (e.g., "=DATE(YEAR(A1), MONTH(A1) + 3, DAY(A1))"). When adding months yields
-#   a date that is not real (due to 28-31 days in a month), Excel rolls to the next
-#   real date, whereas R rolls to the last real date (when using "%m+%") or yields 
-#   an error (if using "+"). Thus, consider some leeway in assessment windows.
+# - In Phase I, 3-month assessment window start dates were computed manually by adding 3 
+# to the month number and then rolling to the last real date of the prior month when this
+# yields a date that does not exist. In R, this is "as_date(EndDate) %m+% months(3)".
+# - In Phase II, follow-up start dates were computed using an Excel formula (e.g., 
+# 3-month start date based on Cell A1: "=DATE(YEAR(A1), MONTH(A1) + 3, DAY(A1))"), 
+# which rolls forward to the closest real date (not necessarily the first date of
+# the next month). In R: "seq(as_date(EndDate), by = "3 months", length.out = 2)[2]".
+# - End dates for windows were not recorded. Thus, have leeway and use Phase II formula
+# above (more forgiving) to compute end dates from start dates for the original window.
+# - Because some surveys were completed late, also compute an extended window that
+# extends the original window's end date by a reasonable 14 days.
 
 ax_windows <- yb_deduplicated %>%
   select(yb_lsmh_id, StartDate, EndDate,
@@ -190,23 +196,17 @@ ax_windows <- yb_deduplicated %>%
          StartDate_yb = StartDate,
          EndDate_yb = EndDate) %>%
   
-  # Window v1 is the definition for the originally intended window, but given that 
-  # Excel and R compute dates differently (see above), treat Window v2 (which extends
-  # Window v1 by 1 day) as the originally intended window during data cleaning. Given
-  # that some surveys are late, Window v3 extends Window v2 by a reasonable 14 days.
-  
-  mutate(start_window_3m_v1 = as_date(EndDate_yb) %m+% months(3),
-         end_window_3m_v1 = start_window_3m_v1 %m+% months(1),
-         start_window_3m_v2 = start_window_3m_v1,
-         end_window_3m_v2 = end_window_3m_v1 + days(1),
+  rowwise() %>%
+  mutate(start_window_3m_org = as_date(EndDate_yb) %m+% months(3),
+         end_window_3m_org = seq(start_window_3m_org, by = "1 month", length.out = 2)[2],
+         start_window_3m_ext = start_window_3m_org,
+         end_window_3m_ext = end_window_3m_org + days(14)) %>%
+  ungroup()
          
-         start_window_3m_v3 = start_window_3m_v2,
-         end_window_3m_v3 = end_window_3m_v2 + days(14))
-
 # Compute indicators of 3-month survey completion in window using helper function
 y3m_valid_ids <- mark_3m_done_in_ax_window(y3m_valid_ids, "y3m_lsmh_id", ax_windows)
 
-# Remove 3-month surveys outside extended window (v3) using helper function
+# Remove 3-month surveys outside extended window using helper function
 y3m_valid_ids <- remove_out_of_ax_window(y3m_valid_ids, "y3m_lsmh_id", "y3m")
 
 # Remove 3-month duplicates using helper function
@@ -319,12 +319,12 @@ y_clean <- y_merged %>%
     y3m_date = EndDate.y3m,
     y3m_duration = EndDate.y3m - StartDate.y3m,
     
-    # Follow-up survey completion in original (v2) and extended (v3) assessment 
+    # Follow-up survey completion in original and extended assessment 
     # windows and days survey was completed before/after original window
-    y3m_in_window_v2 = in_window_3m_v2,
-    y3m_in_window_v3 = in_window_3m_v3,
-    y3m_days_before_start_window_3m_v2 = days_before_start_window_3m_v2,
-    y3m_days_after_end_window_3m_v2 = days_after_end_window_3m_v2,
+    y3m_in_window_org = in_window_3m_org,
+    y3m_in_window_ext = in_window_3m_ext,
+    y3m_days_before_start_window_3m_org = days_before_start_window_3m_org,
+    y3m_days_after_end_window_3m_org = days_after_end_window_3m_org,
     
     
     ## CDI-2 (Children's Depression Inventory - 2)
@@ -518,14 +518,14 @@ y_clean <- y_merged %>%
     yb_duration,
     y3m_date,
     y3m_duration,
-    start_window_3m_v2,
-    end_window_3m_v2,
-    start_window_3m_v3,
-    end_window_3m_v3,
-    y3m_in_window_v2,
-    y3m_in_window_v3,
-    y3m_days_before_start_window_3m_v2,
-    y3m_days_after_end_window_3m_v2,
+    start_window_3m_org,
+    end_window_3m_org,
+    start_window_3m_ext,
+    end_window_3m_ext,
+    y3m_in_window_org,
+    y3m_in_window_ext,
+    y3m_days_before_start_window_3m_org,
+    y3m_days_after_end_window_3m_org,
     
     # Measures
     matches("_cdi_"),
