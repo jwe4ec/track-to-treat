@@ -36,7 +36,7 @@ clean_data_final_dir <- clean_data_dir %+% "final_read_only\\"
 # 2. Your first name (e.g., Jeremy)
 #    - With no spaces
 
-# 3. Date the cleaning code was last modified (e.g., YYYY-MM-DD)
+# 3. Date the cleaning code was last modified (YYYY-MM-DD)
 #    - The date you run this script (may differ) will be obtained from your system
 
 # 4. Confirmation that you would like to use this info to:
@@ -58,4 +58,5 @@ create_data_release(clean_data_staging_dir,
                                          "Phase 1 Youth Qualtrics Clean Data Log.rds",
                                          "Phase 1 Parent Qualtrics Clean Data.rds",
                                          "Phase 1 Parent Qualtrics Clean Data Log.rds",
-                                         "Phase 1 LifePak Clean Data.rds"))
+                                         "Phase 1 LifePak Clean Data.rds",
+                                         "Phase 1 LifePak Clean Data Without Free Responses.rds"))

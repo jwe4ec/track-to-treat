@@ -598,4 +598,12 @@ saveRDS(log, clean_data_staging_dir %+% "Phase 1 Youth Qualtrics Clean Data Log.
 
 saveRDS(ax_windows, clean_data_staging_intermediate_dir %+% "Phase 1 Assessment Windows.rds")
 
+# Save clean LifePak data with and without free-response items (until these are deidentified)
 saveRDS(nis_valid_with_lsmh_id, clean_data_staging_dir %+% "Phase 1 LifePak Clean Data.rds")
+
+free_responses <- c("most_pleasant", "most_unpleasant", "other_night")
+keep_cols <- setdiff(names(nis_valid_with_lsmh_id), free_responses)
+nis_valid_with_lsmh_id_wout_free_responses <- nis_valid_with_lsmh_id[keep_cols]
+
+saveRDS(nis_valid_with_lsmh_id_wout_free_responses,
+        clean_data_staging_dir %+% "Phase 1 LifePak Clean Data Without Free Responses.rds")
