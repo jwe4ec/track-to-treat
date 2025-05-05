@@ -29,18 +29,21 @@ clean_data_final_dir <- clean_data_dir %+% "final_read_only\\"
 # Running the function below will prompt you to provide this info via the console 
 # in order to save versioned copies of the clean data into a versioned folder:
 
-# 1. Version number and your first name (e.g., v0.1_Jeremy)
+# 1. Version number (e.g., v0.1)
 #    - Use numbers < 1 (e.g., 0.1) for development versions and numbers >= 1.0 for 
 #      versions suitable for analysis (describe versions in README.md of this repo)
 
-# 2. Date the cleaning code was last modified (e.g., YYYY-MM-DD)
+# 2. Your first name (e.g., Jeremy)
+#    - With no spaces
+
+# 3. Date the cleaning code was last modified (e.g., YYYY-MM-DD)
 #    - The date you run this script (may differ) will be obtained from your system
 
-# 3. Confirmation that you would like to use this info to:
+# 4. Confirmation that you would like to use this info to:
 #    - Create a folder in "final_read_only" directory (e.g., "YYYY-MM-DD_v0.1_Jeremy")
 #      named with date you ran this script
 #    - Copy files from "staging" directory to this folder, prepending version info 
-#      to filenames (e.g., "YYYY-MM-DD_v0.1_Jeremy_Phase 1 LifePak Clean Data.rds")
+#      to filenames (e.g., "YYYY-MM-DD_v0.1_Phase 1 LifePak Clean Data.rds")
 #    - Save a README.txt to the folder with version info and a URL to this repo
 
 # DO NOT modify or delete files in the "final_read_only" directory as they may be
@@ -56,9 +59,3 @@ create_data_release(clean_data_staging_dir,
                                          "Phase 1 Parent Qualtrics Clean Data.rds",
                                          "Phase 1 Parent Qualtrics Clean Data Log.rds",
                                          "Phase 1 LifePak Clean Data.rds"))
-
-# TODO: JE to separate version number from person (and remove person from filename)
-
-
-
-

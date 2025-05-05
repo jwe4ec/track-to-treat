@@ -54,17 +54,29 @@ create_data_release <- function(clean_data_staging_dir, clean_data_final_dir, st
   ### user's confirmation via console to create versioned folder containing versioned
   ### files, do so. User can press ESC to exit loops for obtaining user input.
   
-  ## Obtain version info from user via console and ensure correct format
+  ## Obtain version number from user via console and ensure correct format
   repeat {
-    ver_prompt <- "Enter a version number and your first name in this format (v0.1_Jeremy): "
-    version_firstname <- readline(ver_prompt)
+    ver_prompt <- "Enter a version number in this format (e.g., v0.1): "
+    version <- readline(ver_prompt)
     
-    if (!grepl("v", version_firstname) | !grepl("_", version_firstname)) {
+    if (!grepl("v", version) | !grepl("\\.", version)) {
       cat("You must provide a response in the requested format! Press ESC to stop.")
     } else break
   }
   
-  cat("Valid 'version_firstname' entered:", version_firstname)
+  cat("Valid 'version' entered:", version)
+  
+  ## Obtain user's first name via console
+  repeat {
+    ver_prompt <- "Enter your first name in this format (e.g., Jeremy): "
+    firstname <- readline(ver_prompt)
+    
+    if (firstname == "" | grepl(" ", firstname)) {
+      cat("You must provide a response in the requested format! Press ESC to stop.")
+    } else break
+  }
+  
+  cat("Valid 'firstname' entered:", firstname)
   
   ## Obtain date this script was run from system
   system_date <- as.character(Sys.Date())
@@ -83,13 +95,14 @@ create_data_release <- function(clean_data_staging_dir, clean_data_final_dir, st
       "Date running script ('system_date'): ", system_date, "\n\n",
       sep = "")
   
-  ## Define versioned folder name, prepend version info to staged filenames, and 
+  ## Define versioned folder name, prepend version number to staged filenames, and 
   ## define versioned README filename
-  system_date_version_firstname <- paste0(system_date, "_", version_firstname)
+  system_date_version <- paste0(system_date, "_", version)
+  system_date_version_firstname <- paste0(system_date_version, "_", firstname)
   
   folder_name         <- system_date_version_firstname
-  names(staged_files) <- paste0(system_date_version_firstname, "_", names(staged_files))
-  readme_name         <- paste0(system_date_version_firstname, "_README.txt")
+  names(staged_files) <- paste0(system_date_version, "_", names(staged_files))
+  readme_name         <- paste0(system_date_version, "_README.txt")
   
   ## Tell user what folder will be created and what files it will contain
   cat("A folder named '", folder_name, "' will be created in:\n", 
@@ -133,8 +146,8 @@ create_data_release <- function(clean_data_staging_dir, clean_data_final_dir, st
       "The code as of ", cleaning_code_date, " was run on ", system_date, " by the person below,\n",
       "who assigned the following version number\n\n",
       
-      "Version:    ", version_firstname, "\n",
-      "Created By: ", "TODO", "\n\n",
+      "Version:    ", version, "\n",
+      "Created By: ", firstname, "\n\n",
       
       "Folder:\n",
       clean_data_final_folder_dir, "\n\n",
