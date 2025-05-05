@@ -8,7 +8,7 @@ library(groundhog) # 3.2.2
 groundhog_date <- "2025-03-28"
 meta.groundhog(groundhog_date)
 groundhog.library(
-  pkg = c("tidyverse", "qualtRics", "here", "openxlsx"),
+  pkg = c("tidyverse", "qualtRics", "here", "openxlsx", "digest"),
   date = groundhog_date
 )
 `%+%` <- paste0
@@ -16,20 +16,24 @@ groundhog.library(
 
 ## Load helper functions
 source(here("Qualtrics Data Cleaning Helper Functions.R"))
+source(here("Version Control Helper Functions.R"))
 
 
 ## Load data
-# Save directory
+# Save directories
 raw_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\Qualtrics Data\\Raw Data\\"
 clean_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\Clean Data (Isaac)\\"
 clean_data_staging_dir <- clean_data_dir %+% "staging\\"
 clean_data_staging_intermediate_dir <- clean_data_staging_dir %+% "intermediate\\"
 
-# Load raw parent Qualtrics datasets in this format: [respondent][wave]_[administration]_raw
+# Load raw parent Qualtrics datasets (storing paths) in this format: [respondent][wave]_[administration]_raw
 # - Note: Use "timeZone" specified for date columns (e.g., "StartDate") in third row of raw CSV
-pb_in_person_raw <- read_survey(raw_data_dir %+% "dp5_b_parent_p1_numeric.csv", time_zone = "America/Denver")
-pb_remote_raw <- read_survey(raw_data_dir %+% "dp5_b_parent_remote_p1_numeric.csv", time_zone = "America/Denver")
-p3m_raw <- read_survey(raw_data_dir %+% "dp5_3m_parent_p1_numeric.csv", time_zone = "America/Denver")
+raw_data_paths <- list(pb_in_person_raw = raw_data_dir %+% "dp5_b_parent_p1_numeric.csv",
+                       pb_remote_raw = raw_data_dir %+% "dp5_b_parent_remote_p1_numeric.csv",
+                       p3m_raw = raw_data_dir %+% "dp5_3m_parent_p1_numeric.csv")
+
+raw_data <- lapply(raw_data_paths, read_survey, time_zone = "America/Denver")
+list2env(raw_data, envir = .GlobalEnv)
 
 # Load assessment windows computed when cleaning youth Qualtrics data
 ax_windows <- readRDS(clean_data_staging_intermediate_dir %+% "Phase 1 Assessment Windows.rds")
@@ -63,6 +67,11 @@ codebook <- openxlsx::read.xlsx(
       NA_real_
     )
   )
+
+
+## Check raw Qualtrics data versions using helper function
+raw_metadata <- read.csv(here("Phase 1", "Raw P1 Metadata.csv"))
+check_raw_data_ver(raw_metadata, raw_data_paths, raw_data, "p_qualtrics")
 
 
 

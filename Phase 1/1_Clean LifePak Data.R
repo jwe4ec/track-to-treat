@@ -8,25 +8,37 @@ library(groundhog) # 3.2.2
 groundhog_date <- "2025-03-28"
 meta.groundhog(groundhog_date)
 groundhog.library(
-  pkg = c("tidyverse", "lubridate"),
+  pkg = c("tidyverse", "lubridate", "here", "digest"),
   date = groundhog_date
 )
 `%+%` <- paste0
 
 
+## Load helper functions
+source(here("Version Control Helper Functions.R"))
+
+
 ## Load data
-# Save directory
+# Save directories
 raw_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\LifePak Raw Data (Do Not Modify)\\"
 clean_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\Clean Data (Isaac)\\"
 clean_data_staging_dir <- clean_data_dir %+% "staging\\"
 clean_data_staging_intermediate_dir <- clean_data_staging_dir %+% "intermediate\\"
 
-# Load NIS ("notification-initiated survey") datasets
-nis_1 <- read.csv(raw_data_dir %+% "3T_P1_V1_NIS_2020_Mar_02.csv")            # Survey "TRACK to TREAT P1"
-nis_2 <- read.csv(raw_data_dir %+% "3T_P1_V2_NIS_2020_Mar_13.csv")            # Survey "TRACK to TREAT P1 - V2"
-nis_3 <- read.csv(raw_data_dir %+% "3T_P1_V2_NIS_21200_958251_Download2.csv") # Survey "TRACK to TREAT - 00347"
-nis_4 <- read.csv(raw_data_dir %+% "3T_P1_V2_NIS_21200_958251_Download3.csv") # Survey "TRACK to TREAT P1 - 00347 V2"
-nis_5 <- read.csv(raw_data_dir %+% "3T_P1_V4_NIS.csv")                        # Survey "TRACK to TREAT P1 - V4"
+# Load NIS ("notification-initiated survey") datasets (storing paths)
+raw_data_paths <- list(nis_1 = raw_data_dir %+% "3T_P1_V1_NIS_2020_Mar_02.csv",
+                       nis_2 = raw_data_dir %+% "3T_P1_V2_NIS_2020_Mar_13.csv",
+                       nis_3 = raw_data_dir %+% "3T_P1_V2_NIS_21200_958251_Download2.csv",
+                       nis_4 = raw_data_dir %+% "3T_P1_V2_NIS_21200_958251_Download3.csv",
+                       nis_5 = raw_data_dir %+% "3T_P1_V4_NIS.csv")
+
+raw_data <- lapply(raw_data_paths, read.csv)
+list2env(raw_data, envir = .GlobalEnv)
+
+
+## Check raw LifePak data versions using helper function
+raw_metadata <- read.csv(here("Phase 1", "Raw P1 Metadata.csv"))
+check_raw_data_ver(raw_metadata, raw_data_paths, raw_data, "lifepak")
 
 
 

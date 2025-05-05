@@ -15,7 +15,7 @@ groundhog.library(
 
 
 ## Load helper function
-source(here("Clean Data Release Helper Function.R"))
+source(here("Version Control Helper Functions.R"))
 
 
 ## Define directories
@@ -57,8 +57,7 @@ create_data_release(clean_data_staging_dir,
                                          "Phase 1 Parent Qualtrics Clean Data Log.rds",
                                          "Phase 1 LifePak Clean Data.rds"))
 
-# TODO: JE to (a) separate version number from person (and remove person from filename), 
-# (b) add raw data versions to README, and (c) consider recording GitHub tag or commit
+# TODO: JE to separate version number from person (and remove person from filename)
 
 
 
