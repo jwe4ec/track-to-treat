@@ -12,6 +12,7 @@ File organization:
 * README.md
 * Phase 1/
   * README.md
+  * Raw P1 Metadata.csv (used to track expected raw data versions for checks against loaded files)
   * Track to Treat P1 Codebook.xlsx (an item-level codebook used to clean the Qualtrics data)
   * 1_Clean LifePak Data.R
   * 2_Clean Youth Qualtrics Data and Add LSMH ID to LifePak Data.R
@@ -51,7 +52,7 @@ Data cleaning notes:
   * Item exclusions
     * Parent item `scared_c_1` was entered into survey incorrectly and is excluded from composite variables
     * Child item `scared_c_11` was absent from in-person baseline survey and is excluded from composites
-  * Some item names differ between youth and parent data (compare item content before comparing responses)
+  * Some youth and parent item names differ (compare item content before comparing responses)
     * E.g., parent item `scared_b_16` corresponds to youth item `scared_c_1`
   * Log list files are created to log:
     * Items used to compute item completion rates (see `log$item_completion_rate`)
@@ -62,7 +63,7 @@ Data cleaning notes:
     * Take care when comparing timestamps between LifePak/Qualtrics datasets
 
 Version control:
-  * Expected raw data versions are tracked in "Raw <P1/P2> Metadata" CSV files
+  * Expected raw data versions are tracked in "Raw <P1/P2> Metadata.csv" files
   * Cleaning scripts save data to `staging/` to avoid overwriting data in `final_read_only/`
   * `Create Clean Data Release.R` creates versioned "releases" of data in `final_read_only/`
     * Versions < v1.0 are for development only; versions >= v1.0 are suitable for analysis
@@ -76,7 +77,7 @@ Version control:
     * v2.0 **(planned)**
       * Phase I: Same output as v1.0
       * Phase II: Cleans LifePak data (collection over) and _interim_ Qualtrics data (collection ongoing)
-        * Clean LifePak data is outputted with and without free responses above (to deidentify in v3.0):
+        * Clean LifePak data is outputted with and without free responses above (to deidentify in v3.0)
         * Qualtrics collection through 18 months over; collection through 24 months expected over 11/2025
     * v3.0 **(planned)**
       * Phase I: Cleans LifePak (with deidentified free responses) and Qualtrics data (collection over)
