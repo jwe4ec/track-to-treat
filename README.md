@@ -28,12 +28,12 @@ Data cleaning notes:
 
 * Scripts are numbered in the order to be run
 * Scripts generally follow the same flow:
-  * Load data
+  * Load data and check raw data versions
   * Remove invalid and duplicated responses
   * Merge datasets (across waves, etc.)
   * Clean selected columns
   * Manually correct IDs as necessary
-
+  
 * LifePak data
   * LifePak IDs here are 6 digits (5-digit IDs elsewhere have leading 0 here; take care when comparing IDs)
   * Clean data includes EMA surveys only (excludes "feedback surveys", which were given after EMA surveys)
@@ -61,7 +61,23 @@ Data cleaning notes:
   * Raw timestamps are in "America/Denver" time zone for Phase I and in "America/Chicago" for Phase II
     * Take care when comparing timestamps between LifePak/Qualtrics datasets
 
-TODO:
-
-* In the clean LifePak data, these free-response columns need to be deidentified as needed:
-  * `most_pleasant`, `most_unpleasant`, `other_night`
+Version control:
+  * Expected raw data versions are tracked in "Raw <P1/P2> Metadata" CSV files
+  * Cleaning scripts save data to `staging/` to avoid overwriting data in `final_read_only/`
+  * `Create Clean Data Release.R` creates versioned "releases" of data in `final_read_only/`
+    * Versions < v1.0 are for development only; versions >= v1.0 are suitable for analysis
+    * To view the code (and raw data versions) for a release, go to this repo's corresponding [tag](https://git-scm.com/book/en/v2/Git-Basics-Tagging)
+  * Releases:
+    * v1.0 **(pending)**
+      * Phase I: Cleans LifePak and Qualtrics data (collection over)
+        * Clean LifePak data is outputted with and without free responses below (to deidentify in v3.0):
+          * `most_pleasant`, `most_unpleasant`, `other_night`
+      * Phase II: Not cleaned for this release
+    * v2.0 **(planned)**
+      * Phase I: Same output as v1.0
+      * Phase II: Cleans LifePak data (collection over) and _interim_ Qualtrics data (collection ongoing)
+        * Clean LifePak data is outputted with and without free responses above (to deidentify in v3.0):
+        * Qualtrics collection through 18 months over; collection through 24 months expected over 11/2025
+    * v3.0 **(planned)**
+      * Phase I: Cleans LifePak (with deidentified free responses) and Qualtrics data (collection over)
+      * Phase II: Cleans LifePak (with deidentified free responses) and Qualtrics data (collection over)
