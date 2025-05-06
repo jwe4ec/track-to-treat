@@ -234,15 +234,7 @@ nis_clean <- nis_combined %>%
   ) %>%
   
   # Filter to only EMA data (not "feedback" surveys, which were administered after EMA surveys)
-  filter(survey_type == "EMA") %>%
-  
-  # Arrange by lifepak ID, then notification datetime
-  arrange(
-    
-    lifepak_id,
-    notification_datetime
-    
-  )
+  filter(survey_type == "EMA")
 
 
 ## Correct lifepak_id
@@ -250,6 +242,13 @@ nis_clean <- nis_combined %>%
 nis_clean$lifepak_id[nis_clean$lifepak_id == "034516"] <- "958251"
 nis_clean$lifepak_id[nis_clean$lifepak_id == "878753"] <- "958251"
 
+
+## Arrange by lifepak_id, then notification_datetime
+nis_clean <- nis_clean %>%
+  arrange(
+    lifepak_id,
+    notification_datetime
+  )
 
 ## Deduplicate
 # No duplicate responses
@@ -285,6 +284,7 @@ duplicate_notifications_to_drop <- duplicate_notifications %>%
     duplicate_notifications_to_keep,
     by = c("lifepak_id", "notification_datetime", "response_start_datetime")
   )
+
 duplicate_notifications_to_drop
 
 # Remove invalid responses manually here
