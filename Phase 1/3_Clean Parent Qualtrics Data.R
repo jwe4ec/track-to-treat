@@ -496,8 +496,8 @@ p_clean <- p_merged %>%
     p3m_bfamg_mean = mean_across("p3m", "bfamg", name = "p3m_bfamg_mean"),
     
     
-    ## BSI (Brief Symptom Inventory)
-    # Overall mean score
+    ## 17 items from BSI-18 (Brief Symptom Inventory-18)
+    # Overall mean score (without suicidal thoughts item)
     pb_bsi_mean = mean_across("pb", "bsi", name = "pb_bsi_mean"),
     p3m_bsi_mean = mean_across("p3m", "bsi", name = "p3m_bsi_mean"),
     
@@ -505,7 +505,7 @@ p_clean <- p_merged %>%
     pb_bsi_s_mean = mean_across("pb", "bsi", "S", name = "pb_bsi_s_mean"),
     p3m_bsi_s_mean = mean_across("p3m", "bsi", "S", name = "p3m_bsi_s_mean"),
     
-    # Depression subscale
+    # Depression subscale (without suicidal thoughts item)
     pb_bsi_d_mean = mean_across("pb", "bsi", "D", name = "pb_bsi_d_mean"),
     p3m_bsi_d_mean = mean_across("p3m", "bsi", "D", name = "p3m_bsi_d_mean"),
     

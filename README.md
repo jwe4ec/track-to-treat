@@ -50,6 +50,7 @@ Data cleaning notes:
   * When items are reverse-coded, cleaning scripts unreverse them (while retaining the original item name)
     * By contrast, in LifePak data, when items are reversed the suffix "_rev" is appended to the item name
   * Item exclusions
+    * Parent BSI-18 item on suicidal thoughts was not administered and is excluded from composite variables
     * Parent item `scared_c_1` was entered into survey incorrectly and is excluded from composite variables
     * Child item `scared_c_11` was absent from in-person baseline survey and is excluded from composites
   * Some youth and parent item names differ (compare item content before comparing responses)
