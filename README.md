@@ -41,7 +41,8 @@ Data cleaning notes:
   * Negative values for `interest` are recoded as 0 in the clean data
     * "3T_P1_V1_NIS_2020_Mar_02.csv" from survey "TRACK to TREAT P1" had some negative values for `Session.Name` "3T Project Day", whose response options for this item were set from -2 to 100
   * Some participants got their first notification after 7:30 am; it's unclear how or why
-  * Most participants have 105 total notifications, but some have fewer and one has more; it's unclear why
+  * Empty rows from multiple datasets overlapping in time for LifePak ID 958251 are removed
+  * Most participants have 105 total notifications, but some have fewer; it's unclear why
   * Raw `Notification.Time` is in local time zones of participants' devices (per LifeData support)
     * Clean timestamp stores these in UTC (actual time zones could be derived from [incomplete] GPS data)
 
