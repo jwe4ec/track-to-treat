@@ -102,6 +102,9 @@ nis_clean <- nis_combined %>%
   mutate(
     
     ## Metadata
+    # Dataset
+    dataset = dataset,
+    
     # ID
     lifepak_id = gsub(".*-", "", Participant.ID),
     
@@ -208,6 +211,7 @@ nis_clean <- nis_combined %>%
   select(
     
     # Metadata
+    dataset,
     lifepak_id,
     survey_type,
     time_of_day,
@@ -249,6 +253,16 @@ nis_clean <- nis_clean %>%
     lifepak_id,
     notification_datetime
   )
+
+
+## Clean rows from datasets overlapping in time for lifepak_id 958251
+# Use Night row from "nis_3_renamed" (vs. empty Night row from "nis_2_renamed" at "2020-03-24 21:32:22")
+# Use rows from "nis_4_renamed" (vs. empty rows from "nis_2_renamed" on and after "2020-03-27 12:25:51")
+nis_clean <- nis_clean[!(nis_clean$lifepak_id == "958251" & 
+                           nis_clean$dataset == "nis_2_renamed" &
+                           (nis_clean$notification_datetime == as_datetime("2020-03-24 21:32:22") |
+                              nis_clean$notification_datetime >= as_datetime("2020-03-27 12:25:51"))), ]
+
 
 ## Deduplicate
 # No duplicate responses
