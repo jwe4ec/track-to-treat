@@ -129,12 +129,14 @@ nis_clean <- nis_combined %>%
     # Response indicator (logical)
     response_started = Responded == "1",
     
-    # Response time
-    response_duration = as.difftime(Session.Length),
-    
     # Response lag
     response_lag_seconds = as.difftime(Session.Instance.Response.Lapse),
-    responded_in_2h_or_less = if_else(
+
+    # Response duration
+    response_duration = as.difftime(Session.Length),
+    
+    # Response completed in window
+    response_ended_within_2h = if_else(
       response_started,
       response_lag_seconds + response_duration <= 7200,
       F
@@ -144,7 +146,7 @@ nis_clean <- nis_combined %>%
     response_start_datetime = notification_datetime + response_lag_seconds,
     response_end_datetime = response_start_datetime + response_duration,
     response_start_date = as_date(response_start_datetime),
-
+    
     # Response data
     sad = case_when(
       time_of_day == "Day" ~ sad_day,
@@ -195,11 +197,11 @@ nis_clean <- nis_combined %>%
       is.na(time_of_day) ~ NA_real_
     ),
     
-    # Across EMA variables, if response did not come in time, recode as NA
+    # Across EMA variables, if response was not completed in time, recode as NA
     across(
       all_of(c("sad", "bad", "interest", "energy", "focus", "movement", "control", "fun")),
       ~ if_else(
-        responded_in_2h_or_less,
+        response_ended_within_2h,
         .,
         NA_real_
       )
@@ -223,7 +225,7 @@ nis_clean <- nis_combined %>%
     response_end_datetime,
     response_duration,
     response_lag_seconds,
-    responded_in_2h_or_less,
+    response_ended_within_2h,
 
     # Response data
     sad, bad, interest, energy, focus, movement, control, fun, fun_rev,
@@ -284,10 +286,10 @@ duplicate_notifications <- nis_clean %>%
 
 duplicate_notifications
 
-# Of these duplicated notifications, keep the first row where responded_in_2h_or_less == T
+# Of these duplicated notifications, keep the first row where response_ended_within_2h == T
 duplicate_notifications_to_keep <- duplicate_notifications %>%
   group_by(lifepak_id, notification_datetime) %>%
-  arrange(desc(responded_in_2h_or_less), response_start_datetime) %>%
+  arrange(desc(response_ended_within_2h), response_start_datetime) %>%
   slice_head(n = 1) %>%
   ungroup()
 
