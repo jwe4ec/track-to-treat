@@ -126,7 +126,7 @@ nis_clean <- nis_combined %>%
     notification_datetime = as_datetime(Notification.Time),
     notification_date = as_date(notification_datetime),
     
-    # Response indicator (logical)
+    # Response start indicator (logical)
     response_started = Responded == "1",
     
     # Response lag
@@ -135,9 +135,10 @@ nis_clean <- nis_combined %>%
     # Response duration
     response_duration = as.difftime(Session.Length),
     
-    # Response completed in window
+    # Response completion indicators (logical)
+    response_ended = !is.na(response_duration),
     response_ended_within_2h = if_else(
-      response_started,
+      response_ended,
       response_lag_seconds + response_duration <= 7200,
       F
     ),
@@ -222,9 +223,10 @@ nis_clean <- nis_combined %>%
     response_started,
     response_start_date,
     response_start_datetime,
+    response_ended,
     response_end_datetime,
-    response_duration,
     response_lag_seconds,
+    response_duration,
     response_ended_within_2h,
 
     # Response data
