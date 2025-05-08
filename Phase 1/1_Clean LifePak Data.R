@@ -127,7 +127,7 @@ nis_clean <- nis_combined %>%
     notification_date = as_date(notification_datetime),
     
     # Response indicator (logical)
-    responded = Responded == "1",
+    response_started = Responded == "1",
     
     # Response time
     response_duration = as.difftime(Session.Length),
@@ -135,7 +135,7 @@ nis_clean <- nis_combined %>%
     # Response lag
     response_lag_seconds = as.difftime(Session.Instance.Response.Lapse),
     responded_in_2h_or_less = if_else(
-      responded,
+      response_started,
       response_lag_seconds + response_duration <= 7200,
       F
     ),
@@ -143,7 +143,7 @@ nis_clean <- nis_combined %>%
     # Response date and datetime
     response_start_datetime = notification_datetime + response_lag_seconds,
     response_end_datetime = response_start_datetime + response_duration,
-    response_date = as_date(response_start_datetime),
+    response_start_date = as_date(response_start_datetime),
 
     # Response data
     sad = case_when(
@@ -209,7 +209,7 @@ nis_clean <- nis_combined %>%
     
   ) %>%
   select(
-    
+
     # Metadata
     dataset,
     lifepak_id,
@@ -217,24 +217,24 @@ nis_clean <- nis_combined %>%
     time_of_day,
     notification_date,
     notification_datetime,
-    responded,
-    response_date,
+    response_started,
+    response_start_date,
     response_start_datetime,
     response_end_datetime,
     response_duration,
     response_lag_seconds,
     responded_in_2h_or_less,
-    
+
     # Response data
     sad, bad, interest, energy, focus, movement, control, fun, fun_rev,
-    
+
     # Most pleasant and most unpleasant event from the day
-    most_pleasant = best_night, 
+    most_pleasant = best_night,
     most_unpleasant = worst_night,
-    
+
     # Another open-ended response worth keeping
     other_night
-    
+
   ) %>%
   
   # Filter to only EMA data (not "feedback" surveys, which were administered after EMA surveys)
