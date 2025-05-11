@@ -82,8 +82,10 @@ identify_duplicates <- function(data, id) {
   duplicates <- sum(out$total > 1)
   completed_duplicates <- sum(out$complete > 1)
   
-  message("Out of " %+% ids %+% " IDs, " %+% duplicates %+% " had multiple responses, while " %+% completed_duplicates %+% " had multiple completed responses.\n" %+%
-            "(Note: 'complete' only means clicked through survey, not completed all items.)")
+  message(
+    "Out of " %+% ids %+% " IDs, " %+% duplicates %+% " had multiple responses, while " %+% completed_duplicates %+% " had multiple completed responses.\n" %+%
+    "(Note: 'complete' only means clicked through survey, not completed all items.)"
+  )
   
   # Return the summary table with duplicated rows at the top
   return(out)
@@ -156,7 +158,9 @@ mark_b_done_in_ax_window <- function(data, id_as_char, ema_notif_dates) {
   # Throw warning if any surveys were not completed in this window (in which case 
   # further analysis to rule out role of differing time zones is warranted)
   if (any(data$in_window_b == FALSE)) {
+    
     warning("Not all baseline surveys are in window. Rule out role of differing time zones.")
+    
   }
 
   return(data)
@@ -197,7 +201,9 @@ mark_3m_done_in_ax_window <- function(data, id_as_char, ax_windows) {
   
   # Throw warning if any surveys were completed before start of window
   if (any(!is.na(data$days_before_start_window_3m_org))) {
+    
     warning("Survey(s) completed before original window. Consider earlier start date for extended window.")
+    
   }
 
   return(data)
@@ -292,7 +298,7 @@ mean_across <- function(.prefix, .measure, .subscale, name, exclude) {
 
   # Exclude items if argument is provided
   if(!missing(exclude)) {
-    
+
     if(!all(exclude %in% items)) stop("Some items in `exclude` not in item list")
     
     items <- setdiff(items, exclude)
@@ -309,7 +315,7 @@ mean_across <- function(.prefix, .measure, .subscale, name, exclude) {
     na.rm = T
   )
   
-  if (is.nan(mean)) mean <- NA
+  if(is.nan(mean)) mean <- NA
   
   # Log the items used to compute the mean in list stored in global environment
   log$mean_items[[name]]$items   <<- items
@@ -389,35 +395,46 @@ check_dups_over_time <- function(data, prefixes, .measure, .subscale, exclude) {
   names(items_ls) <- prefixes
   
   for (.prefix in prefixes) {
-    items <- get_items(.prefix, .measure, .subscale)
     
+    items <- get_items(.prefix, .measure, .subscale)
     items_ls[[.prefix]] <- sort(items)
+    
   }
   
   ## Exclude items if argument is provided
   if(!missing(exclude)) {
+    
     if (length(setdiff(exclude, unlist(items_ls))) > 0) {
+      
       stop("Some items in `exclude` not in item list")
+      
     }
     
     items_ls <- lapply(items_ls, function(x) setdiff(x, exclude))
+    
   }
   
   ## Confirm that number of items is the same over time
   n_items <- sapply(items_ls, length)
   
   if (length(unique(n_items)) != 1) {
+    
     print(items_ls)
     print(n_items)
+    
     stop("Different number of items above over time")
+    
   }
   
   ## Confirm that, apart from .prefix, items are named identically over time
   items_ls_no_prefix <- lapply(items_ls, function(x) sub("^[^_]+_", "", x))
   
   if (length(unique(items_ls_no_prefix)) != 1) {
+    
     print(items_ls_no_prefix)
+    
     stop("Items above are not named identically over time when ignoring prefix")
+    
   }
   
   ## Check that no corresponding items have duplicate responses over time
@@ -440,10 +457,14 @@ check_dups_over_time <- function(data, prefixes, .measure, .subscale, exclude) {
   dup_ids <- unique(data$lsmh_id[duplicated(data)])
   
   if (length(dup_ids) == 0) {
+    
     cat("No duplicated responses over time")
+    
   } else {
+    
     cat("Duplicated responses over time for these IDs (see below): ", dup_ids, "\n\n")
     print(data[data$lsmh_id %in% dup_ids, ])
+    
   }
 
 }
