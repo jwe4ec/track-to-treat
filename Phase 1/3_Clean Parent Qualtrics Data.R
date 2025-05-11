@@ -28,9 +28,11 @@ clean_data_staging_intermediate_dir <- clean_data_staging_dir %+% "intermediate\
 
 # Load raw parent Qualtrics datasets (storing paths) in this format: [respondent][wave]_[administration]_raw
 # - Note: Use "timeZone" specified for date columns (e.g., "StartDate") in third row of raw CSV
-raw_data_paths <- list(pb_in_person_raw = raw_data_dir %+% "dp5_b_parent_p1_numeric.csv",
-                       pb_remote_raw = raw_data_dir %+% "dp5_b_parent_remote_p1_numeric.csv",
-                       p3m_raw = raw_data_dir %+% "dp5_3m_parent_p1_numeric.csv")
+raw_data_paths <- list(
+  pb_in_person_raw = raw_data_dir %+% "dp5_b_parent_p1_numeric.csv",
+  pb_remote_raw = raw_data_dir %+% "dp5_b_parent_remote_p1_numeric.csv",
+  p3m_raw = raw_data_dir %+% "dp5_3m_parent_p1_numeric.csv"
+)
 
 raw_data <- lapply(raw_data_paths, read_survey, time_zone = "America/Denver")
 list2env(raw_data, envir = .GlobalEnv)
@@ -97,12 +99,9 @@ pb_raw <- bind_rows(
 )
 
 
-### Confirm that all IDs match "validate" columns and then remove "validate" columns
+### Confirm that all IDs match "validate" columns
 all(pb_raw$pb_lsmh_id == pb_raw$`pb_lsmh_id_validate`, na.rm = TRUE)
 all(p3m_raw$p3m_lsmh_id == p3m_raw$p3m_lsmh_id_validate, na.rm = TRUE)
-
-pb_raw[, "pb_lsmh_id_validate"] <- NULL
-p3m_raw[, "p3m_lsmh_id_validate"] <- NULL
 
 
 ### Remove invalid responses
@@ -114,12 +113,15 @@ pb_valid_ids <- remove_invalid_responses(pb_raw, pb_lsmh_id)
 p3m_valid_ids <- remove_invalid_responses(p3m_raw, p3m_lsmh_id)
 
 
-### Create lists for logging (a) items used to compute item completion rates below via
-### compute_item_completion_rate(), items used to compute (b) means via mean_across() and
-### (c) counts via count_across(), and (d) clean codebook (edited and added to log below)
-log <- list(item_completion_rate = list(),
-            mean_items = list(),
-            count_items = list())
+### Create log
+# Create lists for logging (a) items used to compute item completion rates below via
+# compute_item_completion_rate(), items used to compute (b) means via mean_across() and
+# (c) counts via count_across(), and (d) clean codebook (edited and added to log below)
+log <- list(
+  item_completion_rate = list(),
+  mean_items = list(),
+  count_items = list()
+)
 
 
 ### Identify duplicates and compute item completion rate for removing duplicates
@@ -140,8 +142,13 @@ ema_notif_dates <- ax_windows[, c("lsmh_id", "first_ema_notif_date", "last_ema_n
 # Compute indicator of baseline survey completion in window using helper function
 pb_valid_ids <- mark_b_done_in_ax_window(pb_valid_ids, "pb_lsmh_id", ema_notif_dates)
 
-# Remove any baseline surveys outside window (0) using helper function
-pb_valid_ids <- remove_out_of_ax_window(pb_valid_ids, "pb_lsmh_id", "pb")
+# Print and remove any baseline surveys outside window
+pb_valid_ids %>%
+  filter(!in_window_b) %>%
+  select(pb_lsmh_id, "StartDate", "EndDate", "first_ema_notif_date", "in_window_b", "item_completion_rate")
+
+pb_valid_ids <- pb_valid_ids %>%
+  filter(in_window_b)
 
 # Remove any baseline duplicates (0) using helper function
 pb_deduplicated <- remove_duplicates(pb_valid_ids, pb_lsmh_id)
@@ -151,13 +158,16 @@ identify_duplicates(pb_deduplicated, pb_lsmh_id)
 
 
 ### Remove any follow-up surveys (a) outside assessment window or (b) duplicated in window
-# Note: Assessment windows were computed when cleaning youth Qualtrics data
-
 # Compute indicators of 3-month survey completion in window using helper function
 p3m_valid_ids <- mark_3m_done_in_ax_window(p3m_valid_ids, "p3m_lsmh_id", ax_windows)
 
-# Remove 3-month surveys outside extended window (v3) using helper function
-p3m_valid_ids <- remove_out_of_ax_window(p3m_valid_ids, "p3m_lsmh_id", "p3m")
+# Print and remove any 3-month surveys outside window
+p3m_valid_ids %>%
+  filter(!in_window_3m_ext) %>%
+  select(p3m_lsmh_id, "StartDate", "EndDate", "first_ema_notif_date", "in_window_3m_ext", "item_completion_rate")
+
+p3m_valid_ids <- p3m_valid_ids %>%
+  filter(in_window_3m_ext)
 
 # Remove 3-month duplicates using helper function
 p3m_deduplicated <- remove_duplicates(p3m_valid_ids, p3m_lsmh_id)
@@ -187,8 +197,7 @@ p_merged <- full_join(
 )
 
 
-### Clean columns
-## Correct misspelled parent item prefixes in the data and codebook
+### Correct misspelled parent item prefixes in the data and codebook
 # Data: Before
 prefixes_data <- str_extract(colnames(p_merged), "^.*?(?=_)")
 table(prefixes_data)
@@ -215,7 +224,7 @@ table(prefixes_codebook)
 log$p_codebook_clean <- codebook
 
 
-
+### Clean merged data
 # Data collected but not included here: 
 # - Data regarding child's current medications
 # - Data regarding child's school accommodations
@@ -638,6 +647,9 @@ walk(
 
 
 
-####  Save Clean Parent Qualtrics Data and Log  ####
+####  Save Data  ####
+# Save clean parent Qualtrics data
 saveRDS(p_clean, clean_data_staging_dir %+% "Phase 1 Parent Qualtrics Clean Data.rds")
+
+# Save log
 saveRDS(log, clean_data_staging_dir %+% "Phase 1 Parent Qualtrics Clean Data Log.rds")
