@@ -490,7 +490,8 @@ check_dups_over_time <- function(data, prefixes, .measure, .subscale, exclude) {
                  names_to = c("survey", "item"),
                  names_pattern = "(^[^_]+)_(.*)",
                  values_to = "value") %>%
-    pivot_wider(names_from = "item", values_from = "value")
+    pivot_wider(names_from = "item", values_from = "value") %>%
+    select(-survey)
 
   # Check for duplicate responses over time
   dup_ids <- unique(data$lsmh_id[duplicated(data)])
