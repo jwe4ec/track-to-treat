@@ -234,7 +234,7 @@ y3m_valid_ids %>%
   filter(!in_window_3m_ext) %>%
   select(y3m_lsmh_id, "StartDate", "EndDate", "first_ema_notif_date", "in_window_3m_ext", "item_completion_rate")
 
-y3m_valid_ids_ <- y3m_valid_ids %>%
+y3m_valid_ids <- y3m_valid_ids %>%
   filter(in_window_3m_ext)
 
 # Remove 3-month duplicates using helper function
@@ -610,18 +610,21 @@ walk(
 check_dups_over_time(y_clean, c("yb", "y3m"), "CDI-2 SR")
 
 
-####  Save Clean Qualtrics Data and Log, Assessment Windows, and Clean LifePak Data  ####
+
+####  Save Data  ####
+# Save clean Qualtrics data
 saveRDS(y_clean, clean_data_staging_dir %+% "Phase 1 Youth Qualtrics Clean Data.rds")
+
+# Save log
 saveRDS(log, clean_data_staging_dir %+% "Phase 1 Youth Qualtrics Clean Data Log.rds")
 
+# Save assessment windows
 saveRDS(ax_windows, clean_data_staging_intermediate_dir %+% "Phase 1 Assessment Windows.rds")
 
-# Save clean LifePak data with and without free-response items (until these are deidentified)
+# Save clean LifePak data with free-response items
 saveRDS(nis_valid_with_lsmh_id, clean_data_staging_dir %+% "Phase 1 LifePak Clean Data.rds")
 
-free_responses <- c("most_pleasant", "most_unpleasant", "other_night")
-keep_cols <- setdiff(names(nis_valid_with_lsmh_id), free_responses)
-nis_valid_with_lsmh_id_wout_free_responses <- nis_valid_with_lsmh_id[keep_cols]
-
-saveRDS(nis_valid_with_lsmh_id_wout_free_responses,
-        clean_data_staging_dir %+% "Phase 1 LifePak Clean Data Without Free Responses.rds")
+# Save clean LifePak data without free-response items (until these are deidentified)
+nis_valid_with_lsmh_id %>%
+  select(-c("most_pleasant", "most_unpleasant", "other_night")) %>%
+  saveRDS(clean_data_staging_dir %+% "Phase 1 LifePak Clean Data Without Free Responses.rds")
