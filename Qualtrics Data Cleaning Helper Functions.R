@@ -34,33 +34,24 @@ remove_invalid_responses <- function(data, id) {
 
 # Function to fill LifePak ID across duplicates (there is at least one case where a 
 # respondent provided their LifePak ID only in a duplicated, noncomplete response)
-fill_lifepak_id <- function(data, id) {
-  
+fill_lifepak_id <- function(data, lsmh_id, lifepak_id) {
+
   ## Check that each LSMH ID has <= 1 LifePak ID
-  # Convert "id" from symbol to character for use outside tidyverse
-  id_as_char <- as.character(ensym(id))
+  lsmh_ids_with_multiple_lifepak_ids <- data %>%
+    distinct({{lsmh_id}}, {{lifepak_id}}) %>%
+    drop_na() %>%
+    count({{lsmh_id}}) %>%
+    filter(n > 1)
   
-  # Find LifePak ID column and throw error if > 1 exists
-  lifepak_id <- grep("LifePak ID", names(data), value = TRUE)
-  if (length(lifepak_id) > 1) stop("Data has > 1 column name containing 'LifePak ID'")
-  
-  # Compute number of unique, non-NA LifePak IDs for each LSMH ID
-  n_unique_lifepak_ids <- tapply(data[[lifepak_id]], data[[id_as_char]], function(lifepak_ids) {
-    sum(!is.na(unique(lifepak_ids)))
-  })
-  
-  # Throw error if LSMH IDs and LifePak IDs are one to many
-  if (any(n_unique_lifepak_ids) > 1) {
-    stop("LSMH IDs and LifePak IDs are one to many (resolve before filling LifePak IDs across duplicates)")
-  }
+  if(nrow(lsmh_ids_with_multiple_lifepak_ids) > 0) stop("Some LSMH IDs correspond to more than one LifePak ID")
   
   ## Fill LifePak ID across duplicates
   # Taking the data...
   data %>%
     # ... group by ID ...
-    group_by({{id}}) %>%
+    group_by({{lsmh_id}}) %>%
     # ... then, fill LifePak ID down-up across participant responses...
-    fill(all_of(lifepak_id), .direction = "downup") %>%
+    fill({{lifepak_id}}, .direction = "downup") %>%
     ungroup() %>%
     return()
   
@@ -91,8 +82,10 @@ identify_duplicates <- function(data, id) {
   duplicates <- sum(out$total > 1)
   completed_duplicates <- sum(out$complete > 1)
   
-  message("Out of " %+% ids %+% " IDs, " %+% duplicates %+% " had multiple responses, while " %+% completed_duplicates %+% " had multiple completed responses.\n" %+%
-            "(Note: 'complete' only means clicked through survey, not completed all items.)")
+  message(
+    "Out of " %+% ids %+% " IDs, " %+% duplicates %+% " had multiple responses, while " %+% completed_duplicates %+% " had multiple completed responses.\n" %+%
+    "(Note: 'complete' only means clicked through survey, not completed all items.)"
+  )
   
   # Return the summary table with duplicated rows at the top
   return(out)
@@ -102,53 +95,43 @@ identify_duplicates <- function(data, id) {
 # Function to compute item completion rate
 compute_item_completion_rate <- function(data, survey_prefix) {
   
-  # Define columns to ignore when computing completion rate
-  # Columns with click and time on page information
-  time_cols <- names(data)[grepl("time", names(data)) & grepl("Click|Submit", names(data))]
+  # Metadata columns
+  qualtrics_metadata <- c(
+    "StartDate", "EndDate", "Status", "IPAddress", "Progress", "Duration (in seconds)", 
+    "Finished", "RecordedDate", "ResponseId", "RecipientLastName", "RecipientFirstName", 
+    "RecipientEmail", "ExternalReference", "LocationLatitude", "LocationLongitude", 
+    "DistributionChannel", "UserLanguage", "status", "SC0"
+  )
   
-  # Columns with specified responses for response options of "Other" (or similar)
-  text_cols <- names(data)[grepl("_TEXT", names(data))]
+  survey_metadata <- c(
+    "administration", "assent_signature", "consent_signature", "p3m_address", 
+    "p3m_child_name", "p3m_childcell", "p3m_childemail", "p3m_date", "p3m_homephone",
+    "p3m_lsmh_id", "p3m_lsmh_id_validate", "p3m_parentcell", "p3m_parentemail",
+    "p3m_workphone", "p3m_wrapup_optin", "password_child", "password_parent", 
+    "pb_address", "pb_child_name", "pb_childcell", "pb_childemail", "pb_date",
+    "pb_homephone", "pb_interview", "pb_lsmh_id", "pb_lsmh_id_validate", "pb_parentcell", 
+    "pb_parentemail", "pb_workphone", "y3_childname", "y3_lsmh_id_ validate",
+    "y3m_chrome_browser", "y3m_lsmh_id", "yb_end", "yb_end_3", "yb_interview",
+    "yb_LifePak ID", "yb_LifePak ID Verify", "yb_lsmh_id", "yb_lsmh_id_ validate", 
+    "yb_phone", "yb_phone_validate"
+  )
   
-  # Columns for metadata
-  meta_cols <- c("StartDate", "EndDate", "Status", "IPAddress", "Progress", 
-                 "Duration (in seconds)", "Finished", "RecordedDate", "ResponseId", 
-                 "RecipientLastName", "RecipientFirstName", "RecipientEmail", 
-                 "ExternalReference", "LocationLatitude", "LocationLongitude", 
-                 "DistributionChannel", "UserLanguage")
+  # Remove columns that should not be included in calculation
+  data_for_calculation <- data %>%
+    select(
+      -matches("time.*(Click|Submit)"), # Columns with click and time on page information
+      -matches("_TEXT"), # Columns with specified responses for response options of "Other" (or similar)
+      -any_of(qualtrics_metadata),
+      -any_of(survey_metadata)
+    )
   
-  y_meta_cols <- c("status", "SC0")
-  
-  if (survey_prefix == "yb") {
-    meta_cols <- c(meta_cols, y_meta_cols,
-                   "administration", "assent_signature", "yb_lsmh_id", "yb_lsmh_id_ validate", 
-                   "yb_phone", "yb_phone_validate", "yb_LifePak ID", "yb_LifePak ID Verify", 
-                   "yb_end", "yb_end_3", "password_child", "yb_interview")
-  } else if (survey_prefix == "y3m") {
-    meta_cols <- c(meta_cols, y_meta_cols,
-                   "y3m_lsmh_id", "y3_lsmh_id_ validate", "y3_childname", "y3m_chrome_browser")
-  } else if (survey_prefix == "pb") {
-    meta_cols <- c(meta_cols,
-                   "administration", "consent_signature", "pb_lsmh_id", "pb_lsmh_id_validate", 
-                   "pb_child_name", "pb_date", "pb_address", "pb_homephone",
-                   "pb_parentcell", "pb_childcell", "pb_workphone", "pb_parentemail", 
-                   "pb_childemail", "password_parent", "pb_interview")
-  } else if (survey_prefix == "p3m") {
-    meta_cols <- c(meta_cols,
-                   "p3m_lsmh_id", "p3m_lsmh_id_validate", 
-                   "p3m_child_name", "p3m_date", "p3m_address", "p3m_homephone", 
-                   "p3m_parentcell", "p3m_childcell", "p3m_workphone", "p3m_parentemail", 
-                   "p3m_childemail", "p3m_wrapup_optin")
-  }
-  
-  ignore_cols <- c(meta_cols, time_cols, text_cols)
-  
-  # Compute completion rate
-  item_cols <- names(data)[!(names(data) %in% ignore_cols)]
-  
-  data$item_completion_rate <- rowMeans(!is.na(data[, item_cols]))
+  # Calculate item completion rate
+  data$item_completion_rate <- rowMeans(!is.na(data_for_calculation))
   
   # Print and log items used to compute completion rate in list stored in global environment
-  cat("'item_completion_rate' for '", survey_prefix, "' survey is based on these items:\n\n", sep = "")
+  item_cols <- colnames(data_for_calculation)
+  
+  print("Item completion rate based on these items:")
   print(item_cols)
   
   log$item_completion_rate[[survey_prefix]]$items   <<- item_cols
@@ -165,21 +148,21 @@ mark_b_done_in_ax_window <- function(data, id_as_char, ema_notif_dates) {
   names(ema_notif_dates)[names(ema_notif_dates) == "lsmh_id"] <- id_as_char
   
   data <- data %>%
-    left_join(ema_notif_dates, by = id_as_char, relationship = "many-to-one")
-  
-  # Compute indicator of survey completion before first EMA notification
+    left_join(ema_notif_dates, by = id_as_char, relationship = "many-to-one") %>%
+    # Compute indicator of survey completion before first EMA notification
     # Note: Given that "EndDate" and "first_ema_notif_date" are in different time
     # zones ("America/Denver" for Phase I vs. participants' local times stored as 
     # UTC, respectively), this comparison is approximate. To rule out the role of
     # time zone differences, derive actual time zones for "first_ema_notif_date"
     # from LifePak GPS data (although GPS data are missing for some observations)
-  data$in_window_b <- NA
-  data$in_window_b <- ifelse(as_date(data$EndDate) < data$first_ema_notif_date, TRUE, FALSE)
-    
+    mutate(in_window_b = as_date(EndDate) < first_ema_notif_date)
+  
   # Throw warning if any surveys were not completed in this window (in which case 
   # further analysis to rule out role of differing time zones is warranted)
   if (any(data$in_window_b == FALSE)) {
+    
     warning("Not all baseline surveys are in window. Rule out role of differing time zones.")
+    
   }
 
   return(data)
@@ -193,70 +176,37 @@ mark_3m_done_in_ax_window <- function(data, id_as_char, ax_windows) {
   names(ax_windows)[names(ax_windows) == "lsmh_id"] <- id_as_char
   
   data <- data %>%
-    left_join(ax_windows, by = id_as_char, relationship = "many-to-one")
+    left_join(ax_windows, by = id_as_char, relationship = "many-to-one") %>%
+    mutate(
+      
+      # Compute indicators of survey completion in originally intended assessment window
+      # and extended window with later end date
+      in_window_3m_org = as_date(EndDate) >= start_window_3m_org & as_date(EndDate) <= end_window_3m_org,
+      in_window_3m_ext = as_date(EndDate) >= start_window_3m_ext & as_date(EndDate) <= end_window_3m_ext,
+      
+      # If done early, compute days before start of originally intended window
+      days_before_start_window_3m_org = ifelse(
+        as_date(EndDate) < start_window_3m_org,
+        as_date(EndDate) - start_window_3m_org,
+        NA
+      ),
+      
+      # If done late, compute days after end of originally intended window
+      days_after_end_window_3m_org = ifelse(
+        as_date(EndDate) > end_window_3m_org,
+        as_date(EndDate) - end_window_3m_org,
+        NA
+      )
+      
+    )
   
-  # Compute indicators of survey completion in originally intended assessment window
-  # and extended window with later end date
-  data$in_window_3m_org <- NA
-  data$in_window_3m_org <- ifelse(as_date(data$EndDate) >= data$start_window_3m_org & 
-                                    as_date(data$EndDate) <= data$end_window_3m_org, TRUE, FALSE)
-  data$in_window_3m_ext <- NA
-  data$in_window_3m_ext <- ifelse(as_date(data$EndDate) >= data$start_window_3m_ext & 
-                                    as_date(data$EndDate) <= data$end_window_3m_ext, TRUE, FALSE)
-  
-  # If done early, compute days before start of originally intended window and throw 
-  # a warning to consider whether extended window needs earlier start date
-  data$days_before_start_window_3m_org <- ifelse(as_date(data$EndDate) < data$start_window_3m_org,
-                                                 as_date(data$EndDate) - data$start_window_3m_org, NA)
-  
+  # Throw warning if any surveys were completed before start of original window
   if (any(!is.na(data$days_before_start_window_3m_org))) {
+    
     warning("Survey(s) completed before original window. Consider earlier start date for extended window.")
-  }
-
-  # If done late, compute days after end of originally intended window
-  data$days_after_end_window_3m_org <- ifelse(as_date(data$EndDate) > data$end_window_3m_org,
-                                              as_date(data$EndDate) - data$end_window_3m_org, NA)
-
-  return(data)
-  
-}
-
-# Function to remove surveys outside assessment window
-remove_out_of_ax_window <- function(data, id_as_char, survey_prefix) {
-  
-  # Obtain any to-be-removed surveys for printing and remove surveys outside window
-  rm_surveys <- NULL
-
-  if (survey_prefix %in% c("yb, pb")) {
-    rm_surveys <- data[data$in_window_b == FALSE,
-                       c(id_as_char, "StartDate", "EndDate", 
-                         "first_ema_notif_date", "in_window_b",
-                         "item_completion_rate")]
-
-    data <- data[data$in_window_b == TRUE, ]
-  } else if (survey_prefix %in% c("y3m", "p3m")) {
-    rm_surveys <- data[data$in_window_3m_ext == FALSE,
-                       c(id_as_char, "StartDate", "EndDate", 
-                         "start_window_3m_org", "end_window_3m_org", "in_window_3m_org",
-                         "days_before_start_window_3m_org", "days_after_end_window_3m_org",
-                         "start_window_3m_ext", "end_window_3m_ext", "in_window_3m_ext",
-                         "item_completion_rate")]
     
-    data <- data[data$in_window_3m_ext == TRUE, ]
   }
-  
-  # Print any removed surveys
-  if (!is.null(rm_surveys)) {
-    rm_surveys <- rm_surveys[order(rm_surveys[[id_as_char]], rm_surveys[["EndDate"]]), ]
-    rm_surveys_ids <- unique(rm_surveys[[id_as_char]])
-    
-    message("Removed the " %+% nrow(rm_surveys) %+% 
-              " surveys below (some of which may be duplicates) for these " %+% 
-              length(rm_surveys_ids) %+% " LSMH IDs:\n" %+% 
-              paste0(rm_surveys_ids, collapse = ", "))
-    print(as.data.frame(rm_surveys))
-  }
-  
+
   return(data)
   
 }
@@ -349,7 +299,7 @@ mean_across <- function(.prefix, .measure, .subscale, name, exclude) {
 
   # Exclude items if argument is provided
   if(!missing(exclude)) {
-    
+
     if(!all(exclude %in% items)) stop("Some items in `exclude` not in item list")
     
     items <- setdiff(items, exclude)
@@ -366,7 +316,7 @@ mean_across <- function(.prefix, .measure, .subscale, name, exclude) {
     na.rm = T
   )
   
-  if (is.nan(mean)) mean <- NA
+  if(is.nan(mean)) mean <- NA
   
   # Log the items used to compute the mean in list stored in global environment
   log$mean_items[[name]]$items   <<- items
@@ -446,35 +396,46 @@ check_dups_over_time <- function(data, prefixes, .measure, .subscale, exclude) {
   names(items_ls) <- prefixes
   
   for (.prefix in prefixes) {
-    items <- get_items(.prefix, .measure, .subscale)
     
+    items <- get_items(.prefix, .measure, .subscale)
     items_ls[[.prefix]] <- sort(items)
+    
   }
   
   ## Exclude items if argument is provided
   if(!missing(exclude)) {
+    
     if (length(setdiff(exclude, unlist(items_ls))) > 0) {
+      
       stop("Some items in `exclude` not in item list")
+      
     }
     
     items_ls <- lapply(items_ls, function(x) setdiff(x, exclude))
+    
   }
   
   ## Confirm that number of items is the same over time
   n_items <- sapply(items_ls, length)
   
   if (length(unique(n_items)) != 1) {
+    
     print(items_ls)
     print(n_items)
+    
     stop("Different number of items above over time")
+    
   }
   
   ## Confirm that, apart from .prefix, items are named identically over time
   items_ls_no_prefix <- lapply(items_ls, function(x) sub("^[^_]+_", "", x))
   
   if (length(unique(items_ls_no_prefix)) != 1) {
+    
     print(items_ls_no_prefix)
+    
     stop("Items above are not named identically over time when ignoring prefix")
+    
   }
   
   ## Check that no corresponding items have duplicate responses over time
@@ -490,16 +451,21 @@ check_dups_over_time <- function(data, prefixes, .measure, .subscale, exclude) {
                  names_to = c("survey", "item"),
                  names_pattern = "(^[^_]+)_(.*)",
                  values_to = "value") %>%
-    pivot_wider(names_from = "item", values_from = "value")
+    pivot_wider(names_from = "item", values_from = "value") %>%
+    select(-survey)
 
   # Check for duplicate responses over time
   dup_ids <- unique(data$lsmh_id[duplicated(data)])
   
   if (length(dup_ids) == 0) {
+    
     cat("No duplicated responses over time")
+    
   } else {
+    
     cat("Duplicated responses over time for these IDs (see below): ", dup_ids, "\n\n")
     print(data[data$lsmh_id %in% dup_ids, ])
+    
   }
 
 }

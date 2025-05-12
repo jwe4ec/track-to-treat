@@ -52,11 +52,15 @@ clean_data_final_dir <- clean_data_dir %+% "final_read_only\\"
 
 
 ####  Run helper function  ####
-create_data_release(clean_data_staging_dir,
-                    clean_data_final_dir,
-                    staged_filenames = c("Phase 1 Youth Qualtrics Clean Data.rds",
-                                         "Phase 1 Youth Qualtrics Clean Data Log.rds",
-                                         "Phase 1 Parent Qualtrics Clean Data.rds",
-                                         "Phase 1 Parent Qualtrics Clean Data Log.rds",
-                                         "Phase 1 LifePak Clean Data.rds",
-                                         "Phase 1 LifePak Clean Data Without Free Responses.rds"))
+create_data_release(
+  clean_data_staging_dir,
+  clean_data_final_dir,
+  staged_filenames = c(
+    "Phase 1 Youth Qualtrics Clean Data.rds",
+    "Phase 1 Youth Qualtrics Clean Data Log.rds",
+    "Phase 1 Parent Qualtrics Clean Data.rds",
+    "Phase 1 Parent Qualtrics Clean Data Log.rds",
+    "Phase 1 LifePak Clean Data.rds",
+    "Phase 1 LifePak Clean Data Without Free Responses.rds"
+  )
+)

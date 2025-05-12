@@ -87,19 +87,16 @@ yb_raw <- bind_rows(
   list(
     "in-person" = yb_in_person_raw, 
     "remote" = yb_remote_raw
-    ),
+  ),
   .id = "administration"
 )
 
 
-### Confirm that all IDs match "validate" columns and then remove "validate" columns
+### Confirm that all IDs match "validate" columns
 all(yb_raw$yb_lsmh_id == yb_raw$`yb_lsmh_id_ validate`, na.rm = TRUE)
 all(yb_raw$`yb_LifePak ID` == yb_raw$`yb_LifePak ID Verify`, na.rm = TRUE)
 all(yb_raw$yb_phone == yb_raw$yb_phone_validate, na.rm = TRUE)
 all(y3m_raw$y3m_lsmh_id == y3m_raw$`y3_lsmh_id_ validate`, na.rm = TRUE)
-
-yb_raw[, c("yb_lsmh_id_ validate", "yb_LifePak ID Verify", "yb_phone_validate")] <- NULL
-y3m_raw[, "y3_lsmh_id_ validate"] <- NULL
 
 
 ### Remove invalid responses
@@ -124,7 +121,11 @@ yb_valid_ids$`yb_LifePak ID`[yb_valid_ids$yb_lsmh_id == "LSMH00306"] <- "130294"
 yb_valid_ids$`yb_LifePak ID`[yb_valid_ids$yb_lsmh_id == "LSMH00416"] <- "946021"
 
 # Fill LifePak ID across duplicates using helper function
-yb_valid_ids <- fill_lifepak_id(yb_valid_ids, yb_lsmh_id)
+yb_valid_ids <- fill_lifepak_id(
+  data = yb_valid_ids,
+  lsmh_id = yb_lsmh_id,
+  lifepak_id = `yb_LifePak ID`
+)
 
 
 ### Add LSMH ID to LifePak Data
@@ -138,14 +139,21 @@ lsmh_id_lookup <- yb_valid_ids %>%
   distinct(lifepak_id, lsmh_id)
 
 nis_valid_with_lsmh_id <- nis_valid %>%
-  left_join(lsmh_id_lookup, by = "lifepak_id", relationship = "many-to-one")
+  left_join(
+    lsmh_id_lookup, 
+    by = "lifepak_id", 
+    relationship = "many-to-one"
+  )
 
 
-### Create lists for logging (a) items used to compute item completion rates below via
-### compute_item_completion_rate(), (b) items used to compute means via mean_across(),
-### and (c) clean codebook (edited and added to log below)
-log <- list(item_completion_rate = list(),
-            mean_items = list())
+### Create log
+# Create lists for logging (a) items used to compute item completion rates below via
+# compute_item_completion_rate(), (b) items used to compute means via mean_across(),
+# and (c) clean codebook (edited and added to log below)
+log <- list(
+  item_completion_rate = list(),
+  mean_items = list()
+)
 
 
 ### Identify duplicates and compute item completion rate for removing duplicates
@@ -163,7 +171,7 @@ y3m_valid_ids <- compute_item_completion_rate(y3m_valid_ids, "y3m")
 # Obtain EMA notification dates from LifePak data and compute end of EMA period
 ema_notif_dates <- nis_valid_with_lsmh_id %>%
   group_by(lifepak_id) %>%
-  summarise(
+  summarize(
     lsmh_id = unique(lsmh_id),
     first_ema_notif_date = min(notification_date),
     last_ema_notif_date = max(notification_date),
@@ -174,8 +182,14 @@ ema_notif_dates <- nis_valid_with_lsmh_id %>%
 # Compute indicator of baseline survey completion in window using helper function
 yb_valid_ids <- mark_b_done_in_ax_window(yb_valid_ids, "yb_lsmh_id", ema_notif_dates)
 
-# Remove any baseline surveys outside window (0) using helper function
-yb_valid_ids <- remove_out_of_ax_window(yb_valid_ids, "yb_lsmh_id", "yb")
+# Print and remove any baseline surveys outside window (0)
+yb_valid_ids %>%
+  filter(!in_window_b) %>%
+  select(yb_lsmh_id, "StartDate", "EndDate", "first_ema_notif_date", "in_window_b", "item_completion_rate") %>%
+  arrange(yb_lsmh_id, EndDate)
+
+yb_valid_ids <- yb_valid_ids %>%
+  filter(in_window_b)
 
 # Remove baseline duplicates using helper function
 yb_deduplicated <- remove_duplicates(yb_valid_ids, yb_lsmh_id)
@@ -197,26 +211,35 @@ identify_duplicates(yb_deduplicated, yb_lsmh_id)
 # above (more forgiving) to compute end dates from start dates for the original window.
 # - Because some surveys were completed late, also compute an extended window that
 # extends the original window's end date by a reasonable 14 days.
-
 ax_windows <- yb_deduplicated %>%
-  select(yb_lsmh_id, StartDate, EndDate,
-         first_ema_notif_date, last_ema_notif_date, end_ema_period) %>%
-  rename(lsmh_id = yb_lsmh_id,
-         StartDate_yb = StartDate,
-         EndDate_yb = EndDate) %>%
-  
+  select(
+    lsmh_id = yb_lsmh_id, 
+    StartDate_yb = StartDate, 
+    EndDate_yb = EndDate, 
+    first_ema_notif_date, last_ema_notif_date, end_ema_period
+  ) %>%
   rowwise() %>%
-  mutate(start_window_3m_org = as_date(EndDate_yb) %m+% months(3),
-         end_window_3m_org = seq(start_window_3m_org, by = "1 month", length.out = 2)[2],
-         start_window_3m_ext = start_window_3m_org,
-         end_window_3m_ext = end_window_3m_org + days(14)) %>%
+  mutate(
+    start_window_3m_org = as_date(EndDate_yb) %m+% months(3),
+    end_window_3m_org = seq(start_window_3m_org, by = "1 month", length.out = 2)[2],
+    start_window_3m_ext = start_window_3m_org,
+    end_window_3m_ext = end_window_3m_org + days(14)
+  ) %>%
   ungroup()
-         
+
 # Compute indicators of 3-month survey completion in window using helper function
 y3m_valid_ids <- mark_3m_done_in_ax_window(y3m_valid_ids, "y3m_lsmh_id", ax_windows)
 
-# Remove 3-month surveys outside extended window using helper function
-y3m_valid_ids <- remove_out_of_ax_window(y3m_valid_ids, "y3m_lsmh_id", "y3m")
+# Print and remove 3-month surveys outside window
+y3m_valid_ids %>%
+  filter(!in_window_3m_ext) %>%
+  select(y3m_lsmh_id, "StartDate", "EndDate", "start_window_3m_org", "end_window_3m_org",
+         "in_window_3m_org", "days_before_start_window_3m_org", "days_after_end_window_3m_org",
+         "start_window_3m_ext", "end_window_3m_ext", "in_window_3m_ext", "item_completion_rate") %>%
+  arrange(y3m_lsmh_id, EndDate)
+
+y3m_valid_ids <- y3m_valid_ids %>%
+  filter(in_window_3m_ext)
 
 # Remove 3-month duplicates using helper function
 y3m_deduplicated <- remove_duplicates(y3m_valid_ids, y3m_lsmh_id)
@@ -226,7 +249,7 @@ identify_duplicates(y3m_deduplicated, y3m_lsmh_id)
 
 # Remove columns redundant with baseline dataset
 y3m_deduplicated <- y3m_deduplicated %>%
-  select(-StartDate_yb, -EndDate_yb, -first_ema_notif_date, -last_ema_notif_date, -end_ema_period)
+  select(-c(StartDate_yb, EndDate_yb, first_ema_notif_date, last_ema_notif_date, end_ema_period))
 
 
 ### Merge data by LSMH ID
@@ -246,8 +269,7 @@ y_merged <- full_join(
 )
 
 
-### Clean columns
-## Correct misspelled youth item prefixes in the data and codebook
+### Correct misspelled youth item prefixes in the data and codebook
 # Data: Before
 prefixes_data <- str_extract(colnames(y_merged), "^.*?(?=_)")
 table(prefixes_data)
@@ -275,6 +297,8 @@ table(prefixes_codebook)
 # Add codebook with clean youth items to log (parent items cleaned in parent script)
 log$y_codebook_clean <- codebook
 
+
+### Clean merged data
 # Data collected but not included here:
 # - Self-Referential Encoding Task (SRET)
 # - Prognostic Pessimism for Depression scale (PPD)
@@ -305,7 +329,7 @@ y_clean <- y_merged %>%
       .fns = ~ codebook$reverse_base[codebook$item == cur_column()] - .x
     )
   ) %>%
-
+  
   # Clean columns and create composites
   rowwise() %>%
   mutate(
@@ -356,15 +380,15 @@ y_clean <- y_merged %>%
     # Interpersonal problems subscale
     yb_cdi_inter_mean = mean_across("yb", "CDI-2 SR", "Interpersonal Problems", name = "yb_cdi_inter_mean"),
     y3m_cdi_inter_mean = mean_across("y3m", "CDI-2 SR", "Interpersonal Problems", name = "y3m_cdi_inter_mean"),
-
+    
     # Emotional problems subscale
     yb_cdi_emotional_mean = ((yb_cdi_nmps_mean * 9) + (yb_cdi_nse_mean * 6)) / 15,
     y3m_cdi_emotional_mean = ((y3m_cdi_nmps_mean * 9) + (y3m_cdi_nse_mean * 6)) / 15,
-
+    
     # Functional problems subscale
     yb_cdi_functional_mean = ((yb_cdi_inef_mean * 8) + (yb_cdi_inter_mean * 5)) / 13,
     y3m_cdi_functional_mean = ((y3m_cdi_inef_mean * 8) + (y3m_cdi_inter_mean * 5)) / 13,
-  
+    
     
     ## BHS-4 (Beck Hopelessness Scale - 4-item)
     # Overall mean score
@@ -425,7 +449,7 @@ y_clean <- y_merged %>%
     ## IDAS-II (Inventory of Depression and Anxiety Symptoms - II)
     # Given that scoring likely depends on intended use, we output items but do 
     # not score them (see Table 1 of https://doi.org/f4b85p for scale info)
-
+    
     
     ## SCARED (Screen for Child Anxiety and Related Disorders)
     # Overall mean score
@@ -463,14 +487,14 @@ y_clean <- y_merged %>%
     # (Currently a low priority to code given how time-intensive this is; see
     # Dainer-Best et al., 2018)
     # Items (both baseline and 3m): "SRET", "SRET.keys", "SRET.time", "SRET.words", "tlcond"
-
+    
     
     ## DRS (Dietary Restriction Screener)
     # Two items that do not need to be recoded or combined
     
     
     ## SITBI-SF (Self-Injurious Thoughts and Behaviors Interview - Short Form)
-    # Many items but no recoding or combining
+    # Many items but no recoding or combining (but ranges need to be checked)
     
     
     ## IPTQ (Implicit Personality Theory Questionnaire)
@@ -510,7 +534,7 @@ y_clean <- y_merged %>%
     # Overall mean score
     yb_ucla_mean = mean_across("yb", "ucla", name = "yb_ucla_mean"),
     y3m_ucla_mean = mean_across("y3m", "ucla", name = "y3m_ucla_mean")
-
+    
   ) %>%
   
   ungroup() %>%
@@ -555,6 +579,9 @@ y_clean <- y_merged %>%
     
   )
 
+test <- y_clean[, names(y_clean)[grepl("sitbi", names(y_clean))]]
+
+
 
 ### Check that values are in expected range
 items_to_check <- y_clean %>%
@@ -569,7 +596,6 @@ items_to_check <- y_clean %>%
     matches("_scared_"),
     matches("_shaps_"),
     matches("_drs_"),
-    # matches("_sitbi_"), # 
     matches("_iptq_"),
     matches("_bfamg_"),
     matches("_mpvs_"),
@@ -592,18 +618,20 @@ check_dups_over_time(y_clean, c("yb", "y3m"), "CDI-2 SR")
 
 
 
-####  Save Clean Qualtrics Data and Log, Assessment Windows, and Clean LifePak Data  ####
+####  Save Data  ####
+# Save clean Qualtrics data
 saveRDS(y_clean, clean_data_staging_dir %+% "Phase 1 Youth Qualtrics Clean Data.rds")
+
+# Save log
 saveRDS(log, clean_data_staging_dir %+% "Phase 1 Youth Qualtrics Clean Data Log.rds")
 
+# Save assessment windows
 saveRDS(ax_windows, clean_data_staging_intermediate_dir %+% "Phase 1 Assessment Windows.rds")
 
-# Save clean LifePak data with and without free-response items (until these are deidentified)
+# Save clean LifePak data with free-response items
 saveRDS(nis_valid_with_lsmh_id, clean_data_staging_dir %+% "Phase 1 LifePak Clean Data.rds")
 
-free_responses <- c("most_pleasant", "most_unpleasant", "other_night")
-keep_cols <- setdiff(names(nis_valid_with_lsmh_id), free_responses)
-nis_valid_with_lsmh_id_wout_free_responses <- nis_valid_with_lsmh_id[keep_cols]
-
-saveRDS(nis_valid_with_lsmh_id_wout_free_responses,
-        clean_data_staging_dir %+% "Phase 1 LifePak Clean Data Without Free Responses.rds")
+# Save clean LifePak data without free-response items (until these are deidentified)
+nis_valid_with_lsmh_id %>%
+  select(-c("most_pleasant", "most_unpleasant", "other_night")) %>%
+  saveRDS(clean_data_staging_dir %+% "Phase 1 LifePak Clean Data Without Free Responses.rds")
