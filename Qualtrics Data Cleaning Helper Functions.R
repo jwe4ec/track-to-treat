@@ -35,7 +35,7 @@ remove_invalid_responses <- function(data, id) {
 # Function to fill LifePak ID across duplicates (there is at least one case where a 
 # respondent provided their LifePak ID only in a duplicated, noncomplete response)
 fill_lifepak_id <- function(data, lsmh_id, lifepak_id) {
-  
+
   ## Check that each LSMH ID has <= 1 LifePak ID
   lsmh_ids_with_multiple_lifepak_ids <- data %>%
     distinct({{lsmh_id}}, {{lifepak_id}}) %>%
@@ -119,8 +119,8 @@ compute_item_completion_rate <- function(data, survey_prefix) {
   # Remove columns that should not be included in calculation
   data_for_calculation <- data %>%
     select(
-      -matches("time.*(Click|Submit)"),
-      -matches("_TEXT"),
+      -matches("time.*(Click|Submit)"), # Columns with click and time on page information
+      -matches("_TEXT"), # Columns with specified responses for response options of "Other" (or similar)
       -any_of(qualtrics_metadata),
       -any_of(survey_metadata)
     )
@@ -129,8 +129,10 @@ compute_item_completion_rate <- function(data, survey_prefix) {
   data$item_completion_rate <- rowMeans(!is.na(data_for_calculation))
   
   # Print and log items used to compute completion rate in list stored in global environment
+  item_cols <- colnames(data_for_calculation)
+  
   print("Item completion rate based on these items:")
-  print(colnames(data_for_calculation))
+  print(item_cols)
   
   log$item_completion_rate[[survey_prefix]]$items   <<- item_cols
   log$item_completion_rate[[survey_prefix]]$n_items <<- length(item_cols)
