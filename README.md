@@ -70,9 +70,9 @@ Version control:
   * Cleaning scripts save data to `staging/` to avoid overwriting data in `final_read_only/`
   * `Create Clean Data Release.R` creates versioned "releases" of data in `final_read_only/`
     * Versions < v1.0 are for development only; versions >= v1.0 are suitable for analysis
-    * To view the code (and raw data versions) for a release, go to this repo's corresponding [tag](https://git-scm.com/book/en/v2/Git-Basics-Tagging)
+    * To view the code (and raw data versions) for a release, go to this repo's corresponding [tag](https://github.com/isaacahuvia/track-to-treat/tags)
   * Releases:
-    * v1.0 **(pending)**
+    * **v1.0 (2025-05-12)**
       * Phase I: Cleans LifePak and Qualtrics data (collection over)
         * Clean LifePak data is outputted with and without free responses below (to deidentify in v3.0):
           * `most_pleasant`, `most_unpleasant`, `other_night`
