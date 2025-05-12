@@ -184,8 +184,7 @@ mark_3m_done_in_ax_window <- function(data, id_as_char, ax_windows) {
       in_window_3m_org = as_date(EndDate) >= start_window_3m_org & as_date(EndDate) <= end_window_3m_org,
       in_window_3m_ext = as_date(EndDate) >= start_window_3m_ext & as_date(EndDate) <= end_window_3m_ext,
       
-      # If done early, compute days before start of originally intended window and throw 
-      # a warning to consider whether extended window needs earlier start date
+      # If done early, compute days before start of originally intended window
       days_before_start_window_3m_org = ifelse(
         as_date(EndDate) < start_window_3m_org,
         as_date(EndDate) - start_window_3m_org,
@@ -201,7 +200,7 @@ mark_3m_done_in_ax_window <- function(data, id_as_char, ax_windows) {
       
     )
   
-  # Throw warning if any surveys were completed before start of window
+  # Throw warning if any surveys were completed before start of original window
   if (any(!is.na(data$days_before_start_window_3m_org))) {
     
     warning("Survey(s) completed before original window. Consider earlier start date for extended window.")

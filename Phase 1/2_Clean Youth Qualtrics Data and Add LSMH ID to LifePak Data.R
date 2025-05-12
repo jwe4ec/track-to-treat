@@ -182,10 +182,11 @@ ema_notif_dates <- nis_valid_with_lsmh_id %>%
 # Compute indicator of baseline survey completion in window using helper function
 yb_valid_ids <- mark_b_done_in_ax_window(yb_valid_ids, "yb_lsmh_id", ema_notif_dates)
 
-# Print and remove any baseline surveys outside window
+# Print and remove any baseline surveys outside window (0)
 yb_valid_ids %>%
   filter(!in_window_b) %>%
-  select(yb_lsmh_id, "StartDate", "EndDate", "first_ema_notif_date", "in_window_b", "item_completion_rate")
+  select(yb_lsmh_id, "StartDate", "EndDate", "first_ema_notif_date", "in_window_b", "item_completion_rate") %>%
+  arrange(yb_lsmh_id, EndDate)
 
 yb_valid_ids <- yb_valid_ids %>%
   filter(in_window_b)
@@ -229,10 +230,13 @@ ax_windows <- yb_deduplicated %>%
 # Compute indicators of 3-month survey completion in window using helper function
 y3m_valid_ids <- mark_3m_done_in_ax_window(y3m_valid_ids, "y3m_lsmh_id", ax_windows)
 
-# Print and remove any 3m surveys outside window
+# Print and remove 3-month surveys outside window
 y3m_valid_ids %>%
   filter(!in_window_3m_ext) %>%
-  select(y3m_lsmh_id, "StartDate", "EndDate", "first_ema_notif_date", "in_window_3m_ext", "item_completion_rate")
+  select(y3m_lsmh_id, "StartDate", "EndDate", "start_window_3m_org", "end_window_3m_org",
+         "in_window_3m_org", "days_before_start_window_3m_org", "days_after_end_window_3m_org",
+         "start_window_3m_ext", "end_window_3m_ext", "in_window_3m_ext", "item_completion_rate") %>%
+  arrange(y3m_lsmh_id, EndDate)
 
 y3m_valid_ids <- y3m_valid_ids %>%
   filter(in_window_3m_ext)

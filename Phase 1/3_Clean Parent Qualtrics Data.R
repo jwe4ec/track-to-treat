@@ -142,10 +142,11 @@ ema_notif_dates <- ax_windows[, c("lsmh_id", "first_ema_notif_date", "last_ema_n
 # Compute indicator of baseline survey completion in window using helper function
 pb_valid_ids <- mark_b_done_in_ax_window(pb_valid_ids, "pb_lsmh_id", ema_notif_dates)
 
-# Print and remove any baseline surveys outside window
+# Print and remove any baseline surveys outside window (0)
 pb_valid_ids %>%
   filter(!in_window_b) %>%
-  select(pb_lsmh_id, "StartDate", "EndDate", "first_ema_notif_date", "in_window_b", "item_completion_rate")
+  select(pb_lsmh_id, "StartDate", "EndDate", "first_ema_notif_date", "in_window_b", "item_completion_rate") %>%
+  arrange(pb_lsmh_id, EndDate)
 
 pb_valid_ids <- pb_valid_ids %>%
   filter(in_window_b)
@@ -161,10 +162,13 @@ identify_duplicates(pb_deduplicated, pb_lsmh_id)
 # Compute indicators of 3-month survey completion in window using helper function
 p3m_valid_ids <- mark_3m_done_in_ax_window(p3m_valid_ids, "p3m_lsmh_id", ax_windows)
 
-# Print and remove any 3-month surveys outside window
+# Print and remove 3-month surveys outside window
 p3m_valid_ids %>%
   filter(!in_window_3m_ext) %>%
-  select(p3m_lsmh_id, "StartDate", "EndDate", "first_ema_notif_date", "in_window_3m_ext", "item_completion_rate")
+  select(p3m_lsmh_id, "StartDate", "EndDate", "start_window_3m_org", "end_window_3m_org",
+         "in_window_3m_org", "days_before_start_window_3m_org", "days_after_end_window_3m_org",
+         "start_window_3m_ext", "end_window_3m_ext", "in_window_3m_ext", "item_completion_rate") %>%
+  arrange(p3m_lsmh_id, EndDate)
 
 p3m_valid_ids <- p3m_valid_ids %>%
   filter(in_window_3m_ext)
@@ -177,7 +181,7 @@ identify_duplicates(p3m_deduplicated, p3m_lsmh_id)
 
 # Remove columns redundant with baseline dataset
 p3m_deduplicated <- p3m_deduplicated %>%
-  select(-first_ema_notif_date, -last_ema_notif_date, -end_ema_period)
+  select(-c(first_ema_notif_date, last_ema_notif_date, end_ema_period))
 
 
 ### Merge data by LSMH ID
