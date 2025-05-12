@@ -494,7 +494,7 @@ y_clean <- y_merged %>%
     
     
     ## SITBI-SF (Self-Injurious Thoughts and Behaviors Interview - Short Form)
-    # Many items but no recoding or combining
+    # Many items but no recoding or combining (but ranges need to be checked)
     
     
     ## IPTQ (Implicit Personality Theory Questionnaire)
@@ -578,6 +578,9 @@ y_clean <- y_merged %>%
     matches("_ucla_")
     
   )
+
+test <- y_clean[, names(y_clean)[grepl("sitbi", names(y_clean))]]
+
 
 
 ### Check that values are in expected range
