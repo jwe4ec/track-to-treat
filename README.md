@@ -11,9 +11,8 @@ File organization:
 
 * README.md
 * Phase 1/
-  * README.md
   * Raw P1 Metadata.csv (used to track expected raw data versions for checks against loaded files)
-  * Track to Treat P1 Codebook.xlsx (an item-level codebook used to clean the Qualtrics data)
+  * 2025.05.01 Track to Treat P1 Codebook.xlsx (an item-level codebook used to clean the Qualtrics data)
   * 1_Clean LifePak Data.R
   * 2_Clean Youth Qualtrics Data and Add LSMH ID to LifePak Data.R
   * 3_Clean Parent Qualtrics Data.R
@@ -22,8 +21,15 @@ File organization:
     * Check Overlap.R (checking ID overlap across datasets)
     * Compare Clean LifePak Datasets.R (checking clean LifePak data to previous versions)
 * Phase 2/
-  * README.md
-  * [TBD]
+  * Raw P2 Metadata.csv (used to track expected raw data versions for checks against loaded files) [WIP]
+  * 2025.05.14 Track to Treat P2 Codebook.xlsx (an item-level codebook used to clean the Qualtrics data)
+  * 1_Clean LifePak Data.R [WIP]
+  * 2_Clean Youth Qualtrics Data and Add LSMH ID to LifePak Data.R [WIP]
+  * 3_Clean Parent Qualtrics Data.R [WIP]
+  * 4_Create Clean Data Release.R [WIP]
+  * QA/
+    * Check Overlap.R (checking ID overlap across datasets) [WIP]
+    * Compare Clean LifePak Datasets.R (checking clean LifePak data to previous versions) [WIP]
 
 Data cleaning notes:
 
@@ -38,13 +44,16 @@ Data cleaning notes:
 * LifePak data
   * LifePak IDs here are 6 digits (5-digit IDs elsewhere have leading 0 here; take care when comparing IDs)
   * Clean data includes EMA surveys only (excludes "feedback surveys", which were given after EMA surveys)
-  * Negative values for `interest` are recoded as 0 in the clean data
-    * "3T_P1_V1_NIS_2020_Mar_02.csv" from survey "TRACK to TREAT P1" had some negative values for `Session.Name` "3T Project Day", whose response options for this item were set from -2 to 100
-  * Some participants got their first notification after 7:30 am; it's unclear how or why
-  * Empty rows from multiple datasets overlapping in time for LifePak ID 958251 are removed
-  * Most participants have 105 total notifications, but some have fewer; it's unclear why
   * Raw `Notification.Time` is in local time zones of participants' devices (per LifeData support)
     * Clean timestamp stores these in UTC (actual time zones could be derived from [incomplete] GPS data)
+  * Phase 1 specifics:
+    * Negative values for `interest` are recoded as 0 in the clean data
+      * "3T_P1_V1_NIS_2020_Mar_02.csv" from survey "TRACK to TREAT P1" had some negative values for `Session.Name` "3T Project Day", whose response options for this item were set from -2 to 100
+    * Some participants got their first notification after 7:30 am; it's unclear how or why
+    * Empty rows from multiple datasets overlapping in time for LifePak ID 958251 are removed
+    * Most participants have 105 total notifications, but some have fewer; it's unclear why
+  * Phase 2 specifics:
+    * There was considerably more messiness with the EMA surveys with the larger sample in Phase 2. Many participants have fewer than 105 notifications, and some have more
 
 * Qualtrics data
   * Clean Columns section lists raw data available that have not yet been cleaned
