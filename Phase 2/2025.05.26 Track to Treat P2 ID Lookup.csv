@@ -1,0 +1,600 @@
+lsmh_id,lifepak_id,action,notes
+LSMH00000,NA,drop,Apparent test data
+LSMH00666,786805,keep,
+LSMH00680,280426,keep,
+LSMH00709,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00749,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00752,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00755,095387,keep,
+LSMH00765,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00766,916614,keep,
+LSMH00768,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00773,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00774,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00776,997589,keep,
+LSMH00784,262266,keep,
+LSMH00785,092365,keep,
+LSMH00787,052994,keep,
+LSMH00793,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00794,796041,keep,
+LSMH00795,245719,keep,
+LSMH00800,070858,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00801,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00802,117138,keep,
+LSMH00803,412931,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00806,995737,keep,
+LSMH00807,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00808,255574,keep,
+LSMH00809,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00817,839206,keep,
+LSMH00820,969268,keep,
+LSMH00822,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00823,094288,keep,
+LSMH00825,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00827,571041,keep,
+LSMH00830,042826,keep,
+LSMH00832,168477,keep,
+LSMH00834,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00835,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00837,721049,keep,
+LSMH00838,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00839,245768,keep,
+LSMH00841,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00843,007405,keep,
+LSMH00844,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00846,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00847,929308,keep,
+LSMH00853,NA,drop,"""Not eligible,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00854,019380,keep,
+LSMH00856,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00859,467546,keep,
+LSMH00861,921620,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00865,497981,keep,
+LSMH00866,117066,keep,
+LSMH00868,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00875,033121,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00877,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00878,NA,drop,"""Not eligible,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00879,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00880,997439,keep,
+LSMH00886,431874,keep,
+LSMH00888,366106,drop,"Opted out, per README_ttt_p2_data_collection"
+LSMH00891,554804,keep,
+LSMH00893,754568,keep,
+LSMH00894,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00896,552344,keep,"Opted out but data can be used, per README_ttt_p2_data_collection"
+LSMH00897,233908,keep,
+LSMH00898,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00899,515786,keep,
+LSMH00900,288190,keep,
+LSMH00901,923381,keep,
+LSMH00904,434162,keep,
+LSMH00905,686816,keep,
+LSMH00906,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00907,NA,drop,"""Not eligible,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00910,380945,keep,
+LSMH00911,706309,keep,
+LSMH00919,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00920,317903,keep,
+LSMH00922,839979,keep,
+LSMH00923,033949,keep,
+LSMH00925,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00934,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00939,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00941,417892,keep,
+LSMH00946,532325,keep,
+LSMH00948,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00949,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00952,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00953,268045,keep,"LifePak ID in Qualtrics data is incorrect, per README_ttt_p2_data_collection"
+LSMH00956,283165,keep,
+LSMH00962,075872,keep,
+LSMH00968,492330,keep,
+LSMH00971,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00972,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00976,993823,keep,
+LSMH00977,164083,keep,
+LSMH00978,237459,keep,
+LSMH00986,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00991,404066,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH00992,493955,keep,"LifePak ID in Qualtrics data is incorrect, per README_ttt_p2_data_collection"
+LSMH00996,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01001,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01008,640697,keep,
+LSMH01012,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01019,823958,keep,"Used two LifePak IDs, per README_ttt_p2_data_collection"
+LSMH01019,906962,keep,"Used two LifePak IDs, per README_ttt_p2_data_collection"
+LSMH01020,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01021,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01025,203826,keep,
+LSMH01035,609499,keep,
+LSMH01041,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01042,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01043,930010,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01050,943391,keep,
+LSMH01051,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01056,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01057,319665,keep,
+LSMH01065,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01069,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01072,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01077,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01078,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01083,324562,drop,"Invalid, per README_ttt_p2_data_collection"
+LSMH01089,594699,keep,
+LSMH01091,293541,keep,
+LSMH01094,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01095,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01096,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01107,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01109,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01121,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01122,952235,keep,
+LSMH01123,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01124,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01127,950572,keep,
+LSMH01131,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01132,723137,keep,
+LSMH01134,557454,keep,
+LSMH01136,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01139,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01143,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01145,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01146,540640,keep,
+LSMH01150,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01155,322476,keep,"Used two LifePak IDs, per README_ttt_p2_data_collection"
+LSMH01155,334418,keep,"Used two LifePak IDs, per README_ttt_p2_data_collection"
+LSMH01156,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01161,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01162,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01178,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01182,257707,keep,
+LSMH01184,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01186,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01187,993565,keep,
+LSMH01189,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01190,716485,keep,
+LSMH01195,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01197,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01203,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01213,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01214,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01215,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01234,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01240,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01241,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01244,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01260,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01269,122772,keep,"Used two LifePak IDs, per README_ttt_p2_data_collection"
+LSMH01269,707268,keep,"Used two LifePak IDs, per README_ttt_p2_data_collection"
+LSMH01274,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01276,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01278,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01280,718561,keep,
+LSMH01281,119299,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01291,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01293,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01294,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01297,864171,keep,
+LSMH01317,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01322,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01332,138774,keep,
+LSMH01337,743101,keep,
+LSMH01339,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01341,387332,keep,
+LSMH01343,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01352,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01360,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01365,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01366,031475,keep,
+LSMH01370,691100,keep,
+LSMH01373,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01384,390179,keep,
+LSMH01388,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01390,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01391,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01394,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01397,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01398,394657,keep,
+LSMH01400,164932,keep,
+LSMH01401,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01404,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01405,825987,keep,
+LSMH01406,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01409,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01411,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01419,059129,keep,
+LSMH01421,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01423,719426,keep,
+LSMH01426,637700,keep,
+LSMH01429,143493,keep,
+LSMH01434,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01436,974086,keep,
+LSMH01438,107278,keep,
+LSMH01439,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01441,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01444,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01451,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01455,713029,keep,
+LSMH01456,298239,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01457,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01460,462666,keep,
+LSMH01469,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01470,144083,keep,
+LSMH01478,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01483,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01485,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01489,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01490,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01494,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01496,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01497,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01499,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01512,592019,keep,
+LSMH01514,727832,keep,
+LSMH01519,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01522,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01523,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01528,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01536,883510,keep,
+LSMH01542,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01547,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01549,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01550,698109,keep,
+LSMH01552,006351,keep,
+LSMH01553,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01554,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01555,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01557,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01559,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01560,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01563,459534,keep,
+LSMH01571,771937,keep,
+LSMH01572,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01575,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01582,490606,keep,
+LSMH01588,000219,keep,
+LSMH01596,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01608,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01614,291599,drop,"Opted out, per README_ttt_p2_data_collection"
+LSMH01619,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01627,212074,keep,
+LSMH01628,540380,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01629,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01638,405360,keep,
+LSMH01641,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01643,668772,keep,
+LSMH01644,919331,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01645,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01652,556041,keep,
+LSMH01653,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01654,844751,keep,
+LSMH01656,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01657,023754,keep,
+LSMH01660,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01662,143200,keep,
+LSMH01668,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01677,570852,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01679,207085,keep,
+LSMH01683,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01684,358452,keep,
+"LSMH01693",NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01694,888967,keep,
+LSMH01702,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01706,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01709,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01710,723906,keep,
+LSMH01714,232616,keep,
+LSMH01725,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01729,466267,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01741,253356,keep,
+LSMH01743,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01745,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01753,694614,keep,
+LSMH01757,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01758,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01766,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01768,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01775,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01783,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01786,326117,keep,"Used two LifePak IDs, per README_ttt_p2_data_collection"
+LSMH01786,867499,keep,"Used two LifePak IDs, per README_ttt_p2_data_collection"
+LSMH01787,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01791,821739,keep,
+LSMH01795,816020,keep,
+LSMH01811,764447,drop,"Invalid, per README_ttt_p2_data_collection"
+LSMH01814,711645,keep,
+LSMH01817,857136,keep,
+LSMH01820,917619,keep,"Used two LifePak IDs; opted out but data can be used, per README_ttt_p2_data_collection"
+LSMH01820,217510,keep,"Used two LifePak IDs; opted out but data can be used, per README_ttt_p2_data_collection"
+LSMH01821,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01826,886941,keep,
+LSMH01829,337896,keep,
+LSMH01836,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01838,680039,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01839,083539,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01840,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01841,131166,keep,"Used two LifePak IDs, per README_ttt_p2_data_collection"
+LSMH01841,303379,keep,"Used two LifePak IDs, per README_ttt_p2_data_collection"
+LSMH01844,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01846,539251,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01853,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01856,925468,keep,
+LSMH01857,588876,keep,
+LSMH01861,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01871,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01875,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01879,680517,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01880,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01884,404350,drop,"Invalid, per README_ttt_p2_data_collection"
+LSMH01886,347614,keep,
+LSMH01892,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01894,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01895,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01896,240896,keep,
+LSMH01898,038363,keep,
+LSMH01900,341334,keep,
+LSMH01901,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01903,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01904,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01907,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01912,195128,keep,
+LSMH01914,063040,keep,"Used two LifePak IDs, per README_ttt_p2_data_collection"
+LSMH01914,500856,keep,"Used two LifePak IDs, per README_ttt_p2_data_collection"
+LSMH01918,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01920,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01921,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01928,275386,keep,
+LSMH01938,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01940,945143,keep,
+LSMH01943,056101,keep,
+LSMH01944,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01945,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01950,550665,keep,
+LSMH01956,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01959,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01965,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01967,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01968,984661,keep,
+LSMH01969,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01978,054488,keep,
+LSMH01989,576558,keep,"Used two LifePak IDs, per README_ttt_p2_data_collection"
+LSMH01989,995977,keep,"Used two LifePak IDs, per README_ttt_p2_data_collection"
+LSMH01991,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01992,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01997,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH01999,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02007,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02016,651465,keep,
+LSMH02020,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02022,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02033,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02044,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02045,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02054,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02055,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02057,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02060,552987,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02061,820860,keep,
+LSMH02070,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02076,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02077,208948,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02078,689283,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02079,724556,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02080,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02081,733531,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02091,424178,keep,
+LSMH02095,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02097,684409,keep,
+LSMH02105,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02112,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02115,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02116,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02119,272694,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02122,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02127,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02128,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02129,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02131,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02136,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02147,704998,keep,
+LSMH02148,643710,keep,
+LSMH02150,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02157,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02160,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02161,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02165,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02168,161309,keep,
+LSMH02169,882844,keep,
+LSMH02170,782453,keep,
+LSMH02172,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02176,340335,keep,
+LSMH02181,898891,keep,"Used two LifePak IDs, per README_ttt_p2_data_collection"
+LSMH02181,961421,keep,"Used two LifePak IDs, per README_ttt_p2_data_collection"
+LSMH02182,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02184,219389,keep,
+LSMH02185,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02190,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02191,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02195,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02206,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02209,238198,keep,
+LSMH02210,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02213,247895,keep,
+LSMH02217,746951,keep,
+LSMH02235,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02238,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02240,232359,keep,
+LSMH02242,776124,keep,
+LSMH02243,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02254,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02255,657123,keep,
+LSMH02256,913989,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02257,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02259,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02260,507008,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02261,093827,keep,
+LSMH02262,573442,keep,
+LSMH02264,443464,keep,
+LSMH02265,948300,keep,
+LSMH02270,379350,keep,
+LSMH02273,356158,keep,
+LSMH02275,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02283,517428,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02295,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02307,384741,keep,
+LSMH02311,594968,keep,
+LSMH02319,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02322,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02326,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02329,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02333,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02339,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02344,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02350,NA,keep,"Opted out but data can be used, per README_ttt_p2_data_collection"
+LSMH02352,563895,keep,
+LSMH02364,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02373,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02386,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02388,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02405,413115,drop,"Invalid, per README_ttt_p2_data_collection"
+LSMH02407,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02409,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02410,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02416,922728,keep,
+LSMH02420,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02422,095929,keep,"Used two LifePak IDs, per README_ttt_p2_data_collection"
+LSMH02422,632541,keep,"Used two LifePak IDs, per README_ttt_p2_data_collection"
+LSMH02423,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02427,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02428,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02434,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02437,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02442,987930,keep,
+LSMH02443,474584,keep,
+LSMH02454,436476,keep,
+LSMH02455,776554,keep,
+LSMH02460,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02463,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02466,587713,keep,
+LSMH02467,762466,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02470,681809,keep,
+LSMH02471,458020,keep,
+LSMH02472,064118,keep,
+LSMH02477,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02478,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02484,482692,keep,
+LSMH02485,581906,keep,
+LSMH02488,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02489,300227,keep,
+LSMH02491,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02493,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02494,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02496,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02497,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02499,466172,keep,
+LSMH02504,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02508,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02509,891450,keep,
+LSMH02512,019345,keep,
+LSMH02513,849302,keep,
+LSMH02520,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02522,936838,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02527,274472,keep,
+LSMH02528,533690,keep,
+LSMH02533,551833,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02534,353343,keep,
+LSMH02535,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02539,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02542,716962,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02549,104455,keep,
+LSMH02554,530417,keep,
+LSMH02555,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02564,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02567,355640,keep,
+LSMH02569,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02583,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02585,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02586,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02588,646972,keep,
+LSMH02591,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02595,219199,keep,
+LSMH02596,615984,keep,
+LSMH02599,971043,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02600,NA,drop,"""Not eligible,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02604,023789,keep,
+LSMH02612,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02613,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02618,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02625,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02626,428372,keep,
+LSMH02633,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02636,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02643,559231,keep,
+LSMH02645,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02647,828843,keep,
+LSMH02648,266094,keep,
+LSMH02657,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02661,373999,keep,
+LSMH02664,972202,keep,
+LSMH02665,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02667,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02671,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02672,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02676,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02679,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02688,347301,keep,
+LSMH02691,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02693,425756,keep,
+LSMH02697,483182,keep,
+LSMH02699,151295,keep,
+LSMH02701,247910,keep,
+LSMH02707,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02723,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02737,933592,keep,
+LSMH02739,267552,keep,
+LSMH02745,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02751,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02756,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02758,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02760,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02764,541040,keep,
+LSMH02765,630437,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02772,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02774,977457,keep,
+LSMH02782,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02786,056379,keep,
+LSMH02788,129681,keep,
+LSMH02790,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02793,976398,keep,
+LSMH02795,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02798,341148,keep,
+LSMH02804,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02805,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02806,892756,keep,
+LSMH02808,245736,keep,
+LSMH02810,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02822,014379,keep,
+LSMH02832,750032,keep,
+LSMH02835,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02843,NA,keep,"""Not interested,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02848,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02852,451137,keep,
+LSMH02856,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02864,783039,keep,
+LSMH02866,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02879,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02884,948661,keep,
+LSMH02889,683517,keep,
+LSMH02893,833863,keep,
+LSMH02904,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02908,834971,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02921,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02927,NA,drop,"""Not eligible,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH02930,834337,keep,
+LSMH02931,NA,keep,"""No contact,"" per Track to Treat P2 Tracking Log 2.0"
+LSMH12345,NA,drop,Apparent test data
+NA,162922,drop,"Test data, per README_ttt_p2_data_collection"
+NA,200466,drop,"Test data, per Piloting Feedback TTT P2 LifePak"
+NA,428939,drop,"Test data, per Piloting Feedback TTT P2 LifePak"
+NA,093122,drop,"Test data, per Piloting Feedback TTT P2 LifePak"

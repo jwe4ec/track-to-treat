@@ -1,0 +1,501 @@
+## Track-to-Treat Phase 2 Data Cleaning, Parent Qualtrics, Baseline
+# R version 4.4.3
+
+####  Startup  ####
+## Load packages
+library(groundhog) # 3.2.2
+groundhog_date <- "2025-03-28"
+meta.groundhog(groundhog_date)
+groundhog.library(
+  pkg = c("tidyverse", "tidylog", "lubridate", "qualtRics", "openxlsx", "here"),
+  date = groundhog_date
+)
+`%+%` <- paste0
+
+
+## Load helper functions
+source(here("Qualtrics Data Cleaning Helper Functions.R"))
+source(here("Version Control Helper Functions.R"))
+
+
+## Load Qualtrics data
+# Save directories
+raw_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT P2\\Data\\Qualtrics\\Raw\\2025.05.22_interim\\"
+clean_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT P2\\Data\\Clean Data (Isaac)\\"
+clean_data_staging_dir <- clean_data_dir %+% "staging\\"
+clean_data_staging_intermediate_dir <- clean_data_staging_dir %+% "intermediate\\"
+
+# Load raw Qualtrics datasets (storing paths) in this format: [respondent][wave]_[administration]_raw
+# - Note: Use "timeZone" specified for date columns (e.g., "StartDate") in third row of raw CSV
+pb_path <- raw_data_dir %+% "DP5+Phase+2+-+Parent+-+Baseline_May+6,+2025_09.42_n.csv"
+pb_raw <- read_survey(pb_path, time_zone = "America/Denver")
+
+
+## Load ID lookup
+id_lookup <- read_csv(here("Phase 2", "2025.05.26 Track to Treat P2 ID Lookup.csv"))
+
+
+## Load item-level codebook file
+codebook <- load_p2_codebook(here("Phase 2", "2025.05.26 Track to Treat P2 Codebook.xlsx"))
+
+
+## Check raw Qualtrics data versions using helper function
+# raw_metadata <- read.csv(here("Phase 1", "Raw P1 Metadata.csv"))
+# check_raw_data_ver(raw_metadata, yb_path, yb_data, "y_qualtrics")
+
+
+
+####  Clean Data  ####
+## Create log
+# Create lists for logging (a) items used to compute item completion rates below via
+# compute_item_completion_rate(), (b) items used to compute means via mean_across(),
+# and (c) clean codebook (edited and added to log below)
+log <- list(
+  item_completion_rate = list(),
+  mean_items = list()
+)
+
+
+## Clean columns
+pb_recoded <- pb_raw %>%
+  
+  # Remove click, page time variables
+  select(
+    
+    -matches("Click Count"),
+    -matches("First Click"),
+    -matches("Last Click"),
+    -matches("Page Submit")
+    
+  ) %>%
+  
+  # Rename "mvps" to "mpvs" throughout
+  rename_with(
+    .cols = contains("mvps"),
+    .fn = ~ gsub("mvps", "mpvs", .x)
+  ) %>%
+  
+  # Un-reverse code items
+  mutate(
+    across(
+      .cols = any_of(codebook$item[codebook$reversed %in% 1]),
+      .fns = ~ codebook$reverse_base[codebook$item == cur_column()] - .x
+    )
+  ) %>%
+  
+  # Clean remaining columns by row
+  rowwise() %>%
+  mutate(
+    
+    ## Metadata
+    # ID (manually correcting as necessary)
+    lsmh_id = case_when(
+      
+      # Cases to be manually recoded
+      lsmh_id == "Baseline" & pb_lsmh_id == "LSMH02533" ~ "LSMH02533",
+      lsmh_id == "LMSH00886" & pb_lsmh_id == "LSMH00886" ~ "LSMH00886",
+      lsmh_id == "LSMH01836 Password: 3tp2_parent" ~ "LSMH01836",
+      
+      # Cases where both match
+      lsmh_id == pb_lsmh_id ~ lsmh_id,
+      
+      # Cases where one is missing (keep the non-missing value)
+      is.na(lsmh_id) & !is.na(pb_lsmh_id) ~ pb_lsmh_id,
+      is.na(pb_lsmh_id) & !is.na(lsmh_id) ~ lsmh_id,
+      
+      # Cases where both are missing
+      is.na(lsmh_id) & is.na(pb_lsmh_id) ~ NA_character_,
+      
+      # Additional cases are flagged for cleaning
+      T ~ "ID Combination Unaccounted For (lsmh_id '" %+% lsmh_id %+% "', pb_lsmh_id '" %+% pb_lsmh_id %+% "')"
+      
+    ),
+    
+    # Survey completion
+    pb_complete = Finished == 1,
+    
+    # Survey datetime and duration
+    pb_datetime = EndDate,
+    pb_date = date(pb_datetime),
+    pb_duration = EndDate - StartDate,
+    
+    
+    ## Demographics at baseline
+    # Child age
+    pb_child_age = pb_childage,
+    
+    # Child sex
+    pb_child_sex = case_match(
+      pb_childsex,
+      1 ~ "Male",
+      2 ~ "Female"
+    ),
+    
+    # Child gender
+    pb_child_gender = case_match(
+      pb_childgender,
+      1 ~ "Agender",
+      2 ~ "Androgyne",
+      3 ~ "Demigender",
+      4 ~ "Genderqueer or genderfluid",
+      5 ~ "Man",
+      6 ~ "Questioning or unsure",
+      7 ~ "Trans man",
+      8 ~ "Trans woman",
+      9 ~ "Woman",
+      10 ~ "Other"
+    ),
+    pb_child_gender_other = pb_childgender_10_TEXT,
+
+    # Child ethnicity
+    pb_child_ethnicity = case_match(
+      pb_childethnicity,
+      1 ~ "AI/AN",
+      2 ~ "Asian",
+      3 ~ "Black/African American",
+      4 ~ "Hispanic or Latino/a/x",
+      5 ~ "NH/PI",
+      6 ~ "White non-Hispanic",
+      8 ~ "Other",
+      9 ~ "Multiple"
+    ),
+    
+    # Child n/siblings
+    pb_n_sisters = as.numeric(pb_siblings_1),
+    pb_n_brothers = as.numeric(pb_siblings_2),
+    pb_n_siblings = pb_n_sisters + pb_n_brothers,
+    
+    # Child grade: Does not need further cleaning
+    
+    # Child school type
+    pb_school = case_when(
+      pb_school == 1 ~ "Public School",
+      pb_school == 2 ~ "Private School",
+      pb_school == 3 ~ "Parochial School",
+      pb_school == 4 ~ "Magnet School",
+      pb_school == 5 ~ "Special Education",
+      pb_school == 6 ~ "Combination of Special Education and Regular School",
+      pb_school == 7 ~ "Other"
+    ),
+    pb_school_other = pb_school_7_TEXT,
+    
+    # Family income
+    pb_income = ordered(
+      pb_income, 
+      levels = 1:8,
+      labels = c(
+        "$0-$19,000",
+        "$20,000-$39,000",
+        "$40,000-$59,000",
+        "$60,000-$79,000",
+        "$80,000-$99,000",
+        "$100,000-$119,000",
+        "$120,000-$140,000",
+        "$140,000+"
+      )
+    ),
+    
+    
+    ## Parent characteristics
+    # Parent age
+    pb_parent_age = if_else(
+      pb_caregiver1_1 == 2, # Set invalid responses to NA
+      NA_real_,
+      pb_caregiver1_1
+    ),
+    
+    # Parent sex
+    pb_parent_sex = case_match(
+      pb_caregiver1_2,
+      1 ~ "Male",
+      2 ~ "Female"
+    ),
+    
+    # Parent gender
+    pb_parent_gender = case_match(
+      pb_caregiver1_3,
+      1 ~ "Agender",
+      2 ~ "Androgyne",
+      3 ~ "Demigender",
+      4 ~ "Genderqueer or genderfluid",
+      5 ~ "Man",
+      6 ~ "Questioning or unsure",
+      7 ~ "Trans man",
+      8 ~ "Trans woman",
+      9 ~ "Woman",
+      10 ~ "Other"
+    ),
+    
+    # Parent ethnicity
+    pb_parent_ethnicity = case_match(
+      pb_caregiver1_4,
+      1 ~ "AI/AN",
+      2 ~ "Asian",
+      3 ~ "Black/African American",
+      4 ~ "Hispanic or Latino/a/x",
+      5 ~ "NH/PI",
+      6 ~ "White non-Hispanic",
+      8 ~ "Other",
+      9 ~ "Multiple"
+    ),
+    
+    # Parent relationship to child
+    pb_parent_relationship_to_child = case_match(
+      pb_caregiver1_5,
+      1 ~ "Biological Parent",
+      2 ~ "Step-Parent",
+      3 ~ "Adoptive Parent",
+      4 ~ "Foster Parent",
+      5 ~ "Other"
+    ),
+    
+    # Parent relationship status
+    pb_parent_relationship_status = case_match(
+      pb_caregiver1_6,
+      1 ~ "Married",
+      2 ~ "Widowed",
+      3 ~ "Divorced",
+      4 ~ "Separated",
+      5 ~ "Never Married",
+      6 ~ "Living with Partner"
+    ),
+    
+    # Single parent status
+    pb_parent_single_parent = case_match(
+      pb_single_parent,
+      1 ~ "Yes",
+      2 ~ "No"
+    ),
+    
+    # Parent educational attainment
+    pb_parent_education = ordered(
+      pb_caregiver1_7, 
+      levels = 1:6,
+      labels = c(
+        "Less than high school",
+        "Attended high school",
+        "Graduated high school",
+        "Attended college",
+        "Bachelor's degree",
+        "Graduate/professional degree"
+      )
+    ),
+
+    
+    ## Child treatment history
+    # Current and lifetime treatment
+    pb_childtx_lifetime = pb_childtx_1 == 1 | pb_childtx_3 == 1,
+    pb_childtx_current = pb_childtx_3 == 1,
+
+    
+    ## Child ACES
+    # Overall mean score
+    pb_child_aces_count = count_across("pb", "ace_y", name = "pb_child_aces_count"), # count_across() from helper function script
+
+    
+    ## Parent ACES
+    # Overall mean score
+    pb_parent_aces_count = count_across("pb", "ace_p", name = "pb_parent_aces_count"),
+
+    
+    ## CDI-2 (Children's Depression Inventory - 2)
+    # Overall mean score
+    pb_cdi_mean = mean_across("pb", "CDI-2 P", name = "pb_cdi_mean"),
+
+    # Emotional problems subscale
+    pb_cdi_emotional_mean = mean_across("pb", "CDI-2 P", "Emotional Problems", name = "pb_cdi_emo_mean"),
+
+    # Functional problems subscale
+    pb_cdi_functional_mean = mean_across("pb", "CDI-2 P", "Functional Problems", name = "pb_cdi_fun_mean"),
+
+    
+    ## BHS-4 (Beck Hopelessness Scale - 4-item)
+    # Overall mean score
+    pb_bhs_mean = mean_across("pb", "bhs", name = "pb_bhs_mean"),
+
+    
+    ## BFAMG (Brief Family Assessment Measure - General Scale)
+    # Overall mean score
+    pb_bfamg_mean = mean_across("pb", "bfamg", name = "pb_bfamg_mean"),
+
+    
+    ## 17 items from BSI-18 (Brief Symptom Inventory-18)
+    # Overall mean score (without suicidal thoughts item)
+    pb_bsi_mean = mean_across("pb", "bsi", name = "pb_bsi_mean"),
+
+    # Somatization subscale
+    pb_bsi_s_mean = mean_across("pb", "bsi", "S", name = "pb_bsi_s_mean"),
+
+    # Depression subscale (without suicidal thoughts item)
+    pb_bsi_d_mean = mean_across("pb", "bsi", "D", name = "pb_bsi_d_mean"),
+
+    # Anxiety subscale
+    pb_bsi_a_mean = mean_across("pb", "bsi", "A", name = "pb_bsi_a_mean"),
+
+    
+    ## BACE (Barriers to Accessing Care Evaluation)
+    # Overall mean score
+    pb_bace_mean = mean_across("pb", "bace", name = "pb_bace_mean"),
+
+    # Treatment stigma subscale
+    pb_bace_stigma_mean = mean_across("pb", "bace", "Treatment Stigma", name = "pb_bace_stigma_mean"),
+
+    
+    ## SCARED (Screen for Child Anxiety and Related Disorders)
+    # Overall mean score
+    pb_scared_mean = mean_across("pb", "scared", name = "pb_scared_mean"),
+
+    # Panic disorder/significant somatic symptoms subscale
+    pb_scared_paso_mean = mean_across("pb", "scared", "PA/SO", name = "pb_scared_paso_mean"),
+
+    # Generalized anxiety disorder subscale
+    pb_scared_ga_mean = mean_across("pb", "scared", "GA", name = "pb_scared_ga_mean"),
+
+    # Separation anxiety disorder subscale
+    pb_scared_sep_mean = mean_across("pb", "scared", "SEP", name = "pb_scared_sep_mean"),
+
+    # Social phobic disorder subscale
+    pb_scared_soc_mean = mean_across("pb", "scared", "SOC", name = "pb_scared_soc_mean"),
+
+    # Significant school avoidance symptoms
+    pb_scared_sch_mean = mean_across("pb", "scared", "SCH", name = "pb_scared_sch_mean"),
+
+  ) %>%
+  
+  ungroup() %>%
+  
+  select(
+    
+    # Metadata
+    lsmh_id,
+    pb_complete,
+    pb_date,
+    pb_datetime,
+    pb_duration,
+    
+    # Parent characteristics
+    pb_parent_age,
+    pb_parent_sex,
+    pb_parent_gender,
+    pb_parent_ethnicity,
+    pb_parent_relationship_to_child,
+    pb_parent_relationship_status,
+    pb_parent_single_parent,
+    pb_parent_education,
+    
+    # Child demographics
+    pb_child_age,
+    pb_child_sex,
+    pb_child_gender,
+    pb_child_gender_other,
+    pb_child_ethnicity,
+    pb_n_sisters,
+    pb_n_brothers,
+    pb_n_siblings,
+    pb_grade,
+    pb_school,
+    pb_income,
+
+    # Child treatment history
+    matches("childtx_lifetime"),
+    matches("childtx_current"),
+    
+    # Measures
+    matches("_child_aces_"),
+    matches("_parent_aces_"),
+    matches("_cdi_"),
+    matches("_bhs_"),
+    matches("_bsi_"),
+    matches("_bace_"),
+    matches("_bfamg_"),
+    matches("_scared_")
+    
+  ) %>%
+  
+  # Compute item completion rate
+  compute_item_completion_rate("pb")
+
+
+## Manual corrections, per README_ttt_p2_data_collection
+pb_recoded$pb_parent_age[pb_recoded$lsmh_id == "LSMH00666"] <- 42
+pb_recoded$pb_parent_age[pb_recoded$lsmh_id == "LSMH00787"] <- 41
+pb_recoded$pb_n_sisters[pb_recoded$lsmh_id == "LSMH00899"] <- 0 # n_siblings is still ok, but sibling is non-binary
+pb_recoded$pb_n_sisters[pb_recoded$lsmh_id == "LSMH00905"] <- 0 # 0, not 4 sisters, and therefore...
+pb_recoded$pb_n_siblings[pb_recoded$lsmh_id == "LSMH00905"] <- 4 # ...4, not 8 siblings
+
+## Check that values are in expected range
+items_to_check <- pb_recoded %>%
+  select(
+    matches("_child_aces_"),
+    matches("_parent_aces_"),
+    matches("_cdi_"),
+    matches("_bhs_"),
+    matches("_bsi_"),
+    matches("_bace_"),
+    matches("_bfamg_"),
+    matches("_scared_"),
+    -ends_with("mean"), -ends_with("count")
+  ) %>%
+  names()
+
+walk(
+  items_to_check,
+  ~ check_values( # Helper function
+    .data = pb_recoded,
+    .item = .x
+  )
+)
+
+
+## Remove invalid responses
+# Known valid LSMH IDs
+valid_ids <- id_lookup %>%
+  filter(action == "keep") %>%
+  distinct(lsmh_id)
+
+invalid_ids <- setdiff(pb_recoded$lsmh_id, valid_ids$lsmh_id)
+
+pb_valid <- pb_recoded %>%
+  inner_join(
+    valid_ids,
+    by = "lsmh_id",
+    relationship = "many-to-one"
+  )
+
+# Just FYI: This is how many IDs/rows included known LSMH IDs matched for removal
+pb_recoded %>%
+  filter(lsmh_id %in% id_lookup$lsmh_id[id_lookup$action == "drop"]) %>%
+  count(lsmh_id)
+
+# Just FYI: No rows contained unknown LSMH IDs (good!)
+# If these rows indicate typos or other errors in the IDs, fix them in the mutate() above
+pb_recoded %>%
+  filter(!lsmh_id %in% id_lookup$lsmh_id) %>%
+  count(lsmh_id)
+
+
+## Deduplicate
+# For LSMH02077, manually keep the latter survey, as this was done on the same day
+# as the child, per README_ttt_p2_data_collection
+pb_manual_filter_02077 <- pb_valid %>%
+  filter(
+    !(lsmh_id == "LSMH02077" & pb_date == mdy("8/27/2022"))
+  )
+
+# Identify duplicates
+identify_duplicates(pb_manual_filter_02077, lsmh_id, pb_complete)
+
+# Remove duplicates
+pb_deduplicated <- remove_duplicates(pb_manual_filter_02077, lsmh_id, pb_datetime)
+
+# Double-check baseline deduplication
+identify_duplicates(pb_deduplicated, lsmh_id, pb_complete)
+
+
+
+####  Save Data  ####
+# Save clean Qualtrics data
+saveRDS(pb_deduplicated, clean_data_staging_dir %+% "Phase 2 Parent Qualtrics Clean Data - Baseline.rds")
+
+# Save log
+# saveRDS(log, clean_data_staging_dir %+% "Phase 2 Parent Qualtrics Clean Data Log - Baseline.rds")

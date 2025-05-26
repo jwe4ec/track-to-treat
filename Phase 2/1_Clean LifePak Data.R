@@ -1,5 +1,4 @@
-## Track-to-Treat Phase 1 Data Cleaning
-## LifePak data
+## Track-to-Treat Phase 2 Data Cleaning, LifePak Data
 # R version 4.4.3
 
 ####  Startup  ####
@@ -8,7 +7,7 @@ library(groundhog) # 3.2.2
 groundhog_date <- "2025-03-28"
 meta.groundhog(groundhog_date)
 groundhog.library(
-  pkg = c("tidyverse", "lubridate", "here", "digest"),
+  pkg = c("tidyverse", "tidylog", "lubridate", "here"),
   date = groundhog_date
 )
 `%+%` <- paste0
@@ -20,25 +19,24 @@ source(here("Version Control Helper Functions.R"))
 
 ## Load data
 # Save directories
-raw_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT P2\\Data\\LifePak\\"
+raw_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT P2\\Data\\LifePak\\2025.05.21\\"
 clean_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT P2\\Data\\Clean Data (Isaac)\\"
 clean_data_staging_dir <- clean_data_dir %+% "staging\\"
 clean_data_staging_intermediate_dir <- clean_data_staging_dir %+% "intermediate\\"
 
 # Load NIS ("notification-initiated survey") datasets
-raw_data_paths <- list(
-  nis_1 = raw_data_dir %+% "DataReports\\TRACK_to_T_NIS_Wide20230823_19_49_36_1.csv",
-  nis_2 = raw_data_dir %+% "DataReports\\TRACK_to_T_NIS_Wide20230823_19_49_36_2.csv",
-  nis_01019_1 = raw_data_dir %+% "LSMH01019\\TRACK_to_T_NIS_Wide20210427_13_22_30.csv",
-  nis_01019_2 = raw_data_dir %+% "LSMH01019\\TRACK_to_T_NIS_Wide20210611_15_22_53.csv",
-  nis_01019_3 = raw_data_dir %+% "LSMH01019\\TRACK_to_T_NIS_Wide20210729_21_07_30.csv",
-  nis_01019_4 = raw_data_dir %+% "LSMH01019\\TRACK_to_T_NIS_Wide20210730_21_14_15.csv",
-  nis_01155 = raw_data_dir %+% "LSMH01155\\TRACK_to_T_NIS_Wide20210803_14_13_35.csv",
-  nis_01550 = raw_data_dir %+% "LSMH01550\\LSMH01550_TRACK_to_T_NIS_Wide20220101_16_36_46.csv"
+raw_data_paths <- lst(
+  nis_1 = raw_data_dir %+% "TRACK to TREAT P2\\NIS_Wide20250521_17_42_45.csv",
+  nis_2 = raw_data_dir %+% "TRACK to TREAT P2 - LSMH01019\\NIS_Wide20250521_17_33_11.csv",
+  nis_3 = raw_data_dir %+% "TRACK to TREAT P2 - LSMH01155\\NIS_Wide20250521_17_27_29.csv",
+  nis_4 = raw_data_dir %+% "TRACK to TREAT P2 - Pilot 2\\NIS_Wide20250521_19_44_38.csv",
 )
 
 raw_data <- lapply(raw_data_paths, read.csv)
 list2env(raw_data, envir = .GlobalEnv)
+
+# Load ID lookup
+id_lookup <- read_csv(here("Phase 2", "2025.05.26 Track to Treat P2 ID Lookup.csv"))
 
 
 ## Check raw LifePak data versions using helper function
@@ -53,12 +51,8 @@ list2env(raw_data, envir = .GlobalEnv)
 nis_combined <- lst(
   nis_1,
   nis_2,
-  nis_01019_1,
-  nis_01019_2,
-  nis_01019_3,
-  nis_01019_4,
-  nis_01155,
-  nis_01550
+  nis_3,
+  nis_4
 ) %>%
   map(
     .f = ~ {.} %>%
@@ -215,93 +209,69 @@ nis_clean <- nis_combined %>%
   filter(survey_type == "EMA")
 
 
-## Correct lifepak_id
-# lifepak_id 322476 (LSMH01019, or LSMH01155, or something?) is also 334418
-nis_clean$lifepak_id[nis_clean$lifepak_id == "334418"] <- "322476"
+## Remove invalid responses, adding lsmh_id
+# Known LifePak IDs along with their lsmh_id
+valid_ids <- id_lookup %>%
+  filter(action == "keep") %>%
+  drop_na(lifepak_id) %>%
+  select(lsmh_id, lifepak_id)
 
-# lifepak_id 122772 (LSMH01269) is also 707268
-nis_clean$lifepak_id[nis_clean$lifepak_id == "707268"] <- "122772"
+nis_valid_with_lsmh_id <- nis_clean %>%
+  inner_join(
+    valid_ids,
+    by = "lifepak_id",
+    relationship = "many-to-one"
+  )
 
-# lifepak_id 867499 (LSMH01786) is also 326117
-nis_clean$lifepak_id[nis_clean$lifepak_id == "326117"] <- "867499"
+# Just FYI: This is how many IDs/rows included known LifePak IDs matched for removal
+nis_clean %>%
+  filter(lifepak_id %in% id_lookup$lifepak_id[id_lookup$action == "drop"]) %>%
+  count(lifepak_id)
+  
+# Just FYI: This is how many IDs/rows included unknown LifePak IDs
+nis_clean %>%
+  filter(!lifepak_id %in% id_lookup$lifepak_id) %>%
+  count(lifepak_id)
 
-# lifepak_id 131166 (LSMH01841) is also 303379 
-nis_clean$lifepak_id[nis_clean$lifepak_id == "303379"] <- "131166"
-
-# lifepak_id 898891 (LSMH02181) is also 961421  
-nis_clean$lifepak_id[nis_clean$lifepak_id == "961421"] <- "898891"
-
-# lifepak_id 632541 (LSMH02422) is also 095929  
-nis_clean$lifepak_id[nis_clean$lifepak_id == "095929"] <- "632541"
-
-# lifepak_id 906962 (LSMH01019) is also 823958  
-nis_clean$lifepak_id[nis_clean$lifepak_id == "823958"] <- "906962"
+# Just FYI: These known LifePak IDs do not appear in the data
+valid_ids %>%
+  filter(!lifepak_id %in% nis_valid_with_lsmh_id$lifepak_id) %>%
+  pull(lifepak_id)
 
 
-## Arrange by lifepak_id, then notification_datetime
-nis_arranged <- nis_clean %>%
+## Arrange by lsmh_id, then notification_datetime
+nis_arranged <- nis_valid_with_lsmh_id %>%
   arrange(
-    lifepak_id,
+    lsmh_id,
     notification_datetime
   )
 
 
 ## Deduplicate by row
-# Taking distinct rows addresses identical rows that were simply saved in multiple datasets
-nis_distinct <- nis_arranged %>%
-  select(-dataset) %>%
-  distinct()
+# No duplicate rows
+nis_arranged %>%
+  distinct() %>%
+  invisible()
 
 
 ## Deduplicate by response
-# One duplicate response remains; this was noted in the readme. It seems that one response value
-# (energy = 0) was somehow recorded as a separate response from the others
-duplicate_responses <- nis_distinct %>%
+# No duplicate responses
+nis_arranged %>%
   count(lifepak_id, response_start_datetime) %>%
   drop_na() %>% 
   filter(n > 1)
 
-duplicate_responses %>%
-  left_join(nis_distinct)
-
-# This can be addressed manually by dropping the less complete response and manually recoding energy = 0
-nis_manually_filtered_587713 <- nis_distinct %>%
-  filter(
-    !(
-      lifepak_id == "587713"
-      & response_start_datetime == as_datetime("2023-03-12 11:03:41")
-      & energy %in% 0
-    )
-  ) %>%
-  mutate(
-    energy = if_else(
-      lifepak_id == "587713" & response_start_datetime == as_datetime("2023-03-12 11:03:41"),
-      0,
-      energy
-    )
-  )
-
-duplicate_responses %>%
-  left_join(nis_manually_filtered_587713)
-
 
 ## Deduplicate by notification
 # A number of notifications appear more than once
-duplicate_notifications <- nis_manually_filtered_587713 %>% 
+duplicate_notifications <- nis_arranged %>% 
   count(lifepak_id, notification_datetime) %>% 
   filter(n > 1)
 
 duplicate_notifications
 
-duplicate_notifications %>%
-  left_join(
-    nis_distinct, 
-    by = c("lifepak_id", "notification_datetime")
-  ) %>%
-  select(lifepak_id, notification_datetime, n, response_start_datetime, response_ended)
-
 # To deduplicate, always keep the first row where response_ended_within_2h == T
-nis_deduplicated <- nis_manually_filtered_587713 %>%
+nis_deduplicated <- nis_arranged %>%
   group_by(lifepak_id, notification_datetime) %>%
   arrange(desc(response_ended_within_2h), response_start_datetime) %>%
   slice_head(n = 1) %>%
@@ -312,19 +282,12 @@ nis_deduplicated %>%
   arrange(desc(n))
 
 
-## Remove additional invalid responses; according to README_ttt_p2_data_collection...
-# 162922 was a test response
-# 366106 opted out of participating
-# 324562 appeared fraudulent
-# 764447 appeared fraudulent
-# 404350 was ineligible
-# 413115 was ineligible
-nis_valid <- nis_deduplicated %>%
-  filter(
-    !lifepak_id %in% c("162922", "366106", "324562", "764447", "404350", "413115")
-  )
-
-
 
 ####  Save Data  ####
-saveRDS(nis_valid, clean_data_staging_intermediate_dir %+% "Phase 2 LifePak Clean Data Without LSMH ID.rds")
+# Save clean LifePak data
+saveRDS(nis_deduplicated, clean_data_staging_dir %+% "Phase 2 LifePak Clean Data.rds")
+
+# Save clean LifePak data without free-response items (until these are deidentified)
+nis_deduplicated %>%
+  select(-c("most_pleasant", "most_unpleasant", "other")) %>%
+  saveRDS(clean_data_staging_dir %+% "Phase 2 LifePak Clean Data Without Free Responses.rds")

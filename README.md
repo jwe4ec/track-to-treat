@@ -22,14 +22,27 @@ File organization:
     * Compare Clean LifePak Datasets.R (checking clean LifePak data to previous versions)
 * Phase 2/
   * Raw P2 Metadata.csv (used to track expected raw data versions for checks against loaded files) [WIP]
-  * 2025.05.14 Track to Treat P2 Codebook.xlsx (an item-level codebook used to clean the Qualtrics data)
-  * 1_Clean LifePak Data.R [WIP]
-  * 2_Clean Youth Qualtrics Data and Add LSMH ID to LifePak Data.R [WIP]
-  * 3_Clean Parent Qualtrics Data.R [WIP]
+  * 2025.05.26 Track to Treat P2 Codebook.xlsx (an item-level codebook used to clean the Qualtrics data)
+  * 2025.05.26 Track to Treat P2 ID Lookup.csv (a lookup table of LSMH IDs and LifePak IDs)
+  * 1_Clean LifePak Data.R
+  * 2_Clean Youth Qualtrics Data/
+    * 1_Youth Baseline.R
+    * 2_Youth Intervention.R
+    * 3_Youth 3m.R
+    * 4_Youth 6m.R [WIP]
+    * 5_Youth 12m.R [WIP]
+    * 6_Youth 18m.R [WIP]
+    * 7_Youth 24m.R [WIP]
+    * 8_Merge Youth Qualtrics Data.R
+  * 3_Clean Parent Qualtrics Data/
+    * 1_Parent Baseline.R
+    * 2_Parent 3m.R
+    * 3_Parent 6m.R [WIP]
+    * 4_Parent 12m.R [WIP]
+    * 5_Parent 18m.R [WIP]
+    * 6_Parent 24m.R [WIP]
+    * 7_Merge Parent Qualtrics Data.R
   * 4_Create Clean Data Release.R [WIP]
-  * QA/
-    * Check Overlap.R (checking ID overlap across datasets) [WIP]
-    * Compare Clean LifePak Datasets.R (checking clean LifePak data to previous versions) [WIP]
 
 Data cleaning notes:
 

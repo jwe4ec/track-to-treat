@@ -1,0 +1,294 @@
+## Track-to-Treat Phase 2 Data Cleaning, Youth Qualtrics, Intervention
+# R version 4.4.3
+
+####  Startup  ####
+## Load packages
+library(groundhog) # 3.2.2
+groundhog_date <- "2025-03-28"
+meta.groundhog(groundhog_date)
+groundhog.library(
+  pkg = c("tidyverse", "tidylog", "lubridate", "qualtRics", "openxlsx", "here"),
+  date = groundhog_date
+)
+`%+%` <- paste0
+
+
+## Load helper functions
+source(here("Qualtrics Data Cleaning Helper Functions.R"))
+source(here("Version Control Helper Functions.R"))
+
+
+## Load Qualtrics data
+# Save directories
+raw_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT P2\\Data\\Qualtrics\\Raw\\2025.05.22_interim\\"
+clean_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT P2\\Data\\Clean Data (Isaac)\\"
+clean_data_staging_dir <- clean_data_dir %+% "staging\\"
+clean_data_staging_intermediate_dir <- clean_data_staging_dir %+% "intermediate\\"
+
+# Load raw Qualtrics datasets (storing paths) in this format: [respondent][wave]_[administration]_raw
+# - Note: Use "timeZone" specified for date columns (e.g., "StartDate") in third row of raw CSV
+yi_path <- raw_data_dir %+% "DP5 Phase 2 - Youth - Interventions_May 22, 2025_12.17_n.csv"
+yi_raw <- read_survey(yi_path, time_zone = "America/Denver")
+
+
+## Load ID lookup
+id_lookup <- read_csv(here("Phase 2", "2025.05.26 Track to Treat P2 ID Lookup.csv"))
+
+
+## Load item-level codebook file
+codebook <- load_p2_codebook(here("Phase 2", "2025.05.26 Track to Treat P2 Codebook.xlsx"))
+
+
+## Check raw Qualtrics data versions using helper function
+# raw_metadata <- read.csv(here("Phase 1", "Raw P1 Metadata.csv"))
+# check_raw_data_ver(raw_metadata, yb_path, yb_data, "y_qualtrics")
+
+
+
+####  Clean Data  ####
+## Create log
+# Create lists for logging (a) items used to compute item completion rates below via
+# compute_item_completion_rate(), (b) items used to compute means via mean_across(),
+# and (c) clean codebook (edited and added to log below)
+log <- list(
+  item_completion_rate = list(),
+  mean_items = list()
+)
+
+
+## Clean columns
+yi_recoded <- yi_raw %>%
+  
+  # Remove click, page time variables
+  select(
+    
+    -matches("Click Count"),
+    -matches("First Click"),
+    -matches("Last Click"),
+    -matches("Page Submit")
+    
+  ) %>%
+  
+  # Un-reverse code items
+  mutate(
+    across(
+      .cols = any_of(codebook$item[codebook$reversed %in% 1]),
+      .fns = ~ codebook$reverse_base[codebook$item == cur_column()] - .x
+    )
+  ) %>%
+  
+  # Clean remaining columns by row
+  rowwise() %>%
+  mutate(
+    
+    ## Metadata
+    # ID (manually correcting as necessary)
+    lsmh_id = case_when(
+      
+      # Cases to be manually recoded
+      lsmh_id...18 == "LSMH01297" & lsmh_id...601 == "LSMH0129" ~ "LSMH01297",
+      lsmh_id...18 == "LsmH00886" & lsmh_id...601 == "LMSH00886" ~ "LSMH00886",
+      lsmh_id...18 == "lsmh01826" & lsmh_id...601 == "LSMH01826" ~ "LSMH01826",
+
+      # Cases where both match
+      lsmh_id...18 == lsmh_id...601 ~ lsmh_id...18,
+      
+      # Cases where one is missing (keep the non-missing value)
+      is.na(lsmh_id...18) & !is.na(lsmh_id...601) ~ lsmh_id...601,
+      is.na(lsmh_id...601) & !is.na(lsmh_id...18) ~ lsmh_id...18,
+      
+      # Cases where both are missing
+      is.na(lsmh_id...18) & is.na(lsmh_id...601) ~ NA_character_,
+      
+      # Additional cases are flagged for cleaning
+      T ~ "ID Combination Unaccounted For (" %+% lsmh_id...18 %+% ", " %+% lsmh_id...601 %+% ")"
+      
+    ),
+    
+    # Survey completion
+    yi_complete = Finished == 1,
+    
+    # Survey datetime and duration
+    yi_datetime = EndDate,
+    yi_date = date(yi_datetime),
+    yi_duration = EndDate - StartDate,
+    
+    
+    ## BADS-SF (Behavioral Activation for Depression Scale - Short Form)
+    # Activation subscale
+    yi_pre_bads_ac_mean = mean_across("b", "bads-sf", "activation", name = "yi_pre_bads_ac_mean"),
+    
+    # Avoidance subscale
+    yi_pre_bads_av_mean = mean_across("b", "bads-sf", "avoidance", name = "yi_pre_bads_av_mean"),
+    
+    
+    ## BHS-4 (Beck Hopelessness Scale - 4-item)
+    # Overall mean score
+    yi_pre_bhs_mean = mean_across("yi_pre", "bhs", name = "yi_pre_bhs_mean"),
+    yi_post_bhs_mean = mean_across("yi_post", "bhs", name = "yi_post_bhs_mean"),
+    
+    
+    ## SHS (*State Hope* Scale)
+    # Pathways subscale
+    yi_pre_pathways_mean = mean_across("yi_pre", "state_hope_scale", "pathways", name = "yi_pre_pathways_mean"),
+    yi_post_pathways_mean = mean_across("yi_post", "state_hope_scale", "pathways", name = "yi_post_pathways_mean"),
+    
+    # Agency subscale
+    yi_pre_agency_mean = mean_across("yi_pre", "state_hope_scale", "agency", name = "yi_pre_agency_mean"),
+    yi_post_agency_mean = mean_across("yi_post", "state_hope_scale", "agency", name = "yi_post_agency_mean"),
+    
+    
+    ## IPTQ
+    yi_pre_iptq_mean = mean_across("yi_pre", "iptq", name = "yi_pre_iptq_mean"),
+    yi_post_iptq_mean = mean_across("yi_post", "iptq", name = "yi_post_iptq_mean"),
+    
+    
+    ## PFS
+    yi_post_pfs_mean = mean_across("yi", "pfs", "pfs", name = "yi_post_pfs_mean")
+    
+    
+  ) %>%
+  ungroup() %>%
+  select(
+    
+    # Metadata
+    lsmh_id,
+    yi_complete,
+    yi_date,
+    yi_datetime,
+    yi_duration,
+    condition,
+    
+    # Measures
+    matches("_bads_"),
+    matches("_bhs_"),
+    matches("_pathways_"),
+    matches("_agency_"),
+    matches("_iptq_"),
+    matches("_pfs_"),
+    yi_perc_change_hope,
+    yi_perc_change_prob
+    
+  ) %>%
+  
+  # Compute item completion rate
+  compute_item_completion_rate("yi")
+
+
+## Check that values are in expected range
+items_to_check <- yi_recoded %>%
+  select(
+    matches("_bads_"),
+    matches("_bhs_"),
+    matches("_pathways_"),
+    matches("_agency_"),
+    matches("_iptq_"),
+    matches("_pfs_[1-7]"),
+    yi_perc_change_hope,
+    yi_perc_change_prob,
+    -ends_with("mean")
+  ) %>%
+  names()
+
+walk(
+  items_to_check,
+  ~ check_values( # Helper function
+    .data = yi_recoded,
+    .item = .x
+  )
+)
+
+
+## Remove invalid responses
+# Known valid LSMH IDs
+valid_ids <- id_lookup %>%
+  filter(action == "keep") %>%
+  distinct(lsmh_id)
+
+invalid_ids <- setdiff(yi_recoded$lsmh_id, valid_ids$lsmh_id)
+
+yi_valid <- yi_recoded %>%
+  inner_join(
+    valid_ids,
+    by = "lsmh_id",
+    relationship = "many-to-one"
+  )
+
+# Just FYI: This is how many IDs/rows included known LSMH IDs matched for removal
+yi_recoded %>%
+  filter(lsmh_id %in% id_lookup$lsmh_id[id_lookup$action == "drop"]) %>%
+  count(lsmh_id)
+
+# Just FYI: No rows contained unknown LSMH IDs (good!)
+# If these rows indicate typos or other errors in the IDs, fix them in the mutate() above
+yi_recoded %>%
+  filter(!lsmh_id %in% id_lookup$lsmh_id) %>%
+  count(lsmh_id)
+
+
+## Deduplicate
+# Identify duplicates
+identify_duplicates(yi_valid, lsmh_id, yi_complete)
+
+# Remove duplicates
+yi_deduplicated <- remove_duplicates(yi_valid, lsmh_id, yi_datetime)
+
+# Double-check baseline deduplication
+identify_duplicates(yi_deduplicated, lsmh_id, yi_complete)
+
+
+## Use deduplicated data to establish assessment windows for follow-up surveys
+# Compute potential assessment windows based on intervention completion date
+# - In Phase I, 3-month assessment window start dates were computed manually by adding 3
+# to the month number and then rolling to the last real date of the prior month when this
+# yields a date that does not exist. In R, this is "as_date(EndDate) %m+% months(3)".
+# - In Phase II, follow-up start dates were computed using an Excel formula (e.g.,
+# 3-month start date based on Cell A1: "=DATE(YEAR(A1), MONTH(A1) + 3, DAY(A1))"),
+# which rolls forward to the closest real date (not necessarily the first date of
+# the next month). In R: "seq(as_date(EndDate), by = "3 months", length.out = 2)[2]".
+# - End dates for windows were not recorded. Thus, have leeway and use Phase II formula
+# above (more forgiving) to compute end dates from start dates for the original window.
+# - Because some surveys were completed late, also compute an extended window that
+# extends the original window's end date by a reasonable 14 days.
+ax_windows <- yi_deduplicated %>%
+  select(
+    lsmh_id,
+    yi_date
+  ) %>%
+  rowwise() %>%
+  mutate(
+    
+    # 3-month follow-up
+    ax_window_3m_start = seq(yi_date, by = "3 months", length.out = 2)[2],
+    ax_window_3m_end = seq(ax_window_3m_start, by = "1 month", length.out = 2)[2],
+
+    # 6-month follow-up
+    ax_window_6m_start = seq(yi_date, by = "6 months", length.out = 2)[2],
+    ax_window_6m_end = seq(ax_window_6m_start, by = "1 month", length.out = 2)[2],
+
+    # 12-month follow-up
+    ax_window_12m_start = seq(yi_date, by = "12 months", length.out = 2)[2],
+    ax_window_12m_end = seq(ax_window_12m_start, by = "1 month", length.out = 2)[2],
+
+    # 18-month follow-up
+    ax_window_18m_start = seq(yi_date, by = "18 months", length.out = 2)[2],
+    ax_window_18m_end = seq(ax_window_18m_start, by = "1 month", length.out = 2)[2],
+
+    # 24-month follow-up
+    ax_window_24m_start = seq(yi_date, by = "24 months", length.out = 2)[2],
+    ax_window_24m_end = seq(ax_window_24m_start, by = "1 month", length.out = 2)[2]
+    
+  ) %>%
+  ungroup()
+
+
+
+####  Save Data  ####
+# Save clean Qualtrics data
+saveRDS(yi_deduplicated, clean_data_staging_dir %+% "Phase 2 Youth Qualtrics Clean Data - Intervention.rds")
+
+# Save assessment windows
+saveRDS(ax_windows, clean_data_staging_intermediate_dir %+% "Phase 2 Assessment Windows.rds")
+
+# Save log
+# saveRDS(log, clean_data_staging_dir %+% "Phase 2 Youth Qualtrics Clean Data Log - Intervention.rds")

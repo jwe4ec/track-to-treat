@@ -58,7 +58,7 @@ fill_lifepak_id <- function(data, lsmh_id, lifepak_id) {
 }
 
 # Function to identify duplicates
-identify_duplicates <- function(data, id) {
+identify_duplicates <- function(data, id, completion_indicator = Finished) {
   
   # Taking the data...
   out <- data %>%
@@ -72,7 +72,7 @@ identify_duplicates <- function(data, id) {
     # ... count the total number of rows and the number of rows with completed responses.
     summarize(
       total = n(),
-      complete = sum(Finished)
+      complete = sum({{completion_indicator}})
     ) %>%
     # Finally, arrange the dataset such that duplicates are at the top
     arrange(desc(complete), desc(total))
@@ -212,7 +212,7 @@ mark_3m_done_in_ax_window <- function(data, id_as_char, ax_windows) {
 }
 
 # Function to deduplicate datasets, keeping first (most) complete response
-remove_duplicates <- function(data, id) {
+remove_duplicates <- function(data, id, date = EndDate) {
   
   # Taking the data...
   data %>%
@@ -222,7 +222,7 @@ remove_duplicates <- function(data, id) {
     # responses at top), then by EndDate (putting first/oldest responses at top)...
     arrange(
       desc(item_completion_rate),
-      EndDate
+      {{date}}
     ) %>%
     # ... finally, take only the top response
     slice_head(n = 1) %>%
@@ -253,7 +253,7 @@ get_items <- function(.prefix, .measure, .subscale) {
     # Take the codebook and...
     filtered_codebook <- codebook %>%
       # ... filter to rows where...
-      filter(
+      dplyr::filter(
         # ... the item column starts with .prefix, and...
         grepl("^" %+% .prefix, item),
         # ... the measure column matches .measure
@@ -266,7 +266,7 @@ get_items <- function(.prefix, .measure, .subscale) {
     # Take the codebook and...
     filtered_codebook <- codebook %>%
       # ... filter to rows where...
-      filter(
+      dplyr::filter(
         # ... the item column starts with .prefix, and...
         grepl("^" %+% .prefix, item),
         # ... the measure column matches .measure, and...
@@ -468,4 +468,80 @@ check_dups_over_time <- function(data, prefixes, .measure, .subscale, exclude) {
     
   }
 
+}
+
+# Function to load and clean phase 2 codebook, as this is done in each script
+load_p2_codebook <- function(codebook_path) {
+  
+  sheet_name <- "Qualtrics Measure Variables"
+  (sheet_last_row <- nrow(openxlsx::read.xlsx(codebook_path, sheet_name)) + 1) # Add 1 for header row
+  
+  codebook <- openxlsx::read.xlsx(
+    codebook_path,
+    sheet_name,
+    rows = c(1, 3:sheet_last_row) # Skip column description row
+  ) %>%
+    # Select only necessary variables
+    select(
+      item = Variable.Name,
+      measure = Measure,
+      subscale = Subscale,
+      minimum = Minimum,
+      maximum = Maximum,
+      reversed = `Is.the.variable.reverse.coded?`
+    ) %>%
+    mutate(
+      # Make `reversed` logical
+      reversed = reversed == 1,
+      # Create `reverse_base`: the number a response should be subtracted from to reverse it
+      reverse_base = if_else(
+        reversed,
+        maximum + minimum,
+        NA_real_
+      )
+    ) %>%
+    # Expand codebook, such that each row with "[x]" in the item name is now one row per wave,
+    # with "[x]" replaced with the wave numbers (e.g., "y[x]" -> "yb", "y3m", etc.)
+    # Create a new column to expand by
+    mutate(
+      wave = if_else(
+        # If "[x]" is in the item name...
+        grepl("\\[x\\]", item),
+        # ... make `waves` a list with one value per wave, otherwise...
+        list(c("b", "3m")),
+        # ... make it an empty list
+        list(c(""))
+      )
+    ) %>%
+    # Unnest such that there is now one row per item per wave
+    unnest_longer(col = wave) %>%
+    # Overwrite the `item` column so that "[x]"s are replaced with the actual waves
+    mutate(
+      item = str_replace(
+        string = item,
+        pattern = "\\[x\\]",
+        replacement = wave
+      )
+    )
+  
+  return(codebook)
+  
+}
+
+# Function to load and clean phase 2 participant tracker, as this is done in each script
+load_p2_tracker <- function(tracker_path) {
+  
+  tracker <- read_csv(tracker_path, col_types = "c") %>%
+    mutate(
+      baseline_date = `Baseline Date/Time` %>%
+        lubridate::mdy_hm() %>%
+        lubridate::date()
+    ) %>%
+    select(
+      lsmh_id = `LSMH ID`,
+      lifepak_id = `LifePak ID`,
+      phase = Phase,
+      baseline_date
+    )
+  
 }
