@@ -51,9 +51,8 @@ check_raw_data_ver(raw_metadata, list(p3m_path), list(p3m_raw), "p3m_qualtrics")
 
 ####  Clean Data  ####
 ## Create log
-# Create lists for logging (a) items used to compute item completion rates below via
-# compute_item_completion_rate(), (b) items used to compute means via mean_across(),
-# and (c) clean codebook (edited and added to log below)
+# Create lists for logging (a) items used to compute item completion rate below via
+# compute_item_completion_rate() and (b) items used to compute means via mean_across()
 log <- list(
   item_completion_rate = list(),
   mean_items = list()
@@ -218,7 +217,7 @@ p3m_recoded <- p3m_raw %>%
   ) %>%
   
   # Compute item completion rate
-  compute_item_completion_rate("p3m")
+  compute_item_completion_rate("p3m") # TODO: Fix which columns are used to compute this
 
 
 ## Check that values are in expected range
@@ -320,4 +319,4 @@ identify_duplicates(p3m_deduplicated, lsmh_id, p3m_complete)
 saveRDS(p3m_deduplicated, clean_data_staging_dir %+% "Phase 2 Parent Qualtrics Clean Data - 3m.rds")
 
 # Save log
-# saveRDS(log, clean_data_staging_dir %+% "Phase 2 Youth Qualtrics Clean Data Log - 3m.rds")
+saveRDS(log, clean_data_staging_intermediate_dir %+% "Phase 2 Parent Qualtrics Clean Data Log - 3m.rds")

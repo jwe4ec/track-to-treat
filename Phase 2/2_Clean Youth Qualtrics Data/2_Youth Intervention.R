@@ -47,9 +47,8 @@ check_raw_data_ver(raw_metadata, list(yi_path), list(yi_raw), "yi_qualtrics")
 
 ####  Clean Data  ####
 ## Create log
-# Create lists for logging (a) items used to compute item completion rates below via
-# compute_item_completion_rate(), (b) items used to compute means via mean_across(),
-# and (c) clean codebook (edited and added to log below)
+# Create lists for logging (a) items used to compute item completion rate below via
+# compute_item_completion_rate() and (b) items used to compute means via mean_across()
 log <- list(
   item_completion_rate = list(),
   mean_items = list()
@@ -172,7 +171,7 @@ yi_recoded <- yi_raw %>%
   ) %>%
   
   # Compute item completion rate
-  compute_item_completion_rate("yi")
+  compute_item_completion_rate("yi") # TODO: Fix which columns are used to compute this
 
 
 ## Check that values are in expected range
@@ -291,4 +290,4 @@ saveRDS(yi_deduplicated, clean_data_staging_dir %+% "Phase 2 Youth Qualtrics Cle
 saveRDS(ax_windows, clean_data_staging_intermediate_dir %+% "Phase 2 Assessment Windows.rds")
 
 # Save log
-# saveRDS(log, clean_data_staging_dir %+% "Phase 2 Youth Qualtrics Clean Data Log - Intervention.rds")
+saveRDS(log, clean_data_staging_intermediate_dir %+% "Phase 2 Youth Qualtrics Clean Data Log - Intervention.rds")

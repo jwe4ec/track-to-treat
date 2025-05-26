@@ -51,9 +51,8 @@ check_raw_data_ver(raw_metadata, list(y3m_path), list(y3m_raw), "y3m_qualtrics")
 
 ####  Clean Data  ####
 ## Create log
-# Create lists for logging (a) items used to compute item completion rates below via
-# compute_item_completion_rate(), (b) items used to compute means via mean_across(),
-# and (c) clean codebook (edited and added to log below)
+# Create lists for logging (a) items used to compute item completion rate below via
+# compute_item_completion_rate() and (b) items used to compute means via mean_across()
 log <- list(
   item_completion_rate = list(),
   mean_items = list()
@@ -300,7 +299,7 @@ y3m_recoded <- y3m_raw %>%
   ) %>%
   
   # Compute item completion rate
-  compute_item_completion_rate("y3m")
+  compute_item_completion_rate("y3m") # TODO: Fix which columns are used to compute this
 
 
 ## Check that values are in expected range
@@ -413,4 +412,4 @@ identify_duplicates(y3m_deduplicated, lsmh_id, y3m_complete)
 saveRDS(y3m_deduplicated, clean_data_staging_dir %+% "Phase 2 Youth Qualtrics Clean Data - 3m.rds")
 
 # Save log
-# saveRDS(log, clean_data_staging_dir %+% "Phase 2 Youth Qualtrics Clean Data Log - 3m.rds")
+saveRDS(log, clean_data_staging_intermediate_dir %+% "Phase 2 Youth Qualtrics Clean Data Log - 3m.rds")
