@@ -43,7 +43,7 @@ check_raw_data_ver <- function(raw_metadata, path_ls, data_ls, data_type,
 }
 
 #### Helper function to create versioned clean data release ####
-create_data_release <- function(clean_data_staging_dir, clean_data_final_dir, staged_filenames) {
+create_data_release <- function(clean_data_staging_dir, clean_data_final_dir, phase, staged_filenames) {
   
   ### Load staged files into named list
   staged_files <- lapply(paste0(clean_data_staging_dir, "\\", staged_filenames), readRDS)
@@ -56,7 +56,7 @@ create_data_release <- function(clean_data_staging_dir, clean_data_final_dir, st
   
   ## Obtain version number from user via console and ensure correct format
   repeat {
-    ver_prompt <- "Enter a version number in this format (e.g., v0.1): "
+    ver_prompt <- paste("Enter a version number for Phase", phase, "data in this format (e.g., v0.1): ")
     version <- readline(ver_prompt)
     
     if (!grepl("v", version) | !grepl("\\.", version)) {
@@ -108,7 +108,7 @@ create_data_release <- function(clean_data_staging_dir, clean_data_final_dir, st
   cat("A folder named '", folder_name, "' will be created in:\n", 
       clean_data_final_dir, "\n\n",
       
-      "Containing these clean data files (named per 'system_date'):\n", 
+      "Containing these Phase ", phase, " clean data files (named per 'system_date'):\n", 
       paste(names(staged_files), collapse = "\n"), "\n\n",
       
       "And this README noting the 'cleaning_code_date' and other info:\n",
@@ -135,7 +135,7 @@ create_data_release <- function(clean_data_staging_dir, clean_data_final_dir, st
   ## Save README file to folder
   sink(file = paste0(clean_data_final_folder_dir, readme_name))
   
-  cat("Clean Data for Project Track-to-Treat\n",
+  cat("Clean Data for Phase ", phase, " of Project Track-to-Treat\n",
       "Contributors: Isaac Ahuvia, Jeremy Eberle, Alyssa Gorkin\n\n",
       
       "This folder, the following clean data files it contains, and this README\n",
@@ -143,7 +143,7 @@ create_data_release <- function(clean_data_staging_dir, clean_data_final_dir, st
       
       "Repository URL and README: https://github.com/isaacahuvia/track-to-treat\n\n",
       
-      "The code as of ", cleaning_code_date, " was run on ", system_date, " by the person below,\n",
+      "The Phase ", phase, " code as of ", cleaning_code_date, " was run on ", system_date, " by the person below,\n",
       "who assigned the following version number\n\n",
       
       "Version:    ", version, "\n",
