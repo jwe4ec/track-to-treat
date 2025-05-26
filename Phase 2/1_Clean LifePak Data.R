@@ -7,7 +7,7 @@ library(groundhog) # 3.2.2
 groundhog_date <- "2025-03-28"
 meta.groundhog(groundhog_date)
 groundhog.library(
-  pkg = c("tidyverse", "tidylog", "lubridate", "here"),
+  pkg = c("tidyverse", "tidylog", "lubridate", "here", "digest"),
   date = groundhog_date
 )
 `%+%` <- paste0
@@ -40,8 +40,8 @@ id_lookup <- read_csv(here("Phase 2", "2025.05.26 Track to Treat P2 ID Lookup.cs
 
 
 ## Check raw LifePak data versions using helper function
-# raw_metadata <- read.csv(here("Phase 2", "Raw P2 Metadata.csv"))
-# check_raw_data_ver(raw_metadata, raw_data_paths, raw_data, "lifepak")
+raw_metadata <- read.csv(here("Phase 2", "Raw P2 Metadata.csv"))
+check_raw_data_ver(raw_metadata, raw_data_paths, raw_data, "lifepak")
 
 
 

@@ -7,7 +7,7 @@ library(groundhog) # 3.2.2
 groundhog_date <- "2025-03-28"
 meta.groundhog(groundhog_date)
 groundhog.library(
-  pkg = c("tidyverse", "tidylog", "lubridate", "qualtRics", "openxlsx", "here"),
+  pkg = c("tidyverse", "tidylog", "lubridate", "qualtRics", "openxlsx", "here", "digest"),
   date = groundhog_date
 )
 `%+%` <- paste0
@@ -44,8 +44,8 @@ ax_windows <- readRDS(clean_data_staging_intermediate_dir %+% "Phase 2 Assessmen
 
 
 ## Check raw Qualtrics data versions using helper function
-# raw_metadata <- read.csv(here("Phase 1", "Raw P1 Metadata.csv"))
-# check_raw_data_ver(raw_metadata, yb_path, yb_data, "y_qualtrics")
+raw_metadata <- read.csv(here("Phase 2", "Raw P2 Metadata.csv"))
+check_raw_data_ver(raw_metadata, list(y3m_path), list(y3m_raw), "y3m_qualtrics")
 
 
 
