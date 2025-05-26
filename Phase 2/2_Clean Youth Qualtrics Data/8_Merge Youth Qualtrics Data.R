@@ -30,6 +30,10 @@ yi_clean <- readRDS(clean_data_staging_dir %+% "Phase 2 Youth Qualtrics Clean Da
 y3m_clean <- readRDS(clean_data_staging_dir %+% "Phase 2 Youth Qualtrics Clean Data - 3m.rds")
 
 
+## Load item-level codebook file
+codebook <- load_p2_codebook(here("Phase 2", "2025.05.26 Track to Treat P2 Codebook.xlsx"))
+
+
 
 ####  Merge Data  ####
 # Remove columns as needed
