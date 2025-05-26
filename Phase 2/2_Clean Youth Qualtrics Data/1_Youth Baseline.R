@@ -28,7 +28,7 @@ clean_data_staging_intermediate_dir <- clean_data_staging_dir %+% "intermediate\
 # Load raw Qualtrics datasets (storing paths) in this format: [respondent][wave]_[administration]_raw
 # - Note: Use "timeZone" specified for date columns (e.g., "StartDate") in third row of raw CSV
 yb_path <- raw_data_dir %+% "DP5+Phase+2+-+Youth+-+Baseline_May+6,+2025_09.43_n.csv"
-yb_raw <- read_survey(yb_path, time_zone = "America/Denver")
+yb_raw <- read_survey(yb_path, time_zone = "America/Chicago")
 
 
 ## Load ID lookup

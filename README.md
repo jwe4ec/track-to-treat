@@ -84,7 +84,8 @@ Data cleaning notes:
     * Items used to compute means and counts (see `log$mean_items` and `log$count_items`)
       * Confirm the items are correct before analyzing the means and counts
     * Clean youth and parent codebooks
-  * Raw timestamps are in "America/Denver" time zone for Phase I and in "America/Chicago" for Phase II
+  * Raw timestamps are in "America/Denver" time zone for Phase I and mostly in "America/Chicago" for Phase II
+    * For Phase II, the youth intervention survey is in "America/Denver"
     * Take care when comparing timestamps between LifePak/Qualtrics datasets
 
 Version control:
