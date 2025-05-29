@@ -36,7 +36,7 @@ id_lookup <- read_csv(here("Phase 2", "2025.05.26 Track to Treat P2 ID Lookup.cs
 
 
 ## Load item-level codebook file
-codebook <- load_p2_codebook(here("Phase 2", "2025.05.26 Track to Treat P2 Codebook.xlsx"))
+codebook <- load_p2_codebook(here("Phase 2", "2025.05.28 Track to Treat P2 Codebook.xlsx"))
 
 
 ## Check raw Qualtrics data versions using helper function
@@ -161,7 +161,7 @@ yi_recoded <- yi_raw %>%
     # Measures
     matches("_bads_"),
     matches("_bhs_"),
-    matches("_pathways_"),
+    matches("_pathways_"), # TODO: Seems we need to select "_shs_" here
     matches("_agency_"),
     matches("_iptq_"),
     matches("_pfs_"),
@@ -179,7 +179,7 @@ items_to_check <- yi_recoded %>%
   select(
     matches("_bads_"),
     matches("_bhs_"),
-    matches("_pathways_"),
+    matches("_pathways_"), # TODO: Seems we need to select "_shs_" and remove "pathways" and "agency" here
     matches("_agency_"),
     matches("_iptq_"),
     matches("_pfs_[1-7]"),
