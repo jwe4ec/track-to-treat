@@ -21,7 +21,7 @@ File organization:
     * Check Overlap.R (checking ID overlap across datasets)
     * Compare Clean LifePak Datasets.R (checking clean LifePak data to previous versions)
 * Phase 2/
-  * Raw P2 Metadata.csv (used to track expected raw data versions for checks against loaded files) [WIP]
+  * Raw P2 Metadata.csv (used to track expected raw data versions for checks against loaded files)
   * 2025.05.28 Track to Treat P2 Codebook.xlsx (an item-level codebook used to clean the Qualtrics data)
   * 2025.05.26 Track to Treat P2 ID Lookup.csv (a lookup table of LSMH IDs and LifePak IDs)
   * 1_Clean LifePak Data.R
@@ -66,7 +66,8 @@ Data cleaning notes:
     * Empty rows from multiple datasets overlapping in time for LifePak ID 958251 are removed
     * Most participants have 105 total notifications, but some have fewer; it's unclear why
   * Phase 2 specifics:
-    * There was considerably more messiness with the EMA surveys with the larger sample in Phase 2. Many participants have fewer than 105 notifications, and some have more
+    * Considerably more messiness with EMA surveys given larger sample in Phase 2
+    * Many participants have fewer than 105 notifications, and some have more
 
 * Qualtrics data
   * Clean Columns section lists raw data available that have not yet been cleaned
