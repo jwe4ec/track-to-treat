@@ -76,6 +76,7 @@ nis_clean <- nis_combined %>%
     lifepak_id = gsub(".*-", "", Participant.ID),
     
     # Survey type (EMA or feedback)
+    # - Day EMA survey and night EMA survey were both named "3T Project" in Phase 2
     survey_type = case_match(
       Session.Name,
       "3T Project" ~ "EMA",
@@ -109,14 +110,15 @@ nis_clean <- nis_combined %>%
     response_start_date = as_date(response_start_datetime),
     
     # Response data
-    # ema_[...].1 variables capture the same construct as ema_[...] variables, but for different rows
-    # No rows have non-missing data for both columns
-    # These variables need to be combined
-    # This may serve the same purpose as [...]_day and [...]_night in Phase 1
+    # - In Phase 1, variables in the day and night surveys were named "[...]_day" and "[...]_night"
+    # - In Phase 2, variables in both surveys were named the same, and ".1" was appended to night variables upon data export
+    #   - Day survey: "ema_[...]", "reminder_[...]", "thankyou"
+    #   - Night survey: "ema_[...].1", "reminder_[...].1", "thankyou.1", "best", "worst", "other"
+    # - No rows have non-missing data for both "ema_[...]" and "ema_[...].1" columns
     sad = case_when(
       !is.na(ema_sad) ~ ema_sad,
       !is.na(ema_sad.1) ~ ema_sad.1,
-      T  ~ NA_real_
+      T ~ NA_real_
     ),
     
     bad = case_when(
