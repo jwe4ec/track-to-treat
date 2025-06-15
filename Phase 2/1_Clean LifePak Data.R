@@ -231,11 +231,17 @@ nis_clean %>%
   count(lifepak_id)
   
 # Just FYI: This is how many IDs/rows included unknown LifePak IDs
+# - TODO: Alyssa found that LifePak ID "007996" in "nis_1" is in "LifePak" tab of
+# "Track to Treat P2 Tracking Log 2.0" with corresponding LSMH ID "LSMH02350". The
+# LSMH ID is in "id_lookup" but the LifePak ID isn't (needs to be added).
+# - Unclear why "850326" and "997505" in "nis_1" ("TRACK to TREAT P2" survey) are unknown
+# - Those in "nis_4" ("TRACK to TREAT P2 - Pilot 2" survey) are likely lab members testing/training
 nis_clean %>%
   filter(!lifepak_id %in% id_lookup$lifepak_id) %>%
-  count(lifepak_id)
+  count(dataset, lifepak_id)
 
-# Just FYI: These known LifePak IDs do not appear in the data
+# Just FYI: These known LifePak IDs to keep do not appear in the data
+# - Unclear why "217510" and "500856" do not appear
 valid_ids %>%
   filter(!lifepak_id %in% nis_valid_with_lsmh_id$lifepak_id) %>%
   pull(lifepak_id)
