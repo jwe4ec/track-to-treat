@@ -263,31 +263,44 @@ nis_arranged %>%
 
 
 ## Deduplicate by response
+# Note: Count by LSMH ID given that multiple LifePak IDs for a given participant were not merged
 # No duplicate responses
 nis_arranged %>%
-  count(lifepak_id, response_start_datetime) %>%
-  drop_na() %>% 
+  count(lsmh_id, response_start_datetime) %>%
+  drop_na() %>%
   filter(n > 1)
 
 
 ## Deduplicate by notification
 # A number of notifications appear more than once
 duplicate_notifications <- nis_arranged %>% 
-  count(lifepak_id, notification_datetime) %>% 
+  count(lsmh_id, notification_datetime) %>% 
   filter(n > 1)
 
 duplicate_notifications
 
 # To deduplicate, always keep the first row where response_ended_within_2h == T
 nis_deduplicated <- nis_arranged %>%
-  group_by(lifepak_id, notification_datetime) %>%
+  group_by(lsmh_id, notification_datetime) %>%
   arrange(desc(response_ended_within_2h), response_start_datetime) %>%
   slice_head(n = 1) %>%
   ungroup()
 
 nis_deduplicated %>% 
-  count(lifepak_id, notification_datetime) %>%
+  count(lsmh_id, notification_datetime) %>%
   arrange(desc(n))
+
+
+## Just FYI, those with more than 105 rows have multiple LifePak IDs (redownloaded app)
+lsmh_ids_extra_rows <- nis_deduplicated %>%
+  group_by(lsmh_id) %>%
+  count() %>%
+  arrange(desc(n)) %>%
+  filter(n > 105)
+
+nis_deduplicated %>%
+  filter(nis_deduplicated$lsmh_id %in% lsmh_ids_extra_rows$lsmh_id) %>%
+  count(lsmh_id, lifepak_id)
 
 
 

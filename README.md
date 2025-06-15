@@ -72,7 +72,7 @@ Data cleaning notes:
       * This is because in Phase 2 the day and night EMA surveys were both named "3T Project"
     * Phase 2 clean data's "other" variable is equivalent to Phase 1 clean data's "other_night"
     * Considerably more messiness with EMA surveys given larger sample in Phase 2
-    * Many participants have fewer than 105 notifications, and some have more
+    * Many participants have fewer than 105 notifications, and some have more (redownloaded app)
 
 * Qualtrics data
   * Clean Columns section lists raw data available that have not yet been cleaned
