@@ -66,6 +66,11 @@ Data cleaning notes:
     * Empty rows from multiple datasets overlapping in time for LifePak ID 958251 are removed
     * Most participants have 105 total notifications, but some have fewer; it's unclear why
   * Phase 2 specifics:
+    * Use LSMH ID to refer to unique participants
+      * Unlike in Phase 1, multiple LifePak IDs for a given participant are not merged into one LifePak ID
+    * Phase 2 clean data lacks Phase 1 clean data's "time_of_day" variable
+      * This is because in Phase 2 the day and night EMA surveys were both named "3T Project"
+    * Phase 2 clean data's "other" variable is equivalent to Phase 1 clean data's "other_night"
     * Considerably more messiness with EMA surveys given larger sample in Phase 2
     * Many participants have fewer than 105 notifications, and some have more
 
