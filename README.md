@@ -75,24 +75,27 @@ Data cleaning notes:
     * Many participants have fewer than 105 notifications, and some have more (redownloaded app)
 
 * Qualtrics data
-  * Clean Columns section lists raw data available that have not yet been cleaned
   * When items are reverse-coded, cleaning scripts unreverse them (while retaining the original item name)
     * By contrast, in LifePak data, when items are reversed the suffix "_rev" is appended to the item name
-  * Item exclusions
-    * Parent BSI-18 item on suicidal thoughts was not administered and is excluded from composite variables
-    * Parent item `scared_c_1` was entered into survey incorrectly and is excluded from composite variables
-    * Child item `scared_c_11` was absent from in-person baseline survey and is excluded from composites
-  * Ranges of youth SITBI-SF items need to be checked against those expected
-  * Some youth and parent item names differ (compare item content before comparing responses)
-    * E.g., parent item `scared_b_16` corresponds to youth item `scared_c_1`
   * Log list files are created to log:
     * Items used to compute item completion rates (see `log$item_completion_rate`)
     * Items used to compute means and counts (see `log$mean_items` and `log$count_items`)
       * Confirm the items are correct before analyzing the means and counts
     * Clean youth and parent codebooks
-  * Raw timestamps are in "America/Denver" time zone for Phase I and mostly in "America/Chicago" for Phase II
-    * For Phase II, the youth intervention survey is in "America/Denver"
-    * Take care when comparing timestamps between LifePak/Qualtrics datasets
+  * Take care when comparing timestamps between LifePak/Qualtrics datasets (different time zones)
+  * Phase 1 specifics:
+    * Clean Columns section lists raw data available that have not yet been cleaned
+    * Item exclusions
+      * Parent BSI-18 item on suicidal thoughts was not administered and is excluded from composite variables
+      * Parent item `scared_c_1` was entered into survey incorrectly and is excluded from composite variables
+      * Child item `scared_c_11` was absent from in-person baseline survey and is excluded from composites
+    * Ranges of youth SITBI-SF items need to be checked against those expected
+    * Some youth and parent item names differ (compare item content before comparing responses)
+      * E.g., parent item `scared_b_16` corresponds to youth item `scared_c_1`
+    * Raw timestamps are in "America/Denver" time zone
+  * Phase 2 specifics:
+    * TODO: Determine which Phase 1 specifics also apply to Phase 2
+    * Raw timestamps are mostly in "America/Chicago", but youth intervention survey is in "America/Denver"
 
 Version control:
   * Expected raw data versions are tracked in "Raw <P1/P2> Metadata.csv" files
