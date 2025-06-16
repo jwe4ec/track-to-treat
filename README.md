@@ -85,10 +85,10 @@ Data cleaning notes:
   * Take care when comparing timestamps between LifePak/Qualtrics datasets (different time zones)
   * Phase 1 specifics:
     * Clean Columns section lists raw data available that have not yet been cleaned
-    * Item exclusions
-      * Parent BSI-18 item on suicidal thoughts was not administered and is excluded from composite variables
-      * Parent item `scared_c_1` was entered into survey incorrectly and is excluded from composite variables
-      * Child item `scared_c_11` was absent from in-person baseline survey and is excluded from composites
+    * Items excluded from composite variables
+      * Parent BSI-18 item on suicidal thoughts, which was not administered
+      * Parent item `scared_c_1`, which was entered into survey incorrectly
+      * Child item `scared_c_11`, which was absent from in-person baseline survey
     * Ranges of youth SITBI-SF items need to be checked against those expected
     * Some youth and parent item names differ (compare item content before comparing responses)
       * E.g., parent item `scared_b_16` corresponds to youth item `scared_c_1`
