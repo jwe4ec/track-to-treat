@@ -29,3 +29,15 @@ clean_data_staging_intermediate_dir <- clean_data_staging_dir %+% "intermediate\
 # - Note: Use "timeZone" specified for date columns (e.g., "StartDate") in third row of raw CSV
 p6m_path <- raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+2+-+6M_May+6,+2025_09.46_n.csv"
 p6m_raw <- read_survey(p6m_path, time_zone = "America/Chicago")
+
+
+## Load ID lookup
+id_lookup <- read_csv(here("Phase 2", "2025.05.26 Track to Treat P2 ID Lookup.csv"))
+
+
+## Load item-level codebook file
+codebook <- load_p2_codebook(here("Phase 2", "2025.05.28 Track to Treat P2 Codebook.xlsx"))
+
+
+## Load assessment windows
+ax_windows <- readRDS(clean_data_staging_intermediate_dir %+% "Phase 2 Assessment Windows.rds")
