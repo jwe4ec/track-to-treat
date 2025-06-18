@@ -21,8 +21,8 @@ File organization:
     * Check Overlap.R (checking ID overlap across datasets)
     * Compare Clean LifePak Datasets.R (checking clean LifePak data to previous versions)
 * Phase 2/
-  * Raw P2 Metadata.csv (used to track expected raw data versions for checks against loaded files) [WIP]
-  * 2025.05.26 Track to Treat P2 Codebook.xlsx (an item-level codebook used to clean the Qualtrics data)
+  * Raw P2 Metadata.csv (used to track expected raw data versions for checks against loaded files)
+  * 2025.05.28 Track to Treat P2 Codebook.xlsx (an item-level codebook used to clean the Qualtrics data)
   * 2025.05.26 Track to Treat P2 ID Lookup.csv (a lookup table of LSMH IDs and LifePak IDs)
   * 1_Clean LifePak Data.R
   * 2_Clean Youth Qualtrics Data/
@@ -66,26 +66,36 @@ Data cleaning notes:
     * Empty rows from multiple datasets overlapping in time for LifePak ID 958251 are removed
     * Most participants have 105 total notifications, but some have fewer; it's unclear why
   * Phase 2 specifics:
-    * There was considerably more messiness with the EMA surveys with the larger sample in Phase 2. Many participants have fewer than 105 notifications, and some have more
+    * Use LSMH ID to refer to unique participants
+      * Unlike in Phase 1, multiple LifePak IDs for a given participant are not merged into one LifePak ID
+    * Phase 2 clean data lacks Phase 1 clean data's "time_of_day" variable
+      * This is because in Phase 2 the day and night EMA surveys were both named "3T Project"
+    * Phase 2 clean data's "other" variable is equivalent to Phase 1 clean data's "other_night"
+    * Considerably more messiness with EMA surveys given larger sample in Phase 2
+    * Many participants have fewer than 105 notifications, and some have more (redownloaded app)
 
 * Qualtrics data
-  * Clean Columns section lists raw data available that have not yet been cleaned
   * When items are reverse-coded, cleaning scripts unreverse them (while retaining the original item name)
     * By contrast, in LifePak data, when items are reversed the suffix "_rev" is appended to the item name
-  * Item exclusions
-    * Parent BSI-18 item on suicidal thoughts was not administered and is excluded from composite variables
-    * Parent item `scared_c_1` was entered into survey incorrectly and is excluded from composite variables
-    * Child item `scared_c_11` was absent from in-person baseline survey and is excluded from composites
-  * Ranges of youth SITBI-SF items need to be checked against those expected
-  * Some youth and parent item names differ (compare item content before comparing responses)
-    * E.g., parent item `scared_b_16` corresponds to youth item `scared_c_1`
   * Log list files are created to log:
     * Items used to compute item completion rates (see `log$item_completion_rate`)
     * Items used to compute means and counts (see `log$mean_items` and `log$count_items`)
       * Confirm the items are correct before analyzing the means and counts
     * Clean youth and parent codebooks
-  * Raw timestamps are in "America/Denver" time zone for Phase I and in "America/Chicago" for Phase II
-    * Take care when comparing timestamps between LifePak/Qualtrics datasets
+  * Take care when comparing timestamps between LifePak/Qualtrics datasets (different time zones)
+  * Phase 1 specifics:
+    * Clean Columns section lists raw data available that have not yet been cleaned
+    * Items excluded from composite variables
+      * Parent BSI-18 item on suicidal thoughts, which was not administered
+      * Parent item `scared_c_1`, which was entered into survey incorrectly
+      * Child item `scared_c_11`, which was absent from in-person baseline survey
+    * Ranges of youth SITBI-SF items need to be checked against those expected
+    * Some youth and parent item names differ (compare item content before comparing responses)
+      * E.g., parent item `scared_b_16` corresponds to youth item `scared_c_1`
+    * Raw timestamps are in "America/Denver" time zone
+  * Phase 2 specifics:
+    * TODO: Determine which Phase 1 specifics also apply to Phase 2
+    * Raw timestamps are mostly in "America/Chicago", but youth intervention survey is in "America/Denver"
 
 Version control:
   * Expected raw data versions are tracked in "Raw <P1/P2> Metadata.csv" files

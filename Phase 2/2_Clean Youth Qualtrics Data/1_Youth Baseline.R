@@ -7,7 +7,7 @@ library(groundhog) # 3.2.2
 groundhog_date <- "2025-03-28"
 meta.groundhog(groundhog_date)
 groundhog.library(
-  pkg = c("tidyverse", "tidylog", "lubridate", "qualtRics", "openxlsx", "here"),
+  pkg = c("tidyverse", "tidylog", "lubridate", "qualtRics", "openxlsx", "here", "digest"),
   date = groundhog_date
 )
 `%+%` <- paste0
@@ -28,7 +28,7 @@ clean_data_staging_intermediate_dir <- clean_data_staging_dir %+% "intermediate\
 # Load raw Qualtrics datasets (storing paths) in this format: [respondent][wave]_[administration]_raw
 # - Note: Use "timeZone" specified for date columns (e.g., "StartDate") in third row of raw CSV
 yb_path <- raw_data_dir %+% "DP5+Phase+2+-+Youth+-+Baseline_May+6,+2025_09.43_n.csv"
-yb_raw <- read_survey(yb_path, time_zone = "America/Denver")
+yb_raw <- read_survey(yb_path, time_zone = "America/Chicago")
 
 
 ## Load ID lookup
@@ -36,20 +36,19 @@ id_lookup <- read_csv(here("Phase 2", "2025.05.26 Track to Treat P2 ID Lookup.cs
 
 
 ## Load item-level codebook file
-codebook <- load_p2_codebook(here("Phase 2", "2025.05.26 Track to Treat P2 Codebook.xlsx"))
+codebook <- load_p2_codebook(here("Phase 2", "2025.05.28 Track to Treat P2 Codebook.xlsx"))
 
 
 ## Check raw Qualtrics data versions using helper function
-# raw_metadata <- read.csv(here("Phase 1", "Raw P1 Metadata.csv"))
-# check_raw_data_ver(raw_metadata, yb_path, yb_data, "y_qualtrics")
+raw_metadata <- read.csv(here("Phase 2", "Raw P2 Metadata.csv"))
+check_raw_data_ver(raw_metadata, list(yb_path), list(yb_raw), "yb_qualtrics")
 
 
 
 ####  Clean Data  ####
 ## Create log
-# Create lists for logging (a) items used to compute item completion rates below via
-# compute_item_completion_rate(), (b) items used to compute means via mean_across(),
-# and (c) clean codebook (edited and added to log below)
+# Create lists for logging (a) items used to compute item completion rate below via
+# compute_item_completion_rate() and (b) items used to compute means via mean_across()
 log <- list(
   item_completion_rate = list(),
   mean_items = list()
@@ -298,7 +297,7 @@ yb_recoded <- yb_raw %>%
   ) %>%
   
   # Compute item completion rate
-  compute_item_completion_rate("yb")
+  compute_item_completion_rate("yb") # TODO: Fix which columns are used to compute this
 
 
 ## Check that values are in expected range
@@ -318,7 +317,7 @@ items_to_check <- yb_recoded %>%
     matches("_mpvs_"),
     matches("_ucla_"),
     matches("_self_hate_"),
-    matches("_agency_"),
+    matches("_agency_"),    # TODO: Seems we should remove "agency" and "pathways" here
     matches("_pathways_"),
     matches("_pfs_"),
     -ends_with("mean")
@@ -378,4 +377,4 @@ identify_duplicates(yb_deduplicated, lsmh_id, yb_complete)
 saveRDS(yb_deduplicated, clean_data_staging_dir %+% "Phase 2 Youth Qualtrics Clean Data - Baseline.rds")
 
 # Save log
-# saveRDS(log, clean_data_staging_dir %+% "Phase 2 Youth Qualtrics Clean Data Log - Baseline.rds")
+saveRDS(log, clean_data_staging_intermediate_dir %+% "Phase 2 Youth Qualtrics Clean Data Log - Baseline.rds")

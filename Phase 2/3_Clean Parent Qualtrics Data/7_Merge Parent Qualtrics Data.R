@@ -28,8 +28,17 @@ clean_data_staging_intermediate_dir <- clean_data_staging_dir %+% "intermediate\
 pb_clean <- readRDS(clean_data_staging_dir %+% "Phase 2 Parent Qualtrics Clean Data - Baseline.rds")
 p3m_clean <- readRDS(clean_data_staging_dir %+% "Phase 2 Parent Qualtrics Clean Data - 3m.rds")
 
+# Load logs by wave
+pb_log <- readRDS(clean_data_staging_intermediate_dir %+% "Phase 2 Parent Qualtrics Clean Data Log - Baseline.rds")
+p3m_log <- readRDS(clean_data_staging_intermediate_dir %+% "Phase 2 Parent Qualtrics Clean Data Log - 3m.rds")
+
 # Load youth intervention data, for `condition`
 yi_clean <- readRDS(clean_data_staging_dir %+% "Phase 2 Youth Qualtrics Clean Data - Intervention.rds")
+
+
+## Load item-level codebook file
+codebook <- load_p2_codebook(here("Phase 2", "2025.05.28 Track to Treat P2 Codebook.xlsx"))
+
 
 
 ####  Merge Data  ####
@@ -78,5 +87,20 @@ p_merged_filtered %>%
 
 
 
+####  Merge Logs  ####
+# Include codebook (unedited to date)
+p_log <- list(item_completion_rate = list(pb = pb_log$item_completion_rate$pb,
+                                          p3m = p3m_log$item_completion_rate$p3m),
+              mean_items = c(pb_log$mean_items,
+                             p3m_log$mean_items),
+              count_items = pb_log$count_items,
+              p_codebook_clean = codebook)
+
+
+
 ####  Save Data  ####
+# Save data
 saveRDS(p_merged_filtered, clean_data_staging_dir %+% "Phase 2 Parent Qualtrics Clean Data - All Waves.rds")
+
+# Save log
+saveRDS(p_log, clean_data_staging_dir %+% "Phase 2 Parent Qualtrics Clean Data Log - All Waves.rds")

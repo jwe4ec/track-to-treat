@@ -7,7 +7,7 @@ library(groundhog) # 3.2.2
 groundhog_date <- "2025-03-28"
 meta.groundhog(groundhog_date)
 groundhog.library(
-  pkg = c("tidyverse", "tidylog", "lubridate", "here"),
+  pkg = c("tidyverse", "tidylog", "lubridate", "here", "digest"),
   date = groundhog_date
 )
 `%+%` <- paste0
@@ -40,8 +40,8 @@ id_lookup <- read_csv(here("Phase 2", "2025.05.26 Track to Treat P2 ID Lookup.cs
 
 
 ## Check raw LifePak data versions using helper function
-# raw_metadata <- read.csv(here("Phase 2", "Raw P2 Metadata.csv"))
-# check_raw_data_ver(raw_metadata, raw_data_paths, raw_data, "lifepak")
+raw_metadata <- read.csv(here("Phase 2", "Raw P2 Metadata.csv"))
+check_raw_data_ver(raw_metadata, raw_data_paths, raw_data, "lifepak")
 
 
 
@@ -76,6 +76,7 @@ nis_clean <- nis_combined %>%
     lifepak_id = gsub(".*-", "", Participant.ID),
     
     # Survey type (EMA or feedback)
+    # - Day EMA survey and night EMA survey were both named "3T Project" in Phase 2
     survey_type = case_match(
       Session.Name,
       "3T Project" ~ "EMA",
@@ -109,14 +110,15 @@ nis_clean <- nis_combined %>%
     response_start_date = as_date(response_start_datetime),
     
     # Response data
-    # ema_[...].1 variables capture the same construct as ema_[...] variables, but for different rows
-    # No rows have non-missing data for both columns
-    # These variables need to be combined
-    # This may serve the same purpose as [...]_day and [...]_night in Phase 1
+    # - In Phase 1, variables in the day and night surveys were named "[...]_day" and "[...]_night"
+    # - In Phase 2, variables in both surveys were named the same, and ".1" was appended to night variables upon data export
+    #   - Day survey: "ema_[...]", "reminder_[...]", "thankyou"
+    #   - Night survey: "ema_[...].1", "reminder_[...].1", "thankyou.1", "best", "worst", "other"
+    # - No rows have non-missing data for both "ema_[...]" and "ema_[...].1" columns
     sad = case_when(
       !is.na(ema_sad) ~ ema_sad,
       !is.na(ema_sad.1) ~ ema_sad.1,
-      T  ~ NA_real_
+      T ~ NA_real_
     ),
     
     bad = case_when(
@@ -229,11 +231,17 @@ nis_clean %>%
   count(lifepak_id)
   
 # Just FYI: This is how many IDs/rows included unknown LifePak IDs
+# - TODO: Alyssa found that LifePak ID "007996" in "nis_1" is in "LifePak" tab of
+# "Track to Treat P2 Tracking Log 2.0" with corresponding LSMH ID "LSMH02350". The
+# LSMH ID is in "id_lookup" but the LifePak ID isn't (needs to be added).
+# - Unclear why "850326" and "997505" in "nis_1" ("TRACK to TREAT P2" survey) are unknown
+# - Those in "nis_4" ("TRACK to TREAT P2 - Pilot 2" survey) are likely lab members testing/training
 nis_clean %>%
   filter(!lifepak_id %in% id_lookup$lifepak_id) %>%
-  count(lifepak_id)
+  count(dataset, lifepak_id)
 
-# Just FYI: These known LifePak IDs do not appear in the data
+# Just FYI: These known LifePak IDs to keep do not appear in the data
+# - Unclear why "217510" and "500856" do not appear
 valid_ids %>%
   filter(!lifepak_id %in% nis_valid_with_lsmh_id$lifepak_id) %>%
   pull(lifepak_id)
@@ -255,31 +263,44 @@ nis_arranged %>%
 
 
 ## Deduplicate by response
+# Note: Count by LSMH ID given that multiple LifePak IDs for a given participant were not merged
 # No duplicate responses
 nis_arranged %>%
-  count(lifepak_id, response_start_datetime) %>%
-  drop_na() %>% 
+  count(lsmh_id, response_start_datetime) %>%
+  drop_na() %>%
   filter(n > 1)
 
 
 ## Deduplicate by notification
 # A number of notifications appear more than once
 duplicate_notifications <- nis_arranged %>% 
-  count(lifepak_id, notification_datetime) %>% 
+  count(lsmh_id, notification_datetime) %>% 
   filter(n > 1)
 
 duplicate_notifications
 
 # To deduplicate, always keep the first row where response_ended_within_2h == T
 nis_deduplicated <- nis_arranged %>%
-  group_by(lifepak_id, notification_datetime) %>%
+  group_by(lsmh_id, notification_datetime) %>%
   arrange(desc(response_ended_within_2h), response_start_datetime) %>%
   slice_head(n = 1) %>%
   ungroup()
 
 nis_deduplicated %>% 
-  count(lifepak_id, notification_datetime) %>%
+  count(lsmh_id, notification_datetime) %>%
   arrange(desc(n))
+
+
+## Just FYI, those with more than 105 rows have multiple LifePak IDs (redownloaded app)
+lsmh_ids_extra_rows <- nis_deduplicated %>%
+  group_by(lsmh_id) %>%
+  count() %>%
+  arrange(desc(n)) %>%
+  filter(n > 105)
+
+nis_deduplicated %>%
+  filter(nis_deduplicated$lsmh_id %in% lsmh_ids_extra_rows$lsmh_id) %>%
+  count(lsmh_id, lifepak_id)
 
 
 
