@@ -41,3 +41,8 @@ codebook <- load_p2_codebook(here("Phase 2", "2025.05.28 Track to Treat P2 Codeb
 
 ## Load assessment windows
 ax_windows <- readRDS(clean_data_staging_intermediate_dir %+% "Phase 2 Assessment Windows.rds")
+
+
+## Check raw Qualtrics data versions using helper function
+raw_metadata <- read.csv(here("Phase 2", "Raw P2 Metadata.csv"))
+check_raw_data_ver(raw_metadata, list(y6m_path), list(y6m_raw), "y6m_qualtrics")
