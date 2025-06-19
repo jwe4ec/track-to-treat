@@ -508,7 +508,7 @@ load_p2_codebook <- function(codebook_path) {
         # If "[x]" is in the item name...
         grepl("\\[x\\]", item),
         # ... make `waves` a list with one value per wave, otherwise...
-        list(c("b", "3m")),
+        list(c("b", "3m", "6m", "12m", "18m")),
         # ... make it an empty list
         list(c(""))
       )
