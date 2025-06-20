@@ -285,6 +285,7 @@ yb_recoded <- yb_raw %>%
     matches("_scsc_"),
     matches("_bads_"),
     matches("_shs_"),
+    matches("_self_hate_"),
     matches("_idas_"),
     matches("_scared_"),
     matches("_shaps_"),
