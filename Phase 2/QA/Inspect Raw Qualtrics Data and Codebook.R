@@ -192,12 +192,12 @@ diff_other_demog_cols_reproduced <- unlist(lapply(diff_other_demog_col_prefixes,
 }))
 identical(sort(diff_other_demog_cols), sort(diff_other_demog_cols_reproduced))
 
-# c("birthorder", "caregiver1_2", "caregiver1_4", "caregiver1_4_8_TEXT", "caregiver1_5", 
-#   "caregiver1_5_5_TEXT", "caregiver1_6", "caregiver1_7", "caregiver1_8", "caregiver2_1", 
-#   "caregiver2_2", "caregiver2_3", "caregiver2_3_10_TEXT", "caregiver2_4", "caregiver2_4_8_TEXT", 
-#   "caregiver2_5", "caregiver2_5_5_TEXT", "caregiver2_6", "caregiver2_7", "caregiver2_8", 
-#   "caretaker", "caretaker_living", "childethnicity", "childethnicity_8_TEXT", "childsex", 
-#   "dependent", "grade", "grade_13_TEXT", "income", "school", "school_7_TEXT", "siblings_1", 
+# c("birthorder", "caregiver1_2", "caregiver1_4", "caregiver1_4_8_TEXT", "caregiver1_5",
+#   "caregiver1_5_5_TEXT", "caregiver1_6", "caregiver1_7", "caregiver1_8", "caregiver2_1",
+#   "caregiver2_2", "caregiver2_3", "caregiver2_3_10_TEXT", "caregiver2_4", "caregiver2_4_8_TEXT",
+#   "caregiver2_5", "caregiver2_5_5_TEXT", "caregiver2_6", "caregiver2_7", "caregiver2_8",
+#   "caretaker", "caretaker_living", "childethnicity", "childethnicity_8_TEXT", "childsex",
+#   "dependent", "grade", "grade_13_TEXT", "income", "school", "school_7_TEXT", "siblings_1",
 #   "siblings_2", "single_parent")
 
 # TODO: "ace_p" and "ace_y" columns are only at baseline (JE changed prefixes to "pb" in codebook)
@@ -277,3 +277,33 @@ nrow(rows_missing_min_max) == 0
 # View(codebook[is.na(codebook$reversed), ]) # TODO: JE changed NA to 0 for "pfs" text items and "condition"
 
 table(codebook$reversed, codebook$reverse_base, useNA = "always")
+
+
+
+#### Check for items in data across waves ####
+## Define function to check for measure item pattern in data across waves
+check_meas_item_pattern <- function(dat_ls_cols, pattern) {
+  lapply(dat_ls_cols, function(dat_cols) {
+    meas_item_cols <- dat_cols$meas_item_cols
+    
+    meas_item_cols[grepl(pattern, meas_item_cols)]
+  })
+}
+
+
+## Define function to check label for item pattern in data across waves
+check_item_pattern_label <- function(dat_ls, pattern) {
+  lapply(dat_ls, function(dat) {
+    target_cols <- names(dat)[grepl(pattern, names(dat))]
+    
+    sapply(target_cols, function(target_col) {
+      attr(dat[[target_col]], "label")
+    }, USE.NAMES = FALSE)
+  })
+}
+
+
+## SCARED item "scared_c_11", which was absent from youth baseline survey in Phase 1
+# It's present in Phase 2 as "I am shy" at "yb", "y3m", "y6m", "y12m", and "y18m"
+check_meas_item_pattern(dat_ls_cols, "scared_c_11")
+check_item_pattern_label(dat_ls, "scared_c_11")
