@@ -223,12 +223,6 @@ y3m_recoded <- y3m_raw %>%
     y3m_shaps_mean = mean_across("y3m", "shaps", name = "y3m_shaps_mean"),
     
     
-    ## SRET (Self-Referential Encoding Task)
-    # (Currently a low priority to code given how time-intensive this is; see
-    # Dainer-Best et al., 2018)
-    # Items (both baseline and 3m): "SRET", "SRET.keys", "SRET.time", "SRET.words", "tlcond"
-    
-    
     ## DRS (Dietary Restriction Screener)
     # Two items that do not need to be recoded or combined
     

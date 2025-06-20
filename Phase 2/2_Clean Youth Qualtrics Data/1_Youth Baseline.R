@@ -223,7 +223,7 @@ yb_recoded <- yb_raw %>%
     ## SRET (Self-Referential Encoding Task)
     # (Currently a low priority to code given how time-intensive this is; see
     # Dainer-Best et al., 2018)
-    # Items (both baseline and 3m): "SRET", "SRET.keys", "SRET.time", "SRET.words", "tlcond"
+    # Items: "SRET", "SRET.keys", "SRET.time", "SRET.words", "tlcond"
     
     
     ## DRS (Dietary Restriction Screener)
