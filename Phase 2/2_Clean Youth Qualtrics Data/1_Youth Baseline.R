@@ -35,7 +35,7 @@ yb_raw <- read_survey(yb_path, time_zone = "America/Chicago")
 id_lookup <- read_csv(here("Phase 2", "2025.05.26 Track to Treat P2 ID Lookup.csv"))
 
 
-## Load item-level codebook file
+## Load item-level codebook file using helper function
 codebook <- load_p2_codebook(here("Phase 2", "2025.05.28 Track to Treat P2 Codebook.xlsx"))
 
 
@@ -82,7 +82,7 @@ yb_recoded <- yb_raw %>%
     )
   ) %>%
   
-  # Clean remaining columns by row
+  # Clean remaining columns by row and create composites
   rowwise() %>%
   mutate(
     
@@ -95,7 +95,8 @@ yb_recoded <- yb_raw %>%
       lsmh_id == "LMSH00886" & is.na(yb_lsmh_id) ~ "LSMH00886",
       lsmh_id == "LSMH02264?Redirect=0" & is.na(yb_lsmh_id) ~ "LSMH02264",
       lsmh_id == "Baseline" & yb_lsmh_id == "LSMH02533" ~ "LSMH02533",
-      lsmh_id == "Baseline" & is.na(yb_lsmh_id) ~ NA_character_,
+      lsmh_id == "Baseline" & is.na(yb_lsmh_id) & StartDate == "2023-04-17 17:28:45" ~ "LSMH02533",
+      is.na(lsmh_id) & is.na(yb_lsmh_id) & StartDate == "2022-03-01 12:33:20" ~ "LSMH01791",
       
       # Cases where both match
       yb_lsmh_id == lsmh_id ~ lsmh_id,
