@@ -310,6 +310,7 @@ items_to_check <- yb_recoded %>%
     matches("_pcsc_"),
     matches("_scsc_"),
     matches("_bads_"),
+    matches("_shs_"),
     matches("_idas_"),
     matches("_scared_"),
     matches("_shaps_"),
@@ -318,10 +319,6 @@ items_to_check <- yb_recoded %>%
     matches("_bfamg_"),
     matches("_mpvs_"),
     matches("_ucla_"),
-    matches("_self_hate_"),
-    matches("_agency_"),    # TODO: Seems we should remove "agency" and "pathways" here
-    matches("_pathways_"),
-    matches("_pfs_"),
     -ends_with("mean")
   ) %>%
   names()
