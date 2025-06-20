@@ -579,8 +579,6 @@ y_clean <- y_merged %>%
     
   )
 
-test <- y_clean[, names(y_clean)[grepl("sitbi", names(y_clean))]]
-
 
 
 ### Check that values are in expected range
