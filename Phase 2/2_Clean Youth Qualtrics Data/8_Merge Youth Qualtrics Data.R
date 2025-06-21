@@ -35,7 +35,7 @@ yi_log <- readRDS(clean_data_staging_intermediate_dir %+% "Phase 2 Youth Qualtri
 y3m_log <- readRDS(clean_data_staging_intermediate_dir %+% "Phase 2 Youth Qualtrics Clean Data Log - 3m.rds")
 
 
-## Load item-level codebook file
+## Load item-level codebook file using helper function
 codebook <- load_p2_codebook(here("Phase 2", "2025.05.28 Track to Treat P2 Codebook.xlsx"))
 
 
