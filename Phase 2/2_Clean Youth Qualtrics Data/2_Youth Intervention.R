@@ -55,8 +55,21 @@ log <- list(
 )
 
 
+## Use unique "ImportId" to rename columns both named "lsmh_id" in Qualtrics
+# - "read_survey()" contingently named these by their column indices upon import to R
+col_map <- attr(yi_raw, "column_map")
+
+lsmh_id_col1_qname <- col_map$qname[col_map$ImportId == "QID186_TEXT"]
+lsmh_id_col2_qname <- col_map$qname[col_map$ImportId == "lsmh_id"]
+
+yi_renamed <- yi_raw
+
+names(yi_renamed)[names(yi_renamed) == lsmh_id_col1_qname] <- "lsmh_id_col1"
+names(yi_renamed)[names(yi_renamed) == lsmh_id_col2_qname] <- "lsmh_id_col2"
+
+
 ## Clean columns
-yi_recoded <- yi_raw %>%
+yi_recoded <- yi_renamed %>%
   
   # Remove click, page time variables
   select(
@@ -85,22 +98,22 @@ yi_recoded <- yi_raw %>%
     lsmh_id = case_when(
       
       # Cases to be manually recoded
-      lsmh_id...18 == "LSMH01297" & lsmh_id...601 == "LSMH0129" ~ "LSMH01297",
-      lsmh_id...18 == "LsmH00886" & lsmh_id...601 == "LMSH00886" ~ "LSMH00886",
-      lsmh_id...18 == "lsmh01826" & lsmh_id...601 == "LSMH01826" ~ "LSMH01826",
+      lsmh_id_col1 == "LSMH01297" & lsmh_id_col2 == "LSMH0129" ~ "LSMH01297",
+      lsmh_id_col1 == "LsmH00886" & lsmh_id_col2 == "LMSH00886" ~ "LSMH00886",
+      lsmh_id_col1 == "lsmh01826" & lsmh_id_col2 == "LSMH01826" ~ "LSMH01826",
 
       # Cases where both match
-      lsmh_id...18 == lsmh_id...601 ~ lsmh_id...18,
+      lsmh_id_col1 == lsmh_id_col2 ~ lsmh_id_col1,
       
       # Cases where one is missing (keep the non-missing value)
-      is.na(lsmh_id...18) & !is.na(lsmh_id...601) ~ lsmh_id...601,
-      is.na(lsmh_id...601) & !is.na(lsmh_id...18) ~ lsmh_id...18,
+      is.na(lsmh_id_col1) & !is.na(lsmh_id_col2) ~ lsmh_id_col2,
+      is.na(lsmh_id_col2) & !is.na(lsmh_id_col1) ~ lsmh_id_col1,
       
       # Cases where both are missing
-      is.na(lsmh_id...18) & is.na(lsmh_id...601) ~ NA_character_,
+      is.na(lsmh_id_col1) & is.na(lsmh_id_col2) ~ NA_character_,
       
       # Additional cases are flagged for cleaning
-      T ~ "ID Combination Unaccounted For (" %+% lsmh_id...18 %+% ", " %+% lsmh_id...601 %+% ")"
+      T ~ "ID Combination Unaccounted For (" %+% lsmh_id_col1 %+% ", " %+% lsmh_id_col2 %+% ")"
       
     ),
     
