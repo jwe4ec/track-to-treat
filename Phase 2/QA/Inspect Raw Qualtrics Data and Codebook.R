@@ -272,6 +272,11 @@ rows_missing_min_max <- codebook[!(codebook$item %in% ignore_cols) &
                                    (is.na(codebook$maximum) | is.na(codebook$minimum)), ]
 nrow(rows_missing_min_max) == 0
 
+# TODO: Check that "minimum" and "maximum" are same across time for each measure
+# - BHS was on 0-3 scale at all time points except "yi", where it was on 1-4 scale
+
+
+
 
 ## Check "reversed" and "reverse_base"
 # View(codebook[is.na(codebook$reversed), ]) # TODO: JE changed NA to 0 for "pfs" text items and "condition"
