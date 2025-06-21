@@ -153,12 +153,13 @@ yi_recoded <- yi_renamed %>%
     yi_post_agency_mean = mean_across("yi_post", "state_hope_scale", "agency", name = "yi_post_agency_mean"),
     
     
-    ## IPTQ
+    ## IPTQ (Implicit Personality Theory Questionnaire)
     yi_pre_iptq_mean = mean_across("yi_pre", "iptq", name = "yi_pre_iptq_mean"),
     yi_post_iptq_mean = mean_across("yi_post", "iptq", name = "yi_post_iptq_mean"),
     
     
-    ## PFS
+    ## PFS (Program Feedback Scale; developed by LSMH)
+    # - "subscale" for ordinal PFS items is "pfs" in codebook (vs. NA for free-text PFS items)
     yi_post_pfs_mean = mean_across("yi", "pfs", "pfs", name = "yi_post_pfs_mean")
     
     
