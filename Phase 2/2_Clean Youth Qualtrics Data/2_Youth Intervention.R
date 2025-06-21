@@ -163,6 +163,9 @@ yi_recoded <- yi_renamed %>%
     yi_post_pfs_mean = mean_across("yi", "pfs", "pfs", name = "yi_post_pfs_mean")
     
     
+    ## Perceived Change
+    # Two post-intervention items that do not need to be recoded or combined    # TODO: Consider labeling as post
+    
   ) %>%
   ungroup() %>%
   
