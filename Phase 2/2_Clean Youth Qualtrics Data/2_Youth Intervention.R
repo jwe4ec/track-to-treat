@@ -133,6 +133,8 @@ yi_recoded <- yi_renamed %>%
     # Avoidance subscale
     yi_pre_bads_av_mean = mean_across("b", "bads-sf", "avoidance", name = "yi_pre_bads_av_mean"),
     
+    # Overall score can also be computed (for instructions, see Note column of raw codebook)
+    # - Subscales are not recommended (per 5/21/25 email from Jonathan Kanter to Alyssa/Jeremy)
     
     ## BHS-4 (Beck Hopelessness Scale - 4-item)
     # Overall mean score
