@@ -76,7 +76,7 @@ yi_recoded <- yi_raw %>%
     )
   ) %>%
   
-  # Clean remaining columns by row
+  # Clean remaining columns by row and create composites
   rowwise() %>%
   mutate(
     

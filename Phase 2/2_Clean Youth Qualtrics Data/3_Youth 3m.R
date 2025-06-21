@@ -86,7 +86,7 @@ y3m_recoded <- y3m_raw %>%
     )
   ) %>%
   
-  # Clean remaining columns by row
+  # Clean remaining columns by row and create composites
   rowwise() %>%
   mutate(
     
