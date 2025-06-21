@@ -128,10 +128,10 @@ yi_recoded <- yi_renamed %>%
     
     ## BADS-SF (Behavioral Activation for Depression Scale - Short Form)
     # Activation subscale
-    yi_pre_bads_ac_mean = mean_across("b", "bads-sf", "activation", name = "yi_pre_bads_ac_mean"),
+    yi_pre_bads_sf_ac_mean = mean_across("b", "bads-sf", "activation", name = "yi_pre_bads_sf_ac_mean"),
     
     # Avoidance subscale
-    yi_pre_bads_av_mean = mean_across("b", "bads-sf", "avoidance", name = "yi_pre_bads_av_mean"),
+    yi_pre_bads_sf_av_mean = mean_across("b", "bads-sf", "avoidance", name = "yi_pre_bads_sf_av_mean"),
     
     # Overall score can also be computed (for instructions, see Note column of raw codebook)
     # - Subscales are not recommended (per 5/21/25 email from Jonathan Kanter to Alyssa/Jeremy)
