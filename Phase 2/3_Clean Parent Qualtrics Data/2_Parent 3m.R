@@ -190,9 +190,9 @@ p3m_recoded <- p3m_raw %>%
     p3m_scared_sch_mean = mean_across("p3m", "scared", "SCH", name = "p3m_scared_sch_mean"),
     
   ) %>%
-  
   ungroup() %>%
   
+  # Select variables
   select(
     
     # Metadata

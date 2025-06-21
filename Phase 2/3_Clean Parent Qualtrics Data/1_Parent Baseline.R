@@ -363,9 +363,9 @@ pb_recoded <- pb_raw %>%
     pb_scared_sch_mean = mean_across("pb", "scared", "SCH", name = "pb_scared_sch_mean"),
 
   ) %>%
-  
   ungroup() %>%
   
+  # Select variables
   select(
     
     # Metadata

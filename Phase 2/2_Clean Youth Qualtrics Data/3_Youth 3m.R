@@ -264,6 +264,8 @@ y3m_recoded <- y3m_raw %>%
     
   ) %>%
   ungroup() %>%
+  
+  # Select variables
   select(
     
     # Metadata

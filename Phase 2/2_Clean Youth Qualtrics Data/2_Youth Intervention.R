@@ -165,6 +165,8 @@ yi_recoded <- yi_renamed %>%
     
   ) %>%
   ungroup() %>%
+  
+  # Select variables
   select(
     
     # Metadata
