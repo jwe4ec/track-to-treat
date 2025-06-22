@@ -164,7 +164,7 @@ yi_recoded <- yi_renamed %>%
     
     
     ## Perceived Change
-    # Two post-intervention items that do not need to be recoded or combined    # TODO: Consider labeling as post
+    # Two post-intervention items that do not need to be recoded or combined
     
   ) %>%
   ungroup() %>%
@@ -183,7 +183,8 @@ yi_recoded <- yi_renamed %>%
     # Measures
     matches("_bads_"),
     matches("_bhs_"),
-    matches("_pathways_"), # TODO: Seems we need to select "_shs_" here
+    matches("_shs_"),
+    matches("_pathways_"),
     matches("_agency_"),
     matches("_iptq_"),
     matches("_pfs_"),
@@ -201,8 +202,7 @@ items_to_check <- yi_recoded %>%
   select(
     matches("_bads_"),
     matches("_bhs_"),
-    matches("_pathways_"), # TODO: Seems we need to select "_shs_" and remove "pathways" and "agency" here
-    matches("_agency_"),
+    matches("_shs_"),
     matches("_iptq_"),
     matches("_pfs_[1-7]"),
     yi_perc_change_hope,
