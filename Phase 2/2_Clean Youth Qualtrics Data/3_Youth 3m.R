@@ -100,6 +100,7 @@ y3m_recoded <- y3m_raw %>%
       lsmh_id == "LSMH" & y3m_lsmh_id == "LSMH02265" ~ "LSMH02265",
       lsmh_id == "LSMH01829" & y3m_lsmh_id == "LSMH08129" ~ "LSMH01829",
       lsmh_id == "LSMH02416" & y3m_lsmh_id == "LSMH ID, LSMH02416" ~ "LSMH02416",
+      lsmh_id == "LSMH02471" & y3m_lsmh_id == "LSMH02471" & y3m_lsmh_id_check == "LSMH02571" ~ "LSMH02471",
 
       # Cases where both match
       lsmh_id == y3m_lsmh_id ~ lsmh_id,
