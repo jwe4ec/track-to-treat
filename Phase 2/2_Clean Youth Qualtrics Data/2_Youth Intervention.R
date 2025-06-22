@@ -276,7 +276,7 @@ ax_windows <- yi_deduplicated %>%
     lsmh_id,
     yi_date
   ) %>%
-  rowwise() %>%
+  rowwise() %>%        # TODO: Investigate ax_windows and extend
   mutate(
     
     # 3-month follow-up
@@ -301,6 +301,9 @@ ax_windows <- yi_deduplicated %>%
     
   ) %>%
   ungroup()
+
+
+## TODO: Check for exclusion criteria in free-response items
 
 
 
