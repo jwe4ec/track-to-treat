@@ -68,6 +68,10 @@ names(yi_renamed)[names(yi_renamed) == lsmh_id_col1_qname] <- "lsmh_id_col1"
 names(yi_renamed)[names(yi_renamed) == lsmh_id_col2_qname] <- "lsmh_id_col2"
 
 
+## TODO: Correct item prefixes in data and codebook
+# For BADS items with prefixes "b_" instead of "yi_"
+
+
 ## Clean columns
 yi_recoded <- yi_renamed %>%
   
