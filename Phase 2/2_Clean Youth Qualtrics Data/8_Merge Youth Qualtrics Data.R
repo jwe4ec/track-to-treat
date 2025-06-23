@@ -75,7 +75,7 @@ y_merged <- yb_selected %>%
 # Check duplicated data in primary outcome over time
 check_dups_over_time(y_merged, c("yb", "y3m"), "CDI-2 SR")
 
-ids_to_drop <- check_dups_over_time(y_merged, c("yb", "y3m"), "CDI-2 SR") %>%
+ids_to_drop <- check_dups_over_time(y_merged, c("yb", "y3m"), "CDI-2 SR") %>%  # TODO: JE to evaluate this after all waves added
   drop_na() %>%
   distinct(lsmh_id)
 
@@ -85,7 +85,7 @@ y_merged_filtered <- y_merged %>%
     by = "lsmh_id"
   )
 
-# Completion rates
+# Completion rates (where completion means response is present but not necessarily complete)
 y_merged_filtered %>%
   count(
     !is.na(yb_date),
