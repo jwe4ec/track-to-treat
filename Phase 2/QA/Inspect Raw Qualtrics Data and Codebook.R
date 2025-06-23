@@ -286,12 +286,23 @@ table(codebook$reversed, codebook$reverse_base, useNA = "always")
 
 
 #### Check for items in data across waves ####
-## Define function to check for measure item pattern in data across waves
-check_meas_item_pattern <- function(dat_ls_cols, pattern) {
+## Define function to check for item pattern in data across waves, with option
+## to restrict to columns of a given type
+check_item_pattern <- function(dat_ls_cols, pattern, col_type = "all") {
+  if (col_type == "all") {
+    cat("All columns:\n\n")
+  } else {
+    cat("Columns of type '", col_type, "':\n\n", sep = "")
+  }
+  
   lapply(dat_ls_cols, function(dat_cols) {
-    meas_item_cols <- dat_cols$meas_item_cols
+    if (col_type == "all") {
+      cols <- unlist(dat_cols, use.names = FALSE)
+    } else {
+      cols <- dat_cols[[col_type]]
+    }
     
-    meas_item_cols[grepl(pattern, meas_item_cols)]
+    cols[grepl(pattern, cols)]
   })
 }
 
@@ -310,5 +321,13 @@ check_item_pattern_label <- function(dat_ls, pattern) {
 
 ## SCARED item "scared_c_11", which was absent from youth baseline survey in Phase 1
 # It's present in Phase 2 as "I am shy" at "yb", "y3m", "y6m", "y12m", and "y18m"
-check_meas_item_pattern(dat_ls_cols, "scared_c_11")
+check_item_pattern(dat_ls_cols, "scared_c_11", "meas_item_cols")
 check_item_pattern_label(dat_ls, "scared_c_11")
+
+
+## Check for columns named identically in Qualtrics and thus named contingently
+## by column index upon export into R
+check_item_pattern(dat_ls_cols, "\\.\\.\\.")
+
+# - "yi_raw" contains "lsmh_id...18" and "lsmh_id...601" (renamed in code)
+# - TODO: "pb_raw" contains "test...511" and "test...512" (rename in code)
