@@ -35,6 +35,10 @@ yi_log <- readRDS(clean_data_staging_intermediate_dir %+% "Phase 2 Youth Qualtri
 y3m_log <- readRDS(clean_data_staging_intermediate_dir %+% "Phase 2 Youth Qualtrics Clean Data Log - 3m.rds")
 
 
+## Load ID lookup
+id_lookup <- read_csv(here("Phase 2", "2025.05.26 Track to Treat P2 ID Lookup.csv"))
+
+
 ## Load item-level codebook file using helper function
 codebook <- load_p2_codebook(here("Phase 2", "2025.05.28 Track to Treat P2 Codebook.xlsx"))
 
@@ -50,6 +54,10 @@ yi_selected <- yi_clean %>%
 
 y3m_selected <- y3m_clean %>%
   select(-c(item_completion_rate, yi_date))
+
+# IDs in intervention and follow-up surveys not in baseline
+length(setdiff(c(yi_clean$lsmh_id, y3m_clean$lsmh_id),
+               yb_clean$lsmh_id)) == 0
 
 # Merge
 y_merged <- yb_selected %>% 
