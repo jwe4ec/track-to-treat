@@ -272,10 +272,26 @@ rows_missing_min_max <- codebook[!(codebook$item %in% ignore_cols) &
                                    (is.na(codebook$maximum) | is.na(codebook$minimum)), ]
 nrow(rows_missing_min_max) == 0
 
-# TODO: Check that "minimum" and "maximum" are same across time for each measure
+# Check that "minimum" and "maximum" are same across time for each measure
 # - BHS was on 0-3 scale at all time points except "yi", where it was on 1-4 scale
 
+ignore_measures <- c("condition", "demographic", "pds", "sitbi", "sret")
+target_measures <- setdiff(unique(codebook$measure), ignore_measures)
 
+for (measure in target_measures) {
+  codebook_measure <- codebook[codebook$measure == measure &
+                                 !(codebook$item %in% ignore_cols), ]
+  
+  min_values <- unique(codebook_measure$minimum)
+  max_values <- unique(codebook_measure$maximum)
+  
+  if (length(min_values) > 1 | length(max_values) > 1) {
+    cat("In codebook, '", measure, "' has min values of ", min_values, 
+          " and max values of ", max_values, "\n")
+  }
+}
+
+# View(codebook[codebook$measure == "bhs", ])
 
 
 ## Check "reversed" and "reverse_base"
