@@ -318,7 +318,7 @@ pb_recoded <- pb_raw %>%
         "Bachelor's degree",
         "Graduate/professional degree"
       )
-    )),
+    ),
 
     
     ## Child treatment history
@@ -328,12 +328,12 @@ pb_recoded <- pb_raw %>%
 
     
     ## Child ACES
-    # Overall mean score
+    # Overall count
     pb_child_aces_count = count_across("pb", "ace_y", name = "pb_child_aces_count"), # count_across() from helper function script
 
     
     ## Parent ACES
-    # Overall mean score
+    # Overall count
     pb_parent_aces_count = count_across("pb", "ace_p", name = "pb_parent_aces_count"),
 
     
@@ -416,8 +416,11 @@ pb_recoded <- pb_raw %>%
     pb_parent_age,
     pb_parent_sex,
     pb_parent_gender,
+    pb_parent_gender_other,
     pb_parent_ethnicity,
+    pb_parent_ethnicity_other,
     pb_parent_relationship_to_child,
+    pb_parent_relationship_to_child_other,
     pb_parent_relationship_status,
     pb_parent_single_parent,
     pb_parent_education,
@@ -428,11 +431,14 @@ pb_recoded <- pb_raw %>%
     pb_child_gender,
     pb_child_gender_other,
     pb_child_ethnicity,
+    pb_child_ethnicity_other,
     pb_n_sisters,
     pb_n_brothers,
     pb_n_siblings,
     pb_grade,
+    pb_grade_other,
     pb_school,
+    pb_school_other,
     pb_income,
 
     # Child treatment history
@@ -444,9 +450,9 @@ pb_recoded <- pb_raw %>%
     matches("_parent_aces_"),
     matches("_cdi_"),
     matches("_bhs_"),
+    matches("_bfamg_"),
     matches("_bsi_"),
     matches("_bace_"),
-    matches("_bfamg_"),
     matches("_scared_")
     
   ) %>%
