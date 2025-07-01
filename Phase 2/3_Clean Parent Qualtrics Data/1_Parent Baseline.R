@@ -168,7 +168,7 @@ pb_recoded <- pb_raw %>%
     pb_n_brothers = as.numeric(pb_siblings_2),
     pb_n_siblings = pb_n_sisters + pb_n_brothers,
     
-    # Child grade: Does not need further cleaning
+    # Child grade: Does not need further cleaning  TODO: Clean responses of 13 (and consider "pb_grade_13_TEXT")
     
     # Child school type
     pb_school = case_when(
@@ -178,7 +178,34 @@ pb_recoded <- pb_raw %>%
       pb_school == 4 ~ "Magnet School",
       pb_school == 5 ~ "Special Education",
       pb_school == 6 ~ "Combination of Special Education and Regular School",
-      pb_school == 7 ~ "Other"
+      pb_school_7_TEXT %in% c(
+        "Public School via Blended Learning Program which is online; testing at physical location",
+        "Public School Virtual",
+        "Public virtual",
+        "Virtual Public School"
+      ) ~ "Public School",
+      pb_school_7_TEXT %in% c(
+        "home school", "Home School", "Home/unschool", "homeschool", "Homeschool", "homeschooled", "Homeschooled",
+        "Charter Homeschool",
+        "Online homeschooling",
+        "Was homeschooled, will be starting public HS in Fall 2022"
+      ) ~ "Other (Specified Homeschool)",
+      pb_school_7_TEXT %in% c(
+        "charter", "Charter", "Charter school", "Charter School",
+        "Online Charter School",
+        "Public Charter"
+      ) ~ "Other (Specified Charter School)",
+      pb_school_7_TEXT %in% c(
+        "Academy",
+        "Catholic Sector",
+        "CCP College",
+        "College Prep",
+        "Charter Homeschool",
+        "Currently in PHP w/remote home school component",
+        "Department of defense education school military base",
+        "has an IEP",
+        "online school", "virtual", "Virtual", "Virtual School"
+      ) ~ "Other",
     ),
     pb_school_other = pb_school_7_TEXT,
     
