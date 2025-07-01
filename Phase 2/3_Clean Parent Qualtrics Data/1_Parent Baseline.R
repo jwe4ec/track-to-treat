@@ -161,6 +161,7 @@ pb_recoded <- pb_raw %>%
       8 ~ "Other",
       9 ~ "Multiple"
     ),
+    pb_child_ethnicity_other = pb_childethnicity_8_TEXT,
     
     # Child n/siblings
     pb_n_sisters = as.numeric(pb_siblings_1),
