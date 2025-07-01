@@ -275,6 +275,7 @@ pb_recoded <- pb_raw %>%
       8 ~ "Other",
       9 ~ "Multiple"
     ),
+    pb_parent_ethnicity_other = pb_caregiver1_4_8_TEXT,
     
     # Parent relationship to child
     pb_parent_relationship_to_child = case_match(
@@ -316,7 +317,7 @@ pb_recoded <- pb_raw %>%
         "Bachelor's degree",
         "Graduate/professional degree"
       )
-    ),
+    )),
 
     
     ## Child treatment history
