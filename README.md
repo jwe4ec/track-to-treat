@@ -22,7 +22,7 @@ File organization:
     * Compare Clean LifePak Datasets.R (checking clean LifePak data to previous versions)
 * Phase 2/
   * Raw P2 Metadata.csv (used to track expected raw data versions for checks against loaded files)
-  * 2025.05.28 Track to Treat P2 Codebook.xlsx (an item-level codebook used to clean the Qualtrics data)
+  * 2025.07.01 Track to Treat P2 Codebook.xlsx (an item-level codebook used to clean the Qualtrics data)
     * "load_p2_codebook()" helper expands repeated-measure items with "[x]" prefix to "b" and "[3-24]m"
   * 2025.05.26 Track to Treat P2 ID Lookup.csv (a lookup table of LSMH IDs and LifePak IDs)
   * 1_Clean LifePak Data.R

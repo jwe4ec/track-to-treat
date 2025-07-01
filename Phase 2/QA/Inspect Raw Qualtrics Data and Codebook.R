@@ -63,7 +63,7 @@ id_lookup <- read_csv(here("Phase 2", "2025.05.26 Track to Treat P2 ID Lookup.cs
 
 
 ## Load item-level codebook file using helper function
-codebook <- load_p2_codebook(here("Phase 2", "2025.05.28 Track to Treat P2 Codebook.xlsx"))
+codebook <- load_p2_codebook(here("Phase 2", "2025.07.01 Track to Treat P2 Codebook.xlsx"))
 
 
 
@@ -141,32 +141,10 @@ lapply(dat_ls_cols, function(dat_cols) {
 })
 
 # TODO: MPVS items in codebook are named "mvps_" in youth data across waves (rename in data)
-
 # TODO: In "y12m_raw", prefix for 1 PDS item ("y312_pds_7") is incorrect (rename in data)
-
 # TODO: In "y18m_raw", prefix for 1 SCSC item ("y18n_scsc_20") is incorrect (rename in data)
-
-# TODO: In "pb_raw", the following "covid", "teletherapy", and "online_tx" items in data are 
-# missing from codebook (JE added to codebook; AG to fill in remaining info in codebook)
-# c("pb_covid_spread", "pb_covid_stress", "pb_covid_stress_fam", "pb_covid_effect",
-#   "pb_covid_sick", "pb_covid_symptoms", "pb_covid_test", "pb_covid_test_result",
-#   "pb_covid_support", "pb_covid_barriers1_1", "pb_covid_barriers1_2",
-#   "pb_covid_barriers1_3", "pb_covid_barriers1_4", "pb_covid_barriers1_5",
-#   "pb_covid_barriers1_6", "pb_covid_barriers1_7", "pb_covid_barriers1_8",
-#   "pb_covid_barriers1_9", "pb_covid_barriers1_9_TEXT", "pb_covid_barriers2_1",
-#   "pb_covid_barriers2_2", "pb_covid_barriers2_3", "pb_covid_barriers2_4",
-#   "pb_covid_barriers2_5", "pb_covid_barriers2_6", "pb_covid_barriers2_7",
-#   "pb_covid_barriers2_8", "pb_covid_barriers2_9", "pb_covid_barriers2_9_TEXT",
-#   "pb_teletherapy1", "pb_teletherapy2", "pb_online_tx1", "pb_online_tx2")
-
-# TODO: The following "childtx_change" items are missing from codebook (JE added to
-# codebook; AG to fill in remaining info in codebook)
-# c("p3m_childtx_change", "p6m_childtx_change", "p12m_childtx_change", "p18m_childtx_change")
-
 # TODO: In "p3m_raw", "020_accom_2", for "p3m_accommodations_2", is incorrectly named (rename in data)
-
 # TODO: In "p12m_raw", "p12m_accommodations_", for "p12m_accommodations_2", is incorrectly named (rename in data)
-
 # TODO: In "p18m_raw", "p18m_accommodations_", for "p18m_accommodations_2", is incorrectly named (rename in data)
 
 
@@ -180,29 +158,6 @@ all_meas_item_cols <- unlist(lapply(dat_ls_cols, function(dat_cols) {
 diff_accommodations_cols <- sort(setdiff(codebook$item[codebook$measure == "demographic" &
                                            grepl("accommodations", codebook$item)], all_meas_item_cols))
 
-# TODO: The following demographics items were given only at baseline (JE changed prefixes to "pb" in codebook)
-diff_other_demog_cols <- sort(setdiff(codebook$item[codebook$measure == "demographic" &
-                                                      !grepl("accommodations", codebook$item)], all_meas_item_cols))
-
-diff_other_demog_col_prefixes <- unique(str_split_i(diff_other_demog_cols, "_", 1))
-diff_other_demog_col_bases    <- unique(sub("^[^_]*_", "", diff_other_demog_cols))
-
-diff_other_demog_cols_reproduced <- unlist(lapply(diff_other_demog_col_prefixes, function(prefix) {
-  paste0(prefix, "_", diff_other_demog_col_bases)
-}))
-identical(sort(diff_other_demog_cols), sort(diff_other_demog_cols_reproduced))
-
-# c("birthorder", "caregiver1_2", "caregiver1_4", "caregiver1_4_8_TEXT", "caregiver1_5",
-#   "caregiver1_5_5_TEXT", "caregiver1_6", "caregiver1_7", "caregiver1_8", "caregiver2_1",
-#   "caregiver2_2", "caregiver2_3", "caregiver2_3_10_TEXT", "caregiver2_4", "caregiver2_4_8_TEXT",
-#   "caregiver2_5", "caregiver2_5_5_TEXT", "caregiver2_6", "caregiver2_7", "caregiver2_8",
-#   "caretaker", "caretaker_living", "childethnicity", "childethnicity_8_TEXT", "childsex",
-#   "dependent", "grade", "grade_13_TEXT", "income", "school", "school_7_TEXT", "siblings_1",
-#   "siblings_2", "single_parent")
-
-# TODO: "ace_p" and "ace_y" columns are only at baseline (JE changed prefixes to "pb" in codebook)
-diff_ace_p_cols       <- sort(setdiff(codebook$item[codebook$measure %in% c("ace_p", "ace_y")], all_meas_item_cols))
-
 # TODO: MPVS columns will be resolved once "mvps" columns are renamed in data
 diff_mpvs_cols        <- sort(setdiff(codebook$item[codebook$measure == "mpvs"], all_meas_item_cols))
 
@@ -210,11 +165,12 @@ diff_mpvs_cols        <- sort(setdiff(codebook$item[codebook$measure == "mpvs"],
 diff_scared_cols      <- sort(setdiff(codebook$item[codebook$measure == "scared"], all_meas_item_cols))
 names(dat_ls$p6m_raw)[grepl("scared_b|scared_c", names(dat_ls$p6m_raw))]
 
-# TODO: 2 other columns will be resolved once fixed above
-ignore_measures <- c("demographic", "ace_p", "ace_y", "mpvs", "scared")
+# TODO: "p24m_childtx_change" will be fixed once 24-month data are cleaned, and
+# 2 other PDS and SCSC columns will be resolved once fixed above
+ignore_measures <- c("demographic", "ace_p", "ace_y", "mpvs", "scared", "other")
 diff_other_cols       <- sort(setdiff(codebook$item[!(codebook$measure %in% ignore_measures) &
                                                         codebook$item != "condition"], all_meas_item_cols))
-diff_other_cols == c("y12m_pds_7", "y18m_scsc_20")
+diff_other_cols == c("p24m_childtx_change", "y12m_pds_7", "y18m_scsc_20")
 
 
 
@@ -238,7 +194,6 @@ codebook_prefixes <- str_split_fixed(codebook$item, "_", 2)[, 1]
 table(codebook_prefixes, useNA = "always")
 
 # TODO: SRET items ("SRET", "SRET.keys", "SRET.time", "SRET.words", "tlcond") lack prefixes
-# and are repeated when they seem to appear only in youth baseline data (see below)
 lapply(dat_ls_cols, function(dat_cols) {
   dat_cols$meas_item_cols[grepl("SRET|tlcond", dat_cols$meas_item_cols)]
 })
@@ -259,7 +214,12 @@ table(codebook$subscale, useNA = "always")
 
 
 ## Check "minimum" and "maximum"
-free_response_cols <- codebook$item[grepl("_TEXT|pds_4|pfs_like|pfs_dislike|pfs_other", codebook$item)]
+free_response_col_patterns <- paste(
+  c("_TEXT", "pds_4", "pfs_like", "pfs_dislike", "pfs_other",
+  "pb_siblings_2", "pb_siblings_1", "pb_dependent", "pb_caregiver2_8", 
+  "pb_caregiver2_1", "pb_caregiver1_8", "pb_birthorder"), collapse = "|")
+free_response_cols <- codebook$item[grepl(free_response_col_patterns, codebook$item)]
+
 select_multiple_cols <- setdiff(codebook$item[grepl("ppd_1", codebook$item)], free_response_cols)
 numeric_cols <- codebook$item[grepl("pds_2|pds_3|pds_11|pds_12", codebook$item)]
 demographic_cols <- codebook$item[codebook$measure == "demographic"]
@@ -295,8 +255,6 @@ for (measure in target_measures) {
 
 
 ## Check "reversed" and "reverse_base"
-# View(codebook[is.na(codebook$reversed), ]) # TODO: JE changed NA to 0 for "pfs" text items and "condition"
-
 table(codebook$reversed, codebook$reverse_base, useNA = "always")
 
 

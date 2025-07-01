@@ -36,7 +36,7 @@ id_lookup <- read_csv(here("Phase 2", "2025.05.26 Track to Treat P2 ID Lookup.cs
 
 
 ## Load item-level codebook file using helper function
-codebook <- load_p2_codebook(here("Phase 2", "2025.05.28 Track to Treat P2 Codebook.xlsx"))
+codebook <- load_p2_codebook(here("Phase 2", "2025.07.01 Track to Treat P2 Codebook.xlsx"))
 
 
 ## Load assessment windows
@@ -118,7 +118,7 @@ y3m_recoded <- y3m_raw %>%
     ),
     
     # Survey completion
-    y3m_complete = Finished == 1,
+    y3m_complete = Finished == 1,                 # TODO: JE to continue here
     
     # Survey datetime and duration
     y3m_datetime = EndDate,
@@ -272,6 +272,8 @@ y3m_recoded <- y3m_raw %>%
     # Metadata
     lsmh_id,
     y3m_complete,
+    StartDate,         # TODO: JE added "StartDate" and "EndDate" for testing windows below
+    EndDate,
     y3m_date,
     y3m_datetime,
     y3m_duration,
@@ -357,7 +359,7 @@ y3m_recoded %>%
   count(lsmh_id)
 
 
-## Filter to assessment window
+## Filter to assessment window                    # TODO: JE testing (added "days_early" and "days_late")
 # Add assessment window information
 y3m_with_window <- y3m_valid %>%
   left_join(
@@ -368,8 +370,36 @@ y3m_with_window <- y3m_valid %>%
   mutate(
     response_in_window = y3m_date >= ax_window_3m_start & y3m_date <= ax_window_3m_end,
     response_too_early = y3m_date < ax_window_3m_start,
-    response_too_late = y3m_date > ax_window_3m_end
+    response_too_late = y3m_date > ax_window_3m_end,
+    
+    # If done early, compute days before start of original window
+    days_early = ifelse(
+      response_too_early,
+      y3m_date - ax_window_3m_start,
+      NA
+    ),
+    
+    # If done late, compute days after end of original window
+    days_late = ifelse(
+      response_too_late,
+      y3m_date - ax_window_3m_end,
+      NA
+    )
   )
+
+
+
+y3m_with_window %>%                  # TODO: JE Testing
+  filter(!response_in_window) %>%
+  select(lsmh_id, "yi_date", "StartDate", "EndDate", "ax_window_3m_start", "ax_window_3m_end",
+         "response_in_window", "days_early", "days_late", "item_completion_rate") %>%
+  arrange(lsmh_id, EndDate)
+
+table(y3m_with_window$days_early, useNA = "always")
+table(y3m_with_window$days_late, useNA = "always")
+
+
+
 
 # Responses by window
 y3m_with_window %>%
