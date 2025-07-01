@@ -168,7 +168,14 @@ pb_recoded <- pb_raw %>%
     pb_n_brothers = as.numeric(pb_siblings_2),
     pb_n_siblings = pb_n_sisters + pb_n_brothers,
     
-    # Child grade: Does not need further cleaning  TODO: Clean responses of 13 (and consider "pb_grade_13_TEXT")
+    # Child grade
+    
+    pb_grade = case_when(
+      pb_grade %in% 5:12 ~ as.character(pb_grade),
+      pb_grade_13_TEXT == "4th" ~ "4",
+      pb_grade_13_TEXT == "CCP student third year college" ~ "Other"
+    ),
+    pb_grade_other = pb_grade_13_TEXT,
     
     # Child school type
     pb_school = case_when(
