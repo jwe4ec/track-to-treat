@@ -169,7 +169,6 @@ pb_recoded <- pb_raw %>%
     pb_n_siblings = pb_n_sisters + pb_n_brothers,
     
     # Child grade
-    
     pb_grade = case_when(
       pb_grade %in% 5:12 ~ as.character(pb_grade),
       pb_grade_13_TEXT == "4th" ~ "4",
@@ -262,6 +261,7 @@ pb_recoded <- pb_raw %>%
       9 ~ "Woman",
       10 ~ "Other"
     ),
+    pb_parent_gender_other = pb_caregiver1_3_10_TEXT,
     
     # Parent ethnicity
     pb_parent_ethnicity = case_match(
