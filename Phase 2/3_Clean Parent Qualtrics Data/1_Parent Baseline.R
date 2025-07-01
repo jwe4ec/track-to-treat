@@ -163,7 +163,7 @@ pb_recoded <- pb_raw %>%
     ),
     pb_child_ethnicity_other = pb_childethnicity_8_TEXT,
     
-    # Child n/siblings
+    # Child n/siblings (these are manually corrected below)
     pb_n_sisters = as.numeric(pb_siblings_1),
     pb_n_brothers = as.numeric(pb_siblings_2),
     pb_n_siblings = pb_n_sisters + pb_n_brothers,
@@ -235,7 +235,7 @@ pb_recoded <- pb_raw %>%
     ## Parent characteristics
     # Parent age
     pb_parent_age = if_else(
-      pb_caregiver1_1 == 2, # Set invalid responses to NA
+      pb_caregiver1_1 == 2, # Set invalid responses to NA (these are manually corrected below)
       NA_real_,
       pb_caregiver1_1
     ),
@@ -467,6 +467,7 @@ pb_recoded$pb_parent_age[pb_recoded$lsmh_id == "LSMH00787"] <- 41
 pb_recoded$pb_n_sisters[pb_recoded$lsmh_id == "LSMH00899"] <- 0 # n_siblings is still ok, but sibling is non-binary
 pb_recoded$pb_n_sisters[pb_recoded$lsmh_id == "LSMH00905"] <- 0 # 0, not 4 sisters, and therefore...
 pb_recoded$pb_n_siblings[pb_recoded$lsmh_id == "LSMH00905"] <- 4 # ...4, not 8 siblings
+
 
 ## Check that values are in expected range
 items_to_check <- pb_recoded %>%
