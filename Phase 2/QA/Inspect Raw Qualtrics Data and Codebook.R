@@ -304,4 +304,4 @@ check_item_pattern_label(dat_ls, "scared_c_11")
 check_item_pattern(dat_ls_cols, "\\.\\.\\.")
 
 # - "yi_raw" contains "lsmh_id...18" and "lsmh_id...601" (renamed in code)
-# - TODO: "pb_raw" contains "test...511" and "test...512" (rename in code)
+# - "pb_raw" contains "test...511" and "test...512" (renamed in code)

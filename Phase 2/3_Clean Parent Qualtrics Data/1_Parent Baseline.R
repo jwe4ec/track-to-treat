@@ -57,9 +57,21 @@ log <- list(
 )
 
 
+## Use unique "ImportId" to rename columns both named "test" in Qualtrics
+# - "read_survey()" contingently named these by their column indices upon import to R
+col_map <- attr(pb_raw, "column_map")
+
+test_col1_qname <- col_map$qname[col_map$ImportId == "test_CED8iraacy"]
+test_col2_qname <- col_map$qname[col_map$ImportId == "test_CEDzbsbl7w"]
+
+pb_renamed <- pb_raw
+
+names(pb_renamed)[names(pb_renamed) == test_col1_qname] <- "test_col1"
+names(pb_renamed)[names(pb_renamed) == test_col2_qname] <- "test_col2"
+
 
 ## Clean columns
-pb_recoded <- pb_raw %>%
+pb_recoded <- pb_renamed %>%
   
   # Remove click, page time variables
   select(
