@@ -141,7 +141,7 @@ yi_recoded <- yi_renamed %>%
     # - Subscales are not recommended (per 5/21/25 email from Jonathan Kanter to Alyssa/Jeremy)
     
     
-    ## BHS-4 (Beck Hopelessness Scale - 4-item) # TODO: Consider recoding from 1-4 to 0-3
+    ## BHS-4 (Beck Hopelessness Scale - 4-item) # TODO: Recode from 1-4 to 0-3
     # Overall mean score
     yi_pre_bhs_mean = mean_across("yi_pre", "bhs", name = "yi_pre_bhs_mean"),
     yi_post_bhs_mean = mean_across("yi_post", "bhs", name = "yi_post_bhs_mean"),
@@ -155,6 +155,8 @@ yi_recoded <- yi_renamed %>%
     # Agency subscale
     yi_pre_agency_mean = mean_across("yi_pre", "state_hope_scale", "agency", name = "yi_pre_agency_mean"),
     yi_post_agency_mean = mean_across("yi_post", "state_hope_scale", "agency", name = "yi_post_agency_mean"),
+    
+    # Overall score can also be computed (see https://doi.org/fwc2xc; p. 334)
     
     
     ## IPTQ (Implicit Personality Theory Questionnaire)
