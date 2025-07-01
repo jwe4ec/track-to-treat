@@ -286,6 +286,7 @@ pb_recoded <- pb_raw %>%
       4 ~ "Foster Parent",
       5 ~ "Other"
     ),
+    pb_parent_relationship_to_child_other = pb_caregiver1_5_5_TEXT,
     
     # Parent relationship status
     pb_parent_relationship_status = case_match(
