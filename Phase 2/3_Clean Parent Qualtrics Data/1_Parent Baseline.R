@@ -476,9 +476,9 @@ items_to_check <- pb_recoded %>%
     matches("_parent_aces_"),
     matches("_cdi_"),
     matches("_bhs_"),
+    matches("_bfamg_"),
     matches("_bsi_"),
     matches("_bace_"),
-    matches("_bfamg_"),
     matches("_scared_"),
     -ends_with("mean"), -ends_with("count")
   ) %>%
