@@ -143,7 +143,7 @@ lapply(dat_ls_cols, function(dat_cols) {
 # TODO: MPVS items in codebook are named "mvps_" in youth data across waves (rename in data)
 # TODO: In "y12m_raw", prefix for 1 PDS item ("y312_pds_7") is incorrect (rename in data)
 # TODO: In "y18m_raw", prefix for 1 SCSC item ("y18n_scsc_20") is incorrect (rename in data)
-# TODO: In "p3m_raw", "020_accom_2", for "p3m_accommodations_2", is incorrectly named (rename in data)
+# In "p3m_raw", "020_accom_2", for "p3m_accommodations_2", is incorrectly named (renamed in data)
 # TODO: In "p12m_raw", "p12m_accommodations_", for "p12m_accommodations_2", is incorrectly named (rename in data)
 # TODO: In "p18m_raw", "p18m_accommodations_", for "p18m_accommodations_2", is incorrectly named (rename in data)
 

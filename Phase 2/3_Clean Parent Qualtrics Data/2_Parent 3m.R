@@ -78,6 +78,9 @@ p3m_recoded <- p3m_raw %>%
     .fn = ~ gsub("mvps", "mpvs", .x)
   ) %>%
   
+  # Fix column name
+  rename(p3m_accommodations_2 = `p3m\020_accom_2`) %>%
+  
   # Un-reverse code items
   mutate(
     across(
