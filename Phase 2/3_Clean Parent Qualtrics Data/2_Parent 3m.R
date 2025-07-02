@@ -124,7 +124,7 @@ p3m_recoded <- p3m_raw %>%
     p3m_duration = EndDate - StartDate,
     
     
-    ## Child treatment history
+    ## Child treatment history (assessed at follow-ups only if "childtx_change" is Yes)
     # Current and lifetime treatment
     p3m_childtx_lifetime = p3m_childtx_1 == 1 | p3m_childtx_3 == 1,
     p3m_childtx_current = p3m_childtx_3 == 1,
@@ -201,11 +201,14 @@ p3m_recoded <- p3m_raw %>%
     # Metadata
     lsmh_id,
     p3m_complete,
+    StartDate,         # TODO: JE added "StartDate" and "EndDate" for testing windows below
+    EndDate,
     p3m_date,
     p3m_datetime,
     p3m_duration,
 
     # Child treatment history
+    matches("childtx_change"),
     matches("childtx_lifetime"),
     matches("childtx_current"),
     
@@ -272,7 +275,7 @@ p3m_recoded %>%
   count(lsmh_id)
 
 
-## Filter to assessment window
+## Filter to assessment window              # TODO: JE testing (added "days_early" and "days_late")
 # Add assessment window information
 p3m_with_window <- p3m_valid %>%
   left_join(
@@ -283,8 +286,36 @@ p3m_with_window <- p3m_valid %>%
   mutate(
     response_in_window = p3m_date >= ax_window_3m_start & p3m_date <= ax_window_3m_end,
     response_too_early = p3m_date < ax_window_3m_start,
-    response_too_late = p3m_date > ax_window_3m_end
+    response_too_late = p3m_date > ax_window_3m_end,
+    
+    # If done early, compute days before start of original window
+    days_early = ifelse(
+      response_too_early,
+      p3m_date - ax_window_3m_start,
+      NA
+    ),
+    
+    # If done late, compute days after end of original window
+    days_late = ifelse(
+      response_too_late,
+      p3m_date - ax_window_3m_end,
+      NA
+    )
   )
+
+
+
+p3m_with_window %>%                  # TODO: JE Testing
+  filter(!response_in_window) %>%
+  select(lsmh_id, "p3m_date", "StartDate", "EndDate", "ax_window_3m_start", "ax_window_3m_end",
+         "response_in_window", "days_early", "days_late", "item_completion_rate") %>%
+  arrange(lsmh_id, EndDate)
+
+table(p3m_with_window$days_early, useNA = "always")
+table(p3m_with_window$days_late, useNA = "always")
+
+
+
 
 # Responses by window
 p3m_with_window %>%
