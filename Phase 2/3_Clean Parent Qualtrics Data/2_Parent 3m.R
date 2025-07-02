@@ -212,9 +212,9 @@ p3m_recoded <- p3m_raw %>%
     # Measures
     matches("_cdi_"),
     matches("_bhs_"),
+    matches("_bfamg_"),
     matches("_bsi_"),
     matches("_bace_"),
-    matches("_bfamg_"),
     matches("_scared_")
     
   ) %>%
