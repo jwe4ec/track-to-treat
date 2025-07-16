@@ -186,7 +186,7 @@ lapply(dat_ls_cols, function(dat_cols) {
 # TODO: "yi_raw" contains prefixes 9 columns ("bads" items) with prefix "b" (change to "yi" in codebook and data)
 # TODO: "y12m_raw" contains 1 column ("y312_pds_7") with incorrect prefix "y312"
 # TODO: "y18m_raw" contains 1 column (y18n_scsc_20) with incorrect prefix "y18n"
-# TODO: "p3m_raw" contains 1 column ("p3m\020") with incorrect prefix "p3m\020"
+# "p3m_raw" contains 1 column ("p3m\020") with incorrect prefix "p3m\020" (fixed in clean data)
 # TODO: "p6m_raw" contains 26 columns ("scared_b" and "scared_c" items) with incorrect prefix "p3m"
 
 ## In codebook
