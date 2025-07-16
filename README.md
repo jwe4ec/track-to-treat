@@ -96,6 +96,10 @@ Data cleaning notes:
     * Raw timestamps are in "America/Denver" time zone
   * Phase 2 specifics:
     * TODO: Determine which Phase 1 specifics also apply to Phase 2
+    * Beck Hopelessness Scale-4 items had different scale in youth intervention survey vs. other surveys
+      * Script recodes values from 1-4 to 0-3 for consistency over time (surveys did not display numbers)
+      * But wording differences remain:
+        * "somewhat false"/"somewhat true" at intervention vs. "sort of false"/"sort of true" elsewhere
     * Youth data collected but not cleaned:
       * TODO
     * Parent data collected but not cleaned:

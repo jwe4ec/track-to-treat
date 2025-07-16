@@ -96,14 +96,16 @@ y_merged_filtered %>%
 
 
 ####  Merge Logs  ####
-# Include codebook (unedited to date)
+# Include clean codebooks (edited only at "yi" to date)
 y_log <- list(item_completion_rate = list(yb = yb_log$item_completion_rate$yb,
                                           yi = yi_log$item_completion_rate$yi,
                                           y3m = y3m_log$item_completion_rate$y3m),
               mean_items = c(yb_log$mean_items,
                              yi_log$mean_items,
                              y3m_log$mean_items),
-              y_codebook_clean = codebook)
+              y_codebooks_clean = list(yb = codebook,
+                                       yi = yi_log$yi_codebook_clean,
+                                       y3m = codebook))
 
 
 

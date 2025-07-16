@@ -48,7 +48,8 @@ check_raw_data_ver(raw_metadata, list(yi_path), list(yi_raw), "yi_qualtrics")
 ####  Clean Data  ####
 ## Create log
 # Create lists for logging (a) items used to compute item completion rate below via
-# compute_item_completion_rate() and (b) items used to compute means via mean_across()
+# compute_item_completion_rate(), (b) items used to compute means via mean_across(),
+# and (c) clean codebook (edited and added to log below)
 log <- list(
   item_completion_rate = list(),
   mean_items = list()
@@ -70,6 +71,21 @@ names(yi_renamed)[names(yi_renamed) == lsmh_id_col2_qname] <- "lsmh_id_col2"
 
 ## TODO: Correct item prefixes in data and codebook
 # For BADS items with prefixes "b_" instead of "yi_"
+
+
+
+
+# Change "minimum"-"maximum" values in codebook for BHS-4 from 1-4 to 0-3 for consistency 
+# with other time points (despite different anchors; data values are recoded below)
+
+yi_bhs_items <- c("yi_pre_bhs_1", "yi_pre_bhs_2", "yi_pre_bhs_3", "yi_pre_bhs_4", 
+                  "yi_post_bhs_1", "yi_post_bhs_2", "yi_post_bhs_3", "yi_post_bhs_4")
+
+codebook$minimum[codebook$item %in% yi_bhs_items] <- 0
+codebook$maximum[codebook$item %in% yi_bhs_items] <- 3
+
+# Add codebook with clean youth intervention items to log
+log$yi_codebook_clean <- codebook
 
 
 ## Clean columns
@@ -141,7 +157,13 @@ yi_recoded <- yi_renamed %>%
     # - Subscales are not recommended (per 5/21/25 email from Jonathan Kanter to Alyssa/Jeremy)
     
     
-    ## BHS-4 (Beck Hopelessness Scale - 4-item) # TODO: Recode from 1-4 to 0-3
+    ## BHS-4 (Beck Hopelessness Scale - 4-item)
+    # Recode items from 1-4 scale to 0-3 scale used at other time points (despite different anchors)
+    across(
+      .cols = all_of(yi_bhs_items),
+      .fns = ~ .x - 1
+    ),
+    
     # Overall mean score
     yi_pre_bhs_mean = mean_across("yi_pre", "bhs", name = "yi_pre_bhs_mean"),
     yi_post_bhs_mean = mean_across("yi_post", "bhs", name = "yi_post_bhs_mean"),
