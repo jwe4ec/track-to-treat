@@ -234,7 +234,12 @@ nis_clean %>%
 # - TODO: Alyssa found that LifePak ID "007996" in "nis_1" is in "LifePak" tab of
 # "Track to Treat P2 Tracking Log 2.0" with corresponding LSMH ID "LSMH02350". The
 # LSMH ID is in "id_lookup" but the LifePak ID isn't (needs to be added).
-# - Unclear why "850326" and "997505" in "nis_1" ("TRACK to TREAT P2" survey) are unknown
+# - TODO: LifePak ID "850326" in "nis_1" was entered for LifePak ID in youth baseline
+# Qualtrics survey for LSMH ID "LSMH02422". The LSMH ID is in "id_lookup" but the
+# LifePak ID isn't (needs to be added with "action" of "drop" given that per the
+# "README_ttt_p2_data_collection", the LifePak IDs "632541" and "095929" comprise
+# the participant's 21 days of EMA data)
+# - Unclear why "997505" in "nis_1" ("TRACK to TREAT P2" survey) is unknown
 # - Those in "nis_4" ("TRACK to TREAT P2 - Pilot 2" survey) are likely lab members testing/training
 nis_clean %>%
   filter(!lifepak_id %in% id_lookup$lifepak_id) %>%
