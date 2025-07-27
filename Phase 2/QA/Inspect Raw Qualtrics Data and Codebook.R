@@ -183,7 +183,7 @@ lapply(dat_ls_cols, function(dat_cols) {
 })
 
 # TODO: "yb_raw" lacks prefixes for SRET items ("SRET", "SRET.keys", "SRET.time", "SRET.words", "tlcond")
-# TODO: "yi_raw" contains prefixes 9 columns ("bads" items) with prefix "b" (change to "yi" in codebook and data)
+# "yi_raw" contains prefixes 9 columns ("bads" items) with prefix "b" (changed to "yi" in codebook and data)
 # TODO: "y12m_raw" contains 1 column ("y312_pds_7") with incorrect prefix "y312"
 # TODO: "y18m_raw" contains 1 column (y18n_scsc_20) with incorrect prefix "y18n"
 # "p3m_raw" contains 1 column ("p3m\020") with incorrect prefix "p3m\020" (fixed in clean data)
@@ -198,7 +198,7 @@ lapply(dat_ls_cols, function(dat_cols) {
   dat_cols$meas_item_cols[grepl("SRET|tlcond", dat_cols$meas_item_cols)]
 })
 
-# TODO: 9 items (for "bads" items at "yi") in codebook have prefix "b" (change to "yi" in codebook and data)
+# 9 items (for "bads" items at "yi") in codebook have prefix "b" (changed to "yi" in codebook and data)
 
 
 

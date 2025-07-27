@@ -69,10 +69,16 @@ names(yi_renamed)[names(yi_renamed) == lsmh_id_col1_qname] <- "lsmh_id_col1"
 names(yi_renamed)[names(yi_renamed) == lsmh_id_col2_qname] <- "lsmh_id_col2"
 
 
-### TODO: Correct item prefixes in data and codebook
-# For BADS items with prefixes "b_" instead of "yi_"
+### Correct item prefixes in data and codebook
+# For BADS-SF items with prefixes "b_" instead of "yi_"
 
+yi_bads_items_raw <- paste0("b_bads_", 1:9)
 
+names(yi_renamed)[names(yi_renamed) %in% yi_bads_items_raw] <-
+  sub("b_", "yi_", names(yi_renamed)[names(yi_renamed) %in% yi_bads_items_raw])
+
+codebook$item[codebook$item %in% yi_bads_items_raw] <-
+  sub("b_", "yi_", codebook$item[codebook$item %in% yi_bads_items_raw])
 
 
 ### Change "minimum"-"maximum" values in codebook for BHS-4 from 1-4 to 0-3 for consistency 
@@ -207,10 +213,10 @@ yi_recoded <- yi_deduplicated %>%
     
     ## BADS-SF (Behavioral Activation for Depression Scale - Short Form)
     # Activation subscale
-    yi_pre_bads_sf_ac_mean = mean_across("b", "bads-sf", "activation", name = "yi_pre_bads_sf_ac_mean"),
+    yi_pre_bads_sf_ac_mean = mean_across("yi", "bads-sf", "activation", name = "yi_pre_bads_sf_ac_mean"),
     
     # Avoidance subscale
-    yi_pre_bads_sf_av_mean = mean_across("b", "bads-sf", "avoidance", name = "yi_pre_bads_sf_av_mean"),
+    yi_pre_bads_sf_av_mean = mean_across("yi", "bads-sf", "avoidance", name = "yi_pre_bads_sf_av_mean"),
     
     # Overall score can also be computed (for instructions, see Note column of raw codebook)
     # - Subscales are not recommended (per 5/21/25 email from Jonathan Kanter to Alyssa/Jeremy)
