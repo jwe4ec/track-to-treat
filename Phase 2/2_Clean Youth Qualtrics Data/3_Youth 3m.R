@@ -165,7 +165,7 @@ y3m_recoded <- y3m_valid_ids %>%
     # ID ("lsmh_id" cleaned above)
     
     # Survey completion
-    y3m_complete = Finished == 1,                 # TODO: JE to continue here
+    y3m_complete = !is.na(EndDate),                 # TODO: JE to continue here
     
     # Survey datetime and duration
     y3m_datetime = EndDate,

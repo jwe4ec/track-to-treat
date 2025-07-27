@@ -163,7 +163,7 @@ p3m_recoded <- p3m_valid_ids %>%
     # ID ("lsmh_id" cleaned above)
     
     # Survey completion
-    p3m_complete = Finished == 1,
+    p3m_complete = !is.na(EndDate),
     
     # Survey datetime and duration
     p3m_datetime = EndDate,

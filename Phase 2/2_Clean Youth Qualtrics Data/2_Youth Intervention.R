@@ -197,7 +197,7 @@ yi_recoded <- yi_deduplicated %>%
     # ID ("lsmh_id" cleaned above)
     
     # Survey completion
-    yi_complete = Finished == 1,
+    yi_complete = !is.na(EndDate),
     
     # Survey datetime and duration
     yi_datetime = EndDate,

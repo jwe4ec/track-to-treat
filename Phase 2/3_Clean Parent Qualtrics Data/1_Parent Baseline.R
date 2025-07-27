@@ -191,7 +191,7 @@ pb_recoded <- pb_deduplicated %>%
     # ID ("lsmh_id" cleaned above)
     
     # Survey completion
-    pb_complete = Finished == 1,
+    pb_complete = !is.na(EndDate),
     
     # Survey datetime and duration
     pb_datetime = EndDate,

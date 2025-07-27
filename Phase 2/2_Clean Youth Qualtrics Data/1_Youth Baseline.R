@@ -172,7 +172,7 @@ yb_recoded <- yb_deduplicated %>%
     # ID ("lsmh_id" cleaned above)
 
     # Survey completion
-    yb_complete = Finished == 1, # TODO: JE to check because it differs from Phase 1 (likely change back to "!is.na(EndDate))")
+    yb_complete = !is.na(EndDate),
     
     # Survey datetime and duration
     yb_datetime = EndDate,
