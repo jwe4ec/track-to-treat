@@ -442,7 +442,7 @@ y3m_in_window <- y3m_with_window %>%
 
 ## Deduplicate
 # Remove duplicates
-y3m_deduplicated <- remove_duplicates(y3m_in_window, lsmh_id, y3m_datetime)
+y3m_deduplicated <- remove_duplicates(y3m_in_window, lsmh_id, y3m_datetime) # TODO: Change "y3m_datetime" to "EndDate"
 
 # Double-check deduplication
 identify_duplicates(y3m_deduplicated, lsmh_id, y3m_complete) # TODO: Change "y3m_complete" to "Finished"

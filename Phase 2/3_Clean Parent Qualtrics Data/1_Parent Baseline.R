@@ -150,7 +150,7 @@ pb_manual_filter_02077 <- pb_valid_ids %>%
   )
 
 # Remove duplicates using helper function
-pb_deduplicated <- remove_duplicates(pb_manual_filter_02077, lsmh_id, EndDate)
+pb_deduplicated <- remove_duplicates(pb_manual_filter_02077, lsmh_id)
 
 # Double-check deduplication
 identify_duplicates(pb_deduplicated, lsmh_id)

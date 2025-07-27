@@ -355,7 +355,7 @@ p3m_in_window <- p3m_with_window %>%
 
 ## Deduplicate
 # Remove duplicates
-p3m_deduplicated <- remove_duplicates(p3m_in_window, lsmh_id, p3m_datetime)
+p3m_deduplicated <- remove_duplicates(p3m_in_window, lsmh_id, p3m_datetime) # TODO: Change "p3m_datetime" to "EndDate"
 
 # Double-check deduplication
 identify_duplicates(p3m_deduplicated, lsmh_id, p3m_complete) # TODO: Change "p3m_complete" to "Finished"

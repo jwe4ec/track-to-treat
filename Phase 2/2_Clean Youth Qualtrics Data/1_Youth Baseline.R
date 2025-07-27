@@ -131,7 +131,7 @@ yb_valid_ids <- compute_item_completion_rate(yb_valid_ids, "yb", phase = 2)
 # TODO: Print and remove any baseline surveys outside window
 
 # Remove duplicates using helper function
-yb_deduplicated <- remove_duplicates(yb_valid_ids, lsmh_id, EndDate) # TODO: Having moved up, changed "yb_datetime" back to "EndDate"
+yb_deduplicated <- remove_duplicates(yb_valid_ids, lsmh_id)
 
 # Double-check deduplication
 identify_duplicates(yb_deduplicated, lsmh_id)

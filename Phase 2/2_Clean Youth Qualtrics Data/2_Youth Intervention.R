@@ -162,7 +162,7 @@ yi_valid_ids <- compute_item_completion_rate(yi_valid_ids, "yi", phase = 2)
 # TODO: Print and remove any intervention surveys outside window
 
 # Remove duplicates using helper function
-yi_deduplicated <- remove_duplicates(yi_valid_ids, lsmh_id, EndDate)
+yi_deduplicated <- remove_duplicates(yi_valid_ids, lsmh_id)
 
 # Double-check deduplication
 identify_duplicates(yi_deduplicated, lsmh_id)
