@@ -36,7 +36,7 @@ id_lookup <- read_csv(here("Phase 2", "2025.05.26 Track to Treat P2 ID Lookup.cs
 
 
 ## Load item-level codebook file using helper function
-codebook <- load_p2_codebook(here("Phase 2", "2025.05.28 Track to Treat P2 Codebook.xlsx"))
+codebook <- load_p2_codebook(here("Phase 2", "2025.07.02 Track to Treat P2 Codebook.xlsx"))
 
 
 ## Check raw Qualtrics data versions using helper function
@@ -46,7 +46,66 @@ check_raw_data_ver(raw_metadata, list(yb_path), list(yb_raw), "yb_qualtrics")
 
 
 ####  Clean Data  ####
-## Create log
+### Correct LSMH IDs (manually as necessary)
+yb_corrected_ids <- yb_raw %>%
+  rowwise() %>%
+  mutate(
+    lsmh_id = case_when(
+      
+      # Cases to be manually recoded
+      lsmh_id == "LMSH00886" & yb_lsmh_id == "LSMH00886" ~ "LSMH00886",
+      lsmh_id == "LMSH00886" & is.na(yb_lsmh_id) ~ "LSMH00886",
+      lsmh_id == "LSMH02264?Redirect=0" & is.na(yb_lsmh_id) ~ "LSMH02264",
+      lsmh_id == "Baseline" & yb_lsmh_id == "LSMH02533" ~ "LSMH02533",
+      lsmh_id == "Baseline" & is.na(yb_lsmh_id) & StartDate == "2023-04-17 17:28:45" ~ "LSMH02533",
+      is.na(lsmh_id) & is.na(yb_lsmh_id) & StartDate == "2022-03-01 12:33:20" ~ "LSMH01791",
+      
+      # Cases where both match
+      yb_lsmh_id == lsmh_id ~ lsmh_id,
+      
+      # Cases where one is missing (keep the non-missing value)
+      is.na(yb_lsmh_id) & !is.na(lsmh_id) ~ lsmh_id,
+      is.na(lsmh_id) & !is.na(yb_lsmh_id) ~ yb_lsmh_id,
+      
+      # Cases where both are missing
+      is.na(lsmh_id) & is.na(yb_lsmh_id) ~ NA_character_,
+      
+      # Additional cases are flagged for cleaning
+      T ~ "ID Combination Unaccounted For (" %+% lsmh_id %+% ", " %+% yb_lsmh_id %+% ")"
+      
+    )
+  ) %>%
+  ungroup()
+
+
+### Remove invalid responses
+# Known valid LSMH IDs
+valid_ids <- id_lookup %>%
+  filter(action == "keep") %>%
+  distinct(lsmh_id)
+
+invalid_ids <- setdiff(yb_corrected_ids$lsmh_id, valid_ids$lsmh_id)
+
+yb_valid_ids <- yb_corrected_ids %>%
+  inner_join(
+    valid_ids,
+    by = "lsmh_id",
+    relationship = "many-to-one"
+  )
+
+# Just FYI: This is how many IDs/rows included known LSMH IDs matched for removal
+yb_corrected_ids %>%
+  filter(lsmh_id %in% id_lookup$lsmh_id[id_lookup$action == "drop"]) %>%
+  count(lsmh_id)
+
+# Just FYI: No rows contained unknown LSMH IDs (good!)
+# If these rows indicate typos or other errors in the IDs, fix them in the mutate() above
+yb_corrected_ids %>%
+  filter(!lsmh_id %in% id_lookup$lsmh_id) %>%
+  count(lsmh_id)
+
+
+### Create log
 # Create lists for logging (a) items used to compute item completion rate below via
 # compute_item_completion_rate() and (b) items used to compute means via mean_across()
 log <- list(
@@ -55,9 +114,32 @@ log <- list(
 )
 
 
-## Clean columns
-yb_recoded <- yb_raw %>%
-  
+### Identify duplicates and compute item completion rate for removing duplicates
+# Identify duplicates using helper function
+identify_duplicates(yb_valid_ids, lsmh_id, Finished) # TODO: Having moved up, changed "yb_complete" back to "Finished"
+
+# Compute item completion rate using helper function (given that Qualtrics's "Progress"
+# and "Finished" variables reflect only clicking through survey, not completing items)
+yb_valid_ids <- compute_item_completion_rate(yb_valid_ids, "yb", phase = 2)
+
+
+### Remove any baseline surveys (a) outside assessment window or (b) duplicated in window
+# TODO: Obtain EMA notification dates from LifePak data and compute end of EMA period
+
+# TODO: Compute indicator of baseline survey completion in window using helper function
+
+# TODO: Print and remove any baseline surveys outside window
+
+# Remove duplicates using helper function
+yb_deduplicated <- remove_duplicates(yb_valid_ids, lsmh_id, EndDate) # TODO: Having moved up, changed "yb_datetime" back to "EndDate"
+
+# Double-check deduplication
+identify_duplicates(yb_deduplicated, lsmh_id, Finished) # TODO: Having moved up, changed "yb_complete" back to "Finished"
+
+
+### Clean columns
+yb_recoded <- yb_deduplicated %>%
+
   # Remove click, page time variables
   select(
     
@@ -87,34 +169,10 @@ yb_recoded <- yb_raw %>%
   mutate(
     
     ## Metadata
-    # ID (manually correcting as necessary)
-    lsmh_id = case_when(
-
-      # Cases to be manually recoded
-      lsmh_id == "LMSH00886" & yb_lsmh_id == "LSMH00886" ~ "LSMH00886",
-      lsmh_id == "LMSH00886" & is.na(yb_lsmh_id) ~ "LSMH00886",
-      lsmh_id == "LSMH02264?Redirect=0" & is.na(yb_lsmh_id) ~ "LSMH02264",
-      lsmh_id == "Baseline" & yb_lsmh_id == "LSMH02533" ~ "LSMH02533",
-      lsmh_id == "Baseline" & is.na(yb_lsmh_id) & StartDate == "2023-04-17 17:28:45" ~ "LSMH02533",
-      is.na(lsmh_id) & is.na(yb_lsmh_id) & StartDate == "2022-03-01 12:33:20" ~ "LSMH01791",
-      
-      # Cases where both match
-      yb_lsmh_id == lsmh_id ~ lsmh_id,
-      
-      # Cases where one is missing (keep the non-missing value)
-      is.na(yb_lsmh_id) & !is.na(lsmh_id) ~ lsmh_id,
-      is.na(lsmh_id) & !is.na(yb_lsmh_id) ~ yb_lsmh_id,
-      
-      # Cases where both are missing
-      is.na(lsmh_id) & is.na(yb_lsmh_id) ~ NA_character_,
-      
-      # Additional cases are flagged for cleaning
-      T ~ "ID Combination Unaccounted For (" %+% lsmh_id %+% ", " %+% yb_lsmh_id %+% ")"
-      
-    ),
+    # ID ("lsmh_id" cleaned above)
 
     # Survey completion
-    yb_complete = Finished == 1,
+    yb_complete = Finished == 1, # TODO: JE to check because it differs from Phase 1 (likely change back to "!is.na(EndDate))")
     
     # Survey datetime and duration
     yb_datetime = EndDate,
@@ -277,7 +335,7 @@ yb_recoded <- yb_raw %>%
     yb_date,
     yb_datetime,
     yb_duration,
-    
+
     # Measures
     matches("_cdi_"),
     matches("_bhs_"),
@@ -296,13 +354,10 @@ yb_recoded <- yb_raw %>%
     matches("_mpvs_"),
     matches("_ucla_")
     
-  ) %>%
-  
-  # Compute item completion rate
-  compute_item_completion_rate("yb") # TODO: Fix which columns are used to compute this
+  )
 
 
-## Check that values are in expected range
+### Check that values are in expected range
 items_to_check <- yb_recoded %>%
   select(
     matches("_cdi_"),
@@ -332,48 +387,10 @@ walk(
 )
 
 
-## Remove invalid responses
-# Known valid LSMH IDs
-valid_ids <- id_lookup %>%
-  filter(action == "keep") %>%
-  distinct(lsmh_id)
-
-invalid_ids <- setdiff(yb_recoded$lsmh_id, valid_ids$lsmh_id)
-
-yb_valid <- yb_recoded %>%
-  inner_join(
-    valid_ids,
-    by = "lsmh_id",
-    relationship = "many-to-one"
-  )
-
-# Just FYI: This is how many IDs/rows included known LSMH IDs matched for removal
-yb_recoded %>%
-  filter(lsmh_id %in% id_lookup$lsmh_id[id_lookup$action == "drop"]) %>%
-  count(lsmh_id)
-
-# Just FYI: No rows contained unknown LSMH IDs (good!)
-# If these rows indicate typos or other errors in the IDs, fix them in the mutate() above
-yb_recoded %>%
-  filter(!lsmh_id %in% id_lookup$lsmh_id) %>%
-  count(lsmh_id)
-
-
-## Deduplicate
-# Identify duplicates
-identify_duplicates(yb_valid, lsmh_id, yb_complete)
-
-# Remove duplicates
-yb_deduplicated <- remove_duplicates(yb_valid, lsmh_id, yb_datetime)
-
-# Double-check baseline deduplication
-identify_duplicates(yb_deduplicated, lsmh_id, yb_complete)
-
-
 
 ####  Save Data  ####
 # Save clean Qualtrics data
-saveRDS(yb_deduplicated, clean_data_staging_dir %+% "Phase 2 Youth Qualtrics Clean Data - Baseline.rds")
+saveRDS(yb_recoded, clean_data_staging_dir %+% "Phase 2 Youth Qualtrics Clean Data - Baseline.rds")
 
 # Save log
 saveRDS(log, clean_data_staging_intermediate_dir %+% "Phase 2 Youth Qualtrics Clean Data Log - Baseline.rds")

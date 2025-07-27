@@ -46,7 +46,7 @@ check_raw_data_ver(raw_metadata, list(yi_path), list(yi_raw), "yi_qualtrics")
 
 
 ####  Clean Data  ####
-## Create log
+### Create log
 # Create lists for logging (a) items used to compute item completion rate below via
 # compute_item_completion_rate(), (b) items used to compute means via mean_across(),
 # and (c) clean codebook (edited and added to log below)
@@ -56,7 +56,7 @@ log <- list(
 )
 
 
-## Use unique "ImportId" to rename columns both named "lsmh_id" in Qualtrics
+### Use unique "ImportId" to rename columns both named "lsmh_id" in Qualtrics
 # - "read_survey()" contingently named these by their column indices upon import to R
 col_map <- attr(yi_raw, "column_map")
 
@@ -69,14 +69,14 @@ names(yi_renamed)[names(yi_renamed) == lsmh_id_col1_qname] <- "lsmh_id_col1"
 names(yi_renamed)[names(yi_renamed) == lsmh_id_col2_qname] <- "lsmh_id_col2"
 
 
-## TODO: Correct item prefixes in data and codebook
+### TODO: Correct item prefixes in data and codebook
 # For BADS items with prefixes "b_" instead of "yi_"
 
 
 
 
-# Change "minimum"-"maximum" values in codebook for BHS-4 from 1-4 to 0-3 for consistency 
-# with other time points (despite different anchors; data values are recoded below)
+### Change "minimum"-"maximum" values in codebook for BHS-4 from 1-4 to 0-3 for consistency 
+### with other time points (despite different anchors; data values are recoded below)
 
 yi_bhs_items <- c("yi_pre_bhs_1", "yi_pre_bhs_2", "yi_pre_bhs_3", "yi_pre_bhs_4", 
                   "yi_post_bhs_1", "yi_post_bhs_2", "yi_post_bhs_3", "yi_post_bhs_4")
@@ -84,12 +84,92 @@ yi_bhs_items <- c("yi_pre_bhs_1", "yi_pre_bhs_2", "yi_pre_bhs_3", "yi_pre_bhs_4"
 codebook$minimum[codebook$item %in% yi_bhs_items] <- 0
 codebook$maximum[codebook$item %in% yi_bhs_items] <- 3
 
-# Add codebook with clean youth intervention items to log
+
+### Add codebook with clean youth intervention items to log
 log$yi_codebook_clean <- codebook
 
 
-## Clean columns
-yi_recoded <- yi_renamed %>%
+### Correct LSMH IDs (manually as necessary)
+yi_corrected_ids <- yi_renamed %>%
+  rowwise() %>%
+  mutate(
+    lsmh_id = case_when(
+      
+      # Cases to be manually recoded
+      lsmh_id_col1 == "LSMH01297" & lsmh_id_col2 == "LSMH0129" ~ "LSMH01297",
+      lsmh_id_col1 == "LsmH00886" & lsmh_id_col2 == "LMSH00886" ~ "LSMH00886",
+      lsmh_id_col1 == "lsmh01826" & lsmh_id_col2 == "LSMH01826" ~ "LSMH01826",
+      
+      # Cases where both match
+      lsmh_id_col1 == lsmh_id_col2 ~ lsmh_id_col1,
+      
+      # Cases where one is missing (keep the non-missing value)
+      is.na(lsmh_id_col1) & !is.na(lsmh_id_col2) ~ lsmh_id_col2,
+      is.na(lsmh_id_col2) & !is.na(lsmh_id_col1) ~ lsmh_id_col1,
+      
+      # Cases where both are missing
+      is.na(lsmh_id_col1) & is.na(lsmh_id_col2) ~ NA_character_,
+      
+      # Additional cases are flagged for cleaning
+      T ~ "ID Combination Unaccounted For (" %+% lsmh_id_col1 %+% ", " %+% lsmh_id_col2 %+% ")"
+      
+    )
+  ) %>%
+  ungroup()
+
+
+### Remove invalid responses
+# Known valid LSMH IDs
+valid_ids <- id_lookup %>%
+  filter(action == "keep") %>%
+  distinct(lsmh_id)
+
+invalid_ids <- setdiff(yi_corrected_ids$lsmh_id, valid_ids$lsmh_id)
+
+yi_valid_ids <- yi_corrected_ids %>%
+  inner_join(
+    valid_ids,
+    by = "lsmh_id",
+    relationship = "many-to-one"
+  )
+
+# Just FYI: This is how many IDs/rows included known LSMH IDs matched for removal
+yi_corrected_ids %>%
+  filter(lsmh_id %in% id_lookup$lsmh_id[id_lookup$action == "drop"]) %>%
+  count(lsmh_id)
+
+# Just FYI: No rows contained unknown LSMH IDs (good!)
+# If these rows indicate typos or other errors in the IDs, fix them in the mutate() above
+yi_corrected_ids %>%
+  filter(!lsmh_id %in% id_lookup$lsmh_id) %>%
+  count(lsmh_id)
+
+
+### Identify duplicates and compute item completion rate for removing duplicates
+# Identify duplicates using helper function
+identify_duplicates(yi_valid_ids, lsmh_id, Finished)
+
+# Compute item completion rate using helper function (given that Qualtrics's "Progress"
+# and "Finished" variables reflect only clicking through survey, not completing items)
+yi_valid_ids <- compute_item_completion_rate(yi_valid_ids, "yi", phase = 2)
+
+
+### TODO: Remove any surveys (a) outside assessment window or (b) duplicated in window
+# TODO: Obtain baseline survey dates and compute intervention survey window
+
+# TODO: Compute indicator of intervention completion in window using helper function
+
+# TODO: Print and remove any intervention surveys outside window
+
+# Remove duplicates using helper function
+yi_deduplicated <- remove_duplicates(yi_valid_ids, lsmh_id, EndDate)
+
+# Double-check deduplication
+identify_duplicates(yi_deduplicated, lsmh_id, Finished)
+
+
+### Clean columns
+yi_recoded <- yi_deduplicated %>%
   
   # Remove click, page time variables
   select(
@@ -114,28 +194,7 @@ yi_recoded <- yi_renamed %>%
   mutate(
     
     ## Metadata
-    # ID (manually correcting as necessary)
-    lsmh_id = case_when(
-      
-      # Cases to be manually recoded
-      lsmh_id_col1 == "LSMH01297" & lsmh_id_col2 == "LSMH0129" ~ "LSMH01297",
-      lsmh_id_col1 == "LsmH00886" & lsmh_id_col2 == "LMSH00886" ~ "LSMH00886",
-      lsmh_id_col1 == "lsmh01826" & lsmh_id_col2 == "LSMH01826" ~ "LSMH01826",
-
-      # Cases where both match
-      lsmh_id_col1 == lsmh_id_col2 ~ lsmh_id_col1,
-      
-      # Cases where one is missing (keep the non-missing value)
-      is.na(lsmh_id_col1) & !is.na(lsmh_id_col2) ~ lsmh_id_col2,
-      is.na(lsmh_id_col2) & !is.na(lsmh_id_col1) ~ lsmh_id_col1,
-      
-      # Cases where both are missing
-      is.na(lsmh_id_col1) & is.na(lsmh_id_col2) ~ NA_character_,
-      
-      # Additional cases are flagged for cleaning
-      T ~ "ID Combination Unaccounted For (" %+% lsmh_id_col1 %+% ", " %+% lsmh_id_col2 %+% ")"
-      
-    ),
+    # ID ("lsmh_id" cleaned above)
     
     # Survey completion
     yi_complete = Finished == 1,
@@ -219,13 +278,10 @@ yi_recoded <- yi_renamed %>%
     yi_perc_change_hope,
     yi_perc_change_prob
     
-  ) %>%
-  
-  # Compute item completion rate
-  compute_item_completion_rate("yi") # TODO: Fix which columns are used to compute this
+  )
 
 
-## Check that values are in expected range
+### Check that values are in expected range
 items_to_check <- yi_recoded %>%
   select(
     matches("_bads_"),
@@ -248,45 +304,7 @@ walk(
 )
 
 
-## Remove invalid responses
-# Known valid LSMH IDs
-valid_ids <- id_lookup %>%
-  filter(action == "keep") %>%
-  distinct(lsmh_id)
-
-invalid_ids <- setdiff(yi_recoded$lsmh_id, valid_ids$lsmh_id)
-
-yi_valid <- yi_recoded %>%
-  inner_join(
-    valid_ids,
-    by = "lsmh_id",
-    relationship = "many-to-one"
-  )
-
-# Just FYI: This is how many IDs/rows included known LSMH IDs matched for removal
-yi_recoded %>%
-  filter(lsmh_id %in% id_lookup$lsmh_id[id_lookup$action == "drop"]) %>%
-  count(lsmh_id)
-
-# Just FYI: No rows contained unknown LSMH IDs (good!)
-# If these rows indicate typos or other errors in the IDs, fix them in the mutate() above
-yi_recoded %>%
-  filter(!lsmh_id %in% id_lookup$lsmh_id) %>%
-  count(lsmh_id)
-
-
-## Deduplicate
-# Identify duplicates
-identify_duplicates(yi_valid, lsmh_id, yi_complete)
-
-# Remove duplicates
-yi_deduplicated <- remove_duplicates(yi_valid, lsmh_id, yi_datetime)
-
-# Double-check baseline deduplication
-identify_duplicates(yi_deduplicated, lsmh_id, yi_complete)
-
-
-## Use deduplicated data to establish assessment windows for follow-up surveys
+### TODO (check and move up?): Use deduplicated data to establish assessment windows for follow-up surveys
 # Compute potential assessment windows based on intervention completion date
 # - In Phase I, 3-month assessment window start dates were computed manually by adding 3
 # to the month number and then rolling to the last real date of the prior month when this
@@ -299,7 +317,7 @@ identify_duplicates(yi_deduplicated, lsmh_id, yi_complete)
 # above (more forgiving) to compute end dates from start dates for the original window.
 # - Because some surveys were completed late, also compute an extended window that
 # extends the original window's end date by a reasonable 14 days.
-ax_windows <- yi_deduplicated %>%
+ax_windows <- yi_recoded %>%
   select(
     lsmh_id,
     yi_date
@@ -331,7 +349,7 @@ ax_windows <- yi_deduplicated %>%
   ungroup()
 
 
-## TODO: Check for exclusion criteria in free-response items
+### TODO: Check for exclusion criteria in free-response items
 
 
 

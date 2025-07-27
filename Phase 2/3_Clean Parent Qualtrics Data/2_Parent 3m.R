@@ -50,7 +50,7 @@ check_raw_data_ver(raw_metadata, list(p3m_path), list(p3m_raw), "p3m_qualtrics")
 
 
 ####  Clean Data  ####
-## Create log
+### Create log
 # Create lists for logging (a) items used to compute item completion rate below via
 # compute_item_completion_rate() and (b) items used to compute means via mean_across()
 log <- list(
@@ -59,8 +59,74 @@ log <- list(
 )
 
 
-## Clean columns
-p3m_recoded <- p3m_raw %>%
+### Correct LSMH IDs (manually as necessary)
+p3m_corrected_ids <- p3m_raw %>%
+  rowwise() %>%
+  mutate(
+    lsmh_id = case_when(
+      
+      # Cases to be manually recoded
+      lsmh_id == "LMSH00886" ~ "LSMH00886",
+      
+      # Cases where both match
+      lsmh_id == p3m_lsmh_id ~ lsmh_id,
+      
+      # Cases where one is missing (keep the non-missing value)
+      is.na(lsmh_id) & !is.na(p3m_lsmh_id) ~ p3m_lsmh_id,
+      is.na(p3m_lsmh_id) & !is.na(lsmh_id) ~ lsmh_id,
+      
+      # Cases where both are missing
+      is.na(lsmh_id) & is.na(p3m_lsmh_id) ~ NA_character_,
+      
+      # Additional cases are flagged for cleaning
+      T ~ "ID Combination Unaccounted For (lsmh_id '" %+% lsmh_id %+% "', p3m_lsmh_id '" %+% p3m_lsmh_id %+% "')"
+      
+    )
+  ) %>%
+  ungroup()
+
+
+### Remove invalid responses
+# Known valid LSMH IDs
+valid_ids <- id_lookup %>%
+  filter(action == "keep") %>%
+  distinct(lsmh_id)
+
+invalid_ids <- setdiff(p3m_corrected_ids$lsmh_id, valid_ids$lsmh_id)
+
+p3m_valid_ids <- p3m_corrected_ids %>%
+  inner_join(
+    valid_ids,
+    by = "lsmh_id",
+    relationship = "many-to-one"
+  )
+
+# Just FYI: This is how many IDs/rows included known LSMH IDs matched for removal
+p3m_corrected_ids %>%
+  filter(lsmh_id %in% id_lookup$lsmh_id[id_lookup$action == "drop"]) %>%
+  count(lsmh_id)
+
+# Just FYI: No rows contained unknown LSMH IDs (good!)
+# If these rows indicate typos or other errors in the IDs, fix them in the mutate() above
+p3m_corrected_ids %>%
+  filter(!lsmh_id %in% id_lookup$lsmh_id) %>%
+  count(lsmh_id)
+
+
+### Identify duplicates and compute item completion rate for removing duplicates
+# Identify duplicates using helper function
+identify_duplicates(p3m_valid_ids, lsmh_id, Finished)
+
+# Compute item completion rate using helper function (given that Qualtrics's "Progress"
+# and "Finished" variables reflect only clicking through survey, not completing items)
+p3m_valid_ids <- compute_item_completion_rate(p3m_valid_ids, "p3m", phase = 2)
+
+
+### TODO (move code up from below): Remove any surveys (a) outside assessment window or (b) duplicated in window
+
+
+### Clean columns
+p3m_recoded <- p3m_valid_ids %>%
   
   # Remove click, page time variables
   select(
@@ -94,26 +160,7 @@ p3m_recoded <- p3m_raw %>%
   mutate(
     
     ## Metadata
-    # ID (manually correcting as necessary)
-    lsmh_id = case_when(
-      
-      # Cases to be manually recoded
-      lsmh_id == "LMSH00886" ~ "LSMH00886",
-      
-      # Cases where both match
-      lsmh_id == p3m_lsmh_id ~ lsmh_id,
-      
-      # Cases where one is missing (keep the non-missing value)
-      is.na(lsmh_id) & !is.na(p3m_lsmh_id) ~ p3m_lsmh_id,
-      is.na(p3m_lsmh_id) & !is.na(lsmh_id) ~ lsmh_id,
-      
-      # Cases where both are missing
-      is.na(lsmh_id) & is.na(p3m_lsmh_id) ~ NA_character_,
-      
-      # Additional cases are flagged for cleaning
-      T ~ "ID Combination Unaccounted For (lsmh_id '" %+% lsmh_id %+% "', p3m_lsmh_id '" %+% p3m_lsmh_id %+% "')"
-      
-    ),
+    # ID ("lsmh_id" cleaned above)
     
     # Survey completion
     p3m_complete = Finished == 1,
@@ -220,13 +267,10 @@ p3m_recoded <- p3m_raw %>%
     matches("_bace_"),
     matches("_scared_")
     
-  ) %>%
-  
-  # Compute item completion rate
-  compute_item_completion_rate("p3m") # TODO: Fix which columns are used to compute this
+  )
 
 
-## Check that values are in expected range
+### Check that values are in expected range
 items_to_check <- p3m_recoded %>%
   select(
     matches("_cdi_"),
@@ -248,36 +292,9 @@ walk(
 )
 
 
-## Remove invalid responses
-# Known valid LSMH IDs
-valid_ids <- id_lookup %>%
-  filter(action == "keep") %>%
-  distinct(lsmh_id)
-
-invalid_ids <- setdiff(p3m_recoded$lsmh_id, valid_ids$lsmh_id)
-
-p3m_valid <- p3m_recoded %>%
-  inner_join(
-    valid_ids,
-    by = "lsmh_id",
-    relationship = "many-to-one"
-  )
-
-# Just FYI: This is how many IDs/rows included known LSMH IDs matched for removal
-p3m_recoded %>%
-  filter(lsmh_id %in% id_lookup$lsmh_id[id_lookup$action == "drop"]) %>%
-  count(lsmh_id)
-
-# Just FYI: No rows contained unknown LSMH IDs (good!)
-# If these rows indicate typos or other errors in the IDs, fix them in the mutate() above
-p3m_recoded %>%
-  filter(!lsmh_id %in% id_lookup$lsmh_id) %>%
-  count(lsmh_id)
-
-
 ## Filter to assessment window              # TODO: JE testing (added "days_early" and "days_late")
 # Add assessment window information
-p3m_with_window <- p3m_valid %>%
+p3m_with_window <- p3m_recoded %>%
   left_join(
     ax_windows,
     by = "lsmh_id",
@@ -337,13 +354,10 @@ p3m_in_window <- p3m_with_window %>%
 
 
 ## Deduplicate
-# Identify duplicates
-identify_duplicates(p3m_in_window, lsmh_id, p3m_complete)
-
 # Remove duplicates
 p3m_deduplicated <- remove_duplicates(p3m_in_window, lsmh_id, p3m_datetime)
 
-# Double-check baseline deduplication
+# Double-check deduplication
 identify_duplicates(p3m_deduplicated, lsmh_id, p3m_complete)
 
 

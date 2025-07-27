@@ -93,36 +93,73 @@ identify_duplicates <- function(data, id, completion_indicator = Finished) {
 }
 
 # Function to compute item completion rate
-compute_item_completion_rate <- function(data, survey_prefix) {
+compute_item_completion_rate <- function(data, survey_prefix, phase = 1) {
   
-  # Metadata columns
-  qualtrics_metadata <- c(
+  qualtrics_metadata_both_phases <- c(
     "StartDate", "EndDate", "Status", "IPAddress", "Progress", "Duration (in seconds)", 
     "Finished", "RecordedDate", "ResponseId", "RecipientLastName", "RecipientFirstName", 
     "RecipientEmail", "ExternalReference", "LocationLatitude", "LocationLongitude", 
-    "DistributionChannel", "UserLanguage", "status", "SC0"
+    "DistributionChannel", "UserLanguage", "status"
   )
   
-  survey_metadata <- c(
-    "administration", "assent_signature", "consent_signature", "p3m_address", 
-    "p3m_child_name", "p3m_childcell", "p3m_childemail", "p3m_date", "p3m_homephone",
-    "p3m_lsmh_id", "p3m_lsmh_id_validate", "p3m_parentcell", "p3m_parentemail",
-    "p3m_workphone", "p3m_wrapup_optin", "password_child", "password_parent", 
-    "pb_address", "pb_child_name", "pb_childcell", "pb_childemail", "pb_date",
-    "pb_homephone", "pb_interview", "pb_lsmh_id", "pb_lsmh_id_validate", "pb_parentcell", 
-    "pb_parentemail", "pb_workphone", "y3_childname", "y3_lsmh_id_ validate",
-    "y3m_chrome_browser", "y3m_lsmh_id", "yb_end", "yb_end_3", "yb_interview",
-    "yb_LifePak ID", "yb_LifePak ID Verify", "yb_lsmh_id", "yb_lsmh_id_ validate", 
-    "yb_phone", "yb_phone_validate"
-  )
+  if (phase == 1) {
+    
+    # Phase 1 metadata columns
+    qualtrics_metadata <- c(qualtrics_metadata_both_phases, "SC0")
+    
+    survey_metadata <- c(
+      "administration", "assent_signature", "consent_signature", "p3m_address", 
+      "p3m_child_name", "p3m_childcell", "p3m_childemail", "p3m_date", "p3m_homephone",
+      "p3m_lsmh_id", "p3m_lsmh_id_validate", "p3m_parentcell", "p3m_parentemail",
+      "p3m_workphone", "p3m_wrapup_optin", "password_child", "password_parent", 
+      "pb_address", "pb_child_name", "pb_childcell", "pb_childemail", "pb_date",
+      "pb_homephone", "pb_interview", "pb_lsmh_id", "pb_lsmh_id_validate", "pb_parentcell", 
+      "pb_parentemail", "pb_workphone", "y3_childname", "y3_lsmh_id_ validate",
+      "y3m_chrome_browser", "y3m_lsmh_id", "yb_end", "yb_end_3", "yb_interview",
+      "yb_LifePak ID", "yb_LifePak ID Verify", "yb_lsmh_id", "yb_lsmh_id_ validate", 
+      "yb_phone", "yb_phone_validate"
+    )
+    
+    # Columns with click and time on page information
+    click_time_cols <- names(data)[grepl("time.*(Click|Submit)", names(data))]
+    
+    metadata <- c(qualtrics_metadata, survey_metadata, click_time_cols)
+    
+  } else if (phase == 2) {
+
+    # Phase 2 metadata columns
+    qualtrics_metadata <- c(qualtrics_metadata_both_phases, paste0("SC", 0:12))
+    
+    survey_metadata <- c(
+      "condition", "email_id", "lsmh_id", "lsmh_id_col1", "lsmh_id_col2",
+      "pb_password_parent", "pb_consent_name", "pb_consent_signature_Id",
+      "pb_consent_signature_Name", "pb_consent_signature_Size", "pb_consent_signature_Type",
+      "pb_lsmh_id", "pb_lsmh_id_check", "pb_childname", "pb_date", "pb_address",
+      "pb_homephone", "pb_parentcell", "pb_childcell", "pb_workphone", "pb_parentemail",
+      "pb_childemail", "pb_interview", "Test", "test_col1", "test_col2",
+      "p3m_lsmh_id", "p3m_childname", "p3m_date",
+      "yb_assent_name", "yb_assent_signature_Id", "yb_assent_signature_Name", 
+      "yb_assent_signature_Size", "yb_assent_signature_Type", "yb_interview", "yb_lifepak", 
+      "yb_lifepak_check", "yb_lsmh_id", "yb_password_child", "yb_phone", "yb_phone_check",
+      "yi_teen_name", "yi_parent_email_1", "yi_parent_email_2",
+      "y3m_lsmh_id", "y3m_lsmh_id_check", "y3m_childname"
+      )
+    
+    # Columns with click and time on page information
+    click_time_cols <- names(data)[grepl("(time|_tim_).*(Click|Submit)", names(data))]
+    
+    # Columns with ranks of selected options (NA if option is not selected)
+    rank_cols <- names(data)[grepl("_RANK", names(data))]
+    
+    metadata <- c(qualtrics_metadata, survey_metadata, click_time_cols, rank_cols)
+  
+  }
   
   # Remove columns that should not be included in calculation
   data_for_calculation <- data %>%
     select(
-      -matches("time.*(Click|Submit)"), # Columns with click and time on page information
       -matches("_TEXT"), # Columns with specified responses for response options of "Other" (or similar)
-      -any_of(qualtrics_metadata),
-      -any_of(survey_metadata)
+      -any_of(metadata)
     )
   
   # Calculate item completion rate

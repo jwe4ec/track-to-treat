@@ -46,7 +46,7 @@ check_raw_data_ver(raw_metadata, list(pb_path), list(pb_raw), "pb_qualtrics")
 
 
 ####  Clean Data  ####
-## Create log
+### Create log
 # Create lists for logging (a) items used to compute item completion rate below via
 # compute_item_completion_rate(), (b) items used to compute means via mean_across(),
 # and (c) items used to compute counts via count_across()
@@ -57,7 +57,7 @@ log <- list(
 )
 
 
-## Use unique "ImportId" to rename columns both named "test" in Qualtrics
+### Use unique "ImportId" to rename columns both named "test" in Qualtrics
 # - "read_survey()" contingently named these by their column indices upon import to R
 col_map <- attr(pb_raw, "column_map")
 
@@ -70,8 +70,94 @@ names(pb_renamed)[names(pb_renamed) == test_col1_qname] <- "test_col1"
 names(pb_renamed)[names(pb_renamed) == test_col2_qname] <- "test_col2"
 
 
-## Clean columns
-pb_recoded <- pb_renamed %>%
+### Correct LSMH IDs (manually as necessary)
+pb_corrected_ids <- pb_renamed %>%
+  rowwise() %>%
+  mutate(
+    lsmh_id = case_when(
+      
+      # Cases to be manually recoded
+      lsmh_id == "Baseline" & pb_lsmh_id == "LSMH02533" ~ "LSMH02533",
+      lsmh_id == "LMSH00886" & pb_lsmh_id == "LSMH00886" ~ "LSMH00886",
+      lsmh_id == "LSMH01836 Password: 3tp2_parent" ~ "LSMH01836",
+      
+      # Cases where both match
+      lsmh_id == pb_lsmh_id ~ lsmh_id,
+      
+      # Cases where one is missing (keep the non-missing value)
+      is.na(lsmh_id) & !is.na(pb_lsmh_id) ~ pb_lsmh_id,
+      is.na(pb_lsmh_id) & !is.na(lsmh_id) ~ lsmh_id,
+      
+      # Cases where both are missing
+      is.na(lsmh_id) & is.na(pb_lsmh_id) ~ NA_character_,
+      
+      # Additional cases are flagged for cleaning
+      T ~ "ID Combination Unaccounted For (lsmh_id '" %+% lsmh_id %+% "', pb_lsmh_id '" %+% pb_lsmh_id %+% "')"
+      
+    )
+  ) %>%
+  ungroup()
+
+
+### Remove invalid responses
+# Known valid LSMH IDs
+valid_ids <- id_lookup %>%
+  filter(action == "keep") %>%
+  distinct(lsmh_id)
+
+invalid_ids <- setdiff(pb_corrected_ids$lsmh_id, valid_ids$lsmh_id)
+
+pb_valid_ids <- pb_corrected_ids %>%
+  inner_join(
+    valid_ids,
+    by = "lsmh_id",
+    relationship = "many-to-one"
+  )
+
+# Just FYI: This is how many IDs/rows included known LSMH IDs matched for removal
+pb_corrected_ids %>%
+  filter(lsmh_id %in% id_lookup$lsmh_id[id_lookup$action == "drop"]) %>%
+  count(lsmh_id)
+
+# Just FYI: No rows contained unknown LSMH IDs (good!)
+# If these rows indicate typos or other errors in the IDs, fix them in the mutate() above
+pb_corrected_ids %>%
+  filter(!lsmh_id %in% id_lookup$lsmh_id) %>%
+  count(lsmh_id)
+
+
+### Identify duplicates and compute item completion rate for removing duplicates
+# Identify duplicates using helper function
+identify_duplicates(pb_valid_ids, lsmh_id, Finished)
+
+# Compute item completion rate using helper function (given that Qualtrics's "Progress"
+# and "Finished" variables reflect only clicking through survey, not completing items)
+pb_valid_ids <- compute_item_completion_rate(pb_valid_ids, "pb", phase = 2)
+
+
+### TODO: Remove any surveys (a) outside assessment window or (b) duplicated in window
+# TODO: Obtain EMA notification dates from LifePak data and compute end of EMA period
+
+# TODO: Compute indicator of baseline survey completion in window using helper function
+
+# TODO: Print and remove any baseline surveys outside window
+
+# For LSMH02077, manually keep the latter survey, as this was done on the same day
+# as the child, per README_ttt_p2_data_collection
+pb_manual_filter_02077 <- pb_valid_ids %>%
+  filter(
+    !(lsmh_id == "LSMH02077" & as_date(EndDate) == mdy("8/27/2022"))
+  )
+
+# Remove duplicates using helper function
+pb_deduplicated <- remove_duplicates(pb_manual_filter_02077, lsmh_id, EndDate)
+
+# Double-check deduplication
+identify_duplicates(pb_deduplicated, lsmh_id, Finished)
+
+
+### Clean columns
+pb_recoded <- pb_deduplicated %>%
   
   # Remove click, page time variables
   select(
@@ -102,28 +188,7 @@ pb_recoded <- pb_renamed %>%
   mutate(
     
     ## Metadata
-    # ID (manually correcting as necessary)
-    lsmh_id = case_when(
-      
-      # Cases to be manually recoded
-      lsmh_id == "Baseline" & pb_lsmh_id == "LSMH02533" ~ "LSMH02533",
-      lsmh_id == "LMSH00886" & pb_lsmh_id == "LSMH00886" ~ "LSMH00886",
-      lsmh_id == "LSMH01836 Password: 3tp2_parent" ~ "LSMH01836",
-      
-      # Cases where both match
-      lsmh_id == pb_lsmh_id ~ lsmh_id,
-      
-      # Cases where one is missing (keep the non-missing value)
-      is.na(lsmh_id) & !is.na(pb_lsmh_id) ~ pb_lsmh_id,
-      is.na(pb_lsmh_id) & !is.na(lsmh_id) ~ lsmh_id,
-      
-      # Cases where both are missing
-      is.na(lsmh_id) & is.na(pb_lsmh_id) ~ NA_character_,
-      
-      # Additional cases are flagged for cleaning
-      T ~ "ID Combination Unaccounted For (lsmh_id '" %+% lsmh_id %+% "', pb_lsmh_id '" %+% pb_lsmh_id %+% "')"
-      
-    ),
+    # ID ("lsmh_id" cleaned above)
     
     # Survey completion
     pb_complete = Finished == 1,
@@ -467,13 +532,10 @@ pb_recoded <- pb_renamed %>%
     matches("_bace_"),
     matches("_scared_")
     
-  ) %>%
-  
-  # Compute item completion rate
-  compute_item_completion_rate("pb") # TODO: Fix which columns are used to compute this
+  )
 
 
-## Manual corrections, per README_ttt_p2_data_collection
+### Manual corrections, per README_ttt_p2_data_collection
 pb_recoded$pb_parent_age[pb_recoded$lsmh_id == "LSMH00666"] <- 42
 pb_recoded$pb_parent_age[pb_recoded$lsmh_id == "LSMH00787"] <- 41
 pb_recoded$pb_n_sisters[pb_recoded$lsmh_id == "LSMH00899"] <- 0 # n_siblings is still ok, but sibling is non-binary
@@ -481,7 +543,7 @@ pb_recoded$pb_n_sisters[pb_recoded$lsmh_id == "LSMH00905"] <- 0 # 0, not 4 siste
 pb_recoded$pb_n_siblings[pb_recoded$lsmh_id == "LSMH00905"] <- 4 # ...4, not 8 siblings
 
 
-## Check that values are in expected range
+### Check that values are in expected range
 items_to_check <- pb_recoded %>%
   select(
     matches("_child_aces_"),
@@ -503,51 +565,6 @@ walk(
     .item = .x
   )
 )
-
-
-## Remove invalid responses
-# Known valid LSMH IDs
-valid_ids <- id_lookup %>%
-  filter(action == "keep") %>%
-  distinct(lsmh_id)
-
-invalid_ids <- setdiff(pb_recoded$lsmh_id, valid_ids$lsmh_id)
-
-pb_valid <- pb_recoded %>%
-  inner_join(
-    valid_ids,
-    by = "lsmh_id",
-    relationship = "many-to-one"
-  )
-
-# Just FYI: This is how many IDs/rows included known LSMH IDs matched for removal
-pb_recoded %>%
-  filter(lsmh_id %in% id_lookup$lsmh_id[id_lookup$action == "drop"]) %>%
-  count(lsmh_id)
-
-# Just FYI: No rows contained unknown LSMH IDs (good!)
-# If these rows indicate typos or other errors in the IDs, fix them in the mutate() above
-pb_recoded %>%
-  filter(!lsmh_id %in% id_lookup$lsmh_id) %>%
-  count(lsmh_id)
-
-
-## Deduplicate
-# For LSMH02077, manually keep the latter survey, as this was done on the same day
-# as the child, per README_ttt_p2_data_collection
-pb_manual_filter_02077 <- pb_valid %>%
-  filter(
-    !(lsmh_id == "LSMH02077" & pb_date == mdy("8/27/2022"))
-  )
-
-# Identify duplicates
-identify_duplicates(pb_manual_filter_02077, lsmh_id, pb_complete)
-
-# Remove duplicates
-pb_deduplicated <- remove_duplicates(pb_manual_filter_02077, lsmh_id, pb_datetime)
-
-# Double-check baseline deduplication
-identify_duplicates(pb_deduplicated, lsmh_id, pb_complete)
 
 
 

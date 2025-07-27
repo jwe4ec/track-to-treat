@@ -50,7 +50,7 @@ check_raw_data_ver(raw_metadata, list(y3m_path), list(y3m_raw), "y3m_qualtrics")
 
 
 ####  Clean Data  ####
-## Create log
+### Create log
 # Create lists for logging (a) items used to compute item completion rate below via
 # compute_item_completion_rate() and (b) items used to compute means via mean_across()
 log <- list(
@@ -59,8 +59,79 @@ log <- list(
 )
 
 
-## Clean columns
-y3m_recoded <- y3m_raw %>%
+### Correct LSMH IDs (manually as necessary)
+y3m_corrected_ids <- y3m_raw %>%
+  rowwise() %>%
+  mutate(
+    lsmh_id = case_when(
+      
+      # Cases to be manually recoded
+      lsmh_id == "LMSH00886" & is.na(y3m_lsmh_id) ~ "LSMH00886",
+      lsmh_id == "LMSH00886" & y3m_lsmh_id == "LSMH00886" ~ "LSMH00886",
+      lsmh_id == "LSMH" & y3m_lsmh_id == "LSMH02265" ~ "LSMH02265",
+      lsmh_id == "LSMH01829" & y3m_lsmh_id == "LSMH08129" ~ "LSMH01829",
+      lsmh_id == "LSMH02416" & y3m_lsmh_id == "LSMH ID, LSMH02416" ~ "LSMH02416",
+      lsmh_id == "LSMH02471" & y3m_lsmh_id == "LSMH02471" & y3m_lsmh_id_check == "LSMH02571" ~ "LSMH02471",
+      
+      # Cases where both match
+      lsmh_id == y3m_lsmh_id ~ lsmh_id,
+      
+      # Cases where one is missing (keep the non-missing value)
+      is.na(lsmh_id) & !is.na(y3m_lsmh_id) ~ y3m_lsmh_id,
+      is.na(y3m_lsmh_id) & !is.na(lsmh_id) ~ lsmh_id,
+      
+      # Cases where both are missing
+      is.na(lsmh_id) & is.na(y3m_lsmh_id) ~ NA_character_,
+      
+      # Additional cases are flagged for cleaning
+      T ~ "ID Combination Unaccounted For (lsmh_id '" %+% lsmh_id %+% "', y3m_lsmh_id '" %+% y3m_lsmh_id %+% "')"
+      
+    )
+  ) %>%
+  ungroup()
+
+
+### Remove invalid responses
+# Known valid LSMH IDs
+valid_ids <- id_lookup %>%
+  filter(action == "keep") %>%
+  distinct(lsmh_id)
+
+invalid_ids <- setdiff(y3m_corrected_ids$lsmh_id, valid_ids$lsmh_id)
+
+y3m_valid_ids <- y3m_corrected_ids %>%
+  inner_join(
+    valid_ids,
+    by = "lsmh_id",
+    relationship = "many-to-one"
+  )
+
+# Just FYI: This is how many IDs/rows included known LSMH IDs matched for removal
+y3m_corrected_ids %>%
+  filter(lsmh_id %in% id_lookup$lsmh_id[id_lookup$action == "drop"]) %>%
+  count(lsmh_id)
+
+# Just FYI: No rows contained unknown LSMH IDs (good!)
+# If these rows indicate typos or other errors in the IDs, fix them in the mutate() above
+y3m_corrected_ids %>%
+  filter(!lsmh_id %in% id_lookup$lsmh_id) %>%
+  count(lsmh_id)
+
+
+### Identify duplicates and compute item completion rate for removing duplicates
+# Identify duplicates using helper function
+identify_duplicates(y3m_valid_ids, lsmh_id, Finished)
+
+# Compute item completion rate using helper function (given that Qualtrics's "Progress"
+# and "Finished" variables reflect only clicking through survey, not completing items)
+y3m_valid_ids <- compute_item_completion_rate(y3m_valid_ids, "y3m", phase = 2)
+
+
+### TODO (move code up from below): Remove any surveys (a) outside assessment window or (b) duplicated in window
+
+
+### Clean columns
+y3m_recoded <- y3m_valid_ids %>%
   
   # Remove click, page time variables
   select(
@@ -91,31 +162,7 @@ y3m_recoded <- y3m_raw %>%
   mutate(
     
     ## Metadata
-    # ID (manually correcting as necessary)
-    lsmh_id = case_when(
-      
-      # Cases to be manually recoded
-      lsmh_id == "LMSH00886" & is.na(y3m_lsmh_id) ~ "LSMH00886",
-      lsmh_id == "LMSH00886" & y3m_lsmh_id == "LSMH00886" ~ "LSMH00886",
-      lsmh_id == "LSMH" & y3m_lsmh_id == "LSMH02265" ~ "LSMH02265",
-      lsmh_id == "LSMH01829" & y3m_lsmh_id == "LSMH08129" ~ "LSMH01829",
-      lsmh_id == "LSMH02416" & y3m_lsmh_id == "LSMH ID, LSMH02416" ~ "LSMH02416",
-      lsmh_id == "LSMH02471" & y3m_lsmh_id == "LSMH02471" & y3m_lsmh_id_check == "LSMH02571" ~ "LSMH02471",
-
-      # Cases where both match
-      lsmh_id == y3m_lsmh_id ~ lsmh_id,
-      
-      # Cases where one is missing (keep the non-missing value)
-      is.na(lsmh_id) & !is.na(y3m_lsmh_id) ~ y3m_lsmh_id,
-      is.na(y3m_lsmh_id) & !is.na(lsmh_id) ~ lsmh_id,
-      
-      # Cases where both are missing
-      is.na(lsmh_id) & is.na(y3m_lsmh_id) ~ NA_character_,
-      
-      # Additional cases are flagged for cleaning
-      T ~ "ID Combination Unaccounted For (lsmh_id '" %+% lsmh_id %+% "', y3m_lsmh_id '" %+% y3m_lsmh_id %+% "')"
-      
-    ),
+    # ID ("lsmh_id" cleaned above)
     
     # Survey completion
     y3m_complete = Finished == 1,                 # TODO: JE to continue here
@@ -296,13 +343,10 @@ y3m_recoded <- y3m_raw %>%
     matches("_mpvs_"),
     matches("_ucla_")
     
-  ) %>%
-  
-  # Compute item completion rate
-  compute_item_completion_rate("y3m") # TODO: Fix which columns are used to compute this
+  )
 
 
-## Check that values are in expected range
+### Check that values are in expected range
 items_to_check <- y3m_recoded %>%
   select(
     matches("_cdi_"),
@@ -332,36 +376,9 @@ walk(
 )
 
 
-## Remove invalid responses
-# Known valid LSMH IDs
-valid_ids <- id_lookup %>%
-  filter(action == "keep") %>%
-  distinct(lsmh_id)
-
-invalid_ids <- setdiff(y3m_recoded$lsmh_id, valid_ids$lsmh_id)
-
-y3m_valid <- y3m_recoded %>%
-  inner_join(
-    valid_ids,
-    by = "lsmh_id",
-    relationship = "many-to-one"
-  )
-
-# Just FYI: This is how many IDs/rows included known LSMH IDs matched for removal
-y3m_recoded %>%
-  filter(lsmh_id %in% id_lookup$lsmh_id[id_lookup$action == "drop"]) %>%
-  count(lsmh_id)
-
-# Just FYI: No rows contained unknown LSMH IDs (good!)
-# If these rows indicate typos or other errors in the IDs, fix them in the mutate() above
-y3m_recoded %>%
-  filter(!lsmh_id %in% id_lookup$lsmh_id) %>%
-  count(lsmh_id)
-
-
 ## Filter to assessment window                    # TODO: JE testing (added "days_early" and "days_late")
 # Add assessment window information
-y3m_with_window <- y3m_valid %>%
+y3m_with_window <- y3m_recoded %>%
   left_join(
     ax_windows,
     by = "lsmh_id",
@@ -389,6 +406,8 @@ y3m_with_window <- y3m_valid %>%
 
 
 
+
+
 y3m_with_window %>%                  # TODO: JE Testing
   filter(!response_in_window) %>%
   select(lsmh_id, "yi_date", "StartDate", "EndDate", "ax_window_3m_start", "ax_window_3m_end",
@@ -397,6 +416,7 @@ y3m_with_window %>%                  # TODO: JE Testing
 
 table(y3m_with_window$days_early, useNA = "always")
 table(y3m_with_window$days_late, useNA = "always")
+
 
 
 
@@ -421,13 +441,10 @@ y3m_in_window <- y3m_with_window %>%
 
 
 ## Deduplicate
-# Identify duplicates
-identify_duplicates(y3m_in_window, lsmh_id, y3m_complete)
-
 # Remove duplicates
 y3m_deduplicated <- remove_duplicates(y3m_in_window, lsmh_id, y3m_datetime)
 
-# Double-check baseline deduplication
+# Double-check deduplication
 identify_duplicates(y3m_deduplicated, lsmh_id, y3m_complete)
 
 
