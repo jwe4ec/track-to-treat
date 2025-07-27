@@ -128,7 +128,7 @@ pb_corrected_ids %>%
 
 ### Identify duplicates and compute item completion rate for removing duplicates
 # Identify duplicates using helper function
-identify_duplicates(pb_valid_ids, lsmh_id, Finished)
+identify_duplicates(pb_valid_ids, lsmh_id)
 
 # Compute item completion rate using helper function (given that Qualtrics's "Progress"
 # and "Finished" variables reflect only clicking through survey, not completing items)
@@ -153,7 +153,7 @@ pb_manual_filter_02077 <- pb_valid_ids %>%
 pb_deduplicated <- remove_duplicates(pb_manual_filter_02077, lsmh_id, EndDate)
 
 # Double-check deduplication
-identify_duplicates(pb_deduplicated, lsmh_id, Finished)
+identify_duplicates(pb_deduplicated, lsmh_id)
 
 
 ### Clean columns

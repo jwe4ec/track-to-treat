@@ -147,7 +147,7 @@ yi_corrected_ids %>%
 
 ### Identify duplicates and compute item completion rate for removing duplicates
 # Identify duplicates using helper function
-identify_duplicates(yi_valid_ids, lsmh_id, Finished)
+identify_duplicates(yi_valid_ids, lsmh_id)
 
 # Compute item completion rate using helper function (given that Qualtrics's "Progress"
 # and "Finished" variables reflect only clicking through survey, not completing items)
@@ -165,7 +165,7 @@ yi_valid_ids <- compute_item_completion_rate(yi_valid_ids, "yi", phase = 2)
 yi_deduplicated <- remove_duplicates(yi_valid_ids, lsmh_id, EndDate)
 
 # Double-check deduplication
-identify_duplicates(yi_deduplicated, lsmh_id, Finished)
+identify_duplicates(yi_deduplicated, lsmh_id)
 
 
 ### Clean columns

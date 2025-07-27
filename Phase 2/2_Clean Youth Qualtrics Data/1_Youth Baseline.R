@@ -116,7 +116,7 @@ log <- list(
 
 ### Identify duplicates and compute item completion rate for removing duplicates
 # Identify duplicates using helper function
-identify_duplicates(yb_valid_ids, lsmh_id, Finished) # TODO: Having moved up, changed "yb_complete" back to "Finished"
+identify_duplicates(yb_valid_ids, lsmh_id)
 
 # Compute item completion rate using helper function (given that Qualtrics's "Progress"
 # and "Finished" variables reflect only clicking through survey, not completing items)
@@ -134,7 +134,7 @@ yb_valid_ids <- compute_item_completion_rate(yb_valid_ids, "yb", phase = 2)
 yb_deduplicated <- remove_duplicates(yb_valid_ids, lsmh_id, EndDate) # TODO: Having moved up, changed "yb_datetime" back to "EndDate"
 
 # Double-check deduplication
-identify_duplicates(yb_deduplicated, lsmh_id, Finished) # TODO: Having moved up, changed "yb_complete" back to "Finished"
+identify_duplicates(yb_deduplicated, lsmh_id)
 
 
 ### Clean columns

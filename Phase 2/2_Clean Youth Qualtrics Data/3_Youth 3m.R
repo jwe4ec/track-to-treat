@@ -120,7 +120,7 @@ y3m_corrected_ids %>%
 
 ### Identify duplicates and compute item completion rate for removing duplicates
 # Identify duplicates using helper function
-identify_duplicates(y3m_valid_ids, lsmh_id, Finished)
+identify_duplicates(y3m_valid_ids, lsmh_id)
 
 # Compute item completion rate using helper function (given that Qualtrics's "Progress"
 # and "Finished" variables reflect only clicking through survey, not completing items)
@@ -445,7 +445,7 @@ y3m_in_window <- y3m_with_window %>%
 y3m_deduplicated <- remove_duplicates(y3m_in_window, lsmh_id, y3m_datetime)
 
 # Double-check deduplication
-identify_duplicates(y3m_deduplicated, lsmh_id, y3m_complete)
+identify_duplicates(y3m_deduplicated, lsmh_id, y3m_complete) # TODO: Change "y3m_complete" to "Finished"
 
 
 
