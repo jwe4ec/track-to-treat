@@ -188,10 +188,11 @@ mark_b_done_in_ax_window <- function(data, id_as_char, ema_notif_dates) {
     left_join(ema_notif_dates, by = id_as_char, relationship = "many-to-one") %>%
     # Compute indicator of survey completion before first EMA notification
     # Note: Given that "EndDate" and "first_ema_notif_date" are in different time
-    # zones ("America/Denver" for Phase I vs. participants' local times stored as 
-    # UTC, respectively), this comparison is approximate. To rule out the role of
-    # time zone differences, derive actual time zones for "first_ema_notif_date"
-    # from LifePak GPS data (although GPS data are missing for some observations)
+    # zones ("America/Denver" for Phase 1 and "America/Chicago" for Phase 2 vs. 
+    # participants' local times stored as UTC, respectively), this comparison is 
+    # approximate. To rule out the role of time zone differences, derive actual
+    # time zones for "first_ema_notif_date" from LifePak GPS data (although GPS 
+    # data are missing for some observations)
     mutate(in_window_b = as_date(EndDate) < first_ema_notif_date)
   
   # Throw warning if any surveys were not completed in this window (in which case 
@@ -206,7 +207,7 @@ mark_b_done_in_ax_window <- function(data, id_as_char, ema_notif_dates) {
   
 }
 
-# Function to compute indicators of follow-up survey completion in assessment window
+# Function to compute indicators of follow-up survey completion in assessment window for Phase 1
 mark_3m_done_in_ax_window <- function(data, id_as_char, ax_windows) {
   
   # Add assessment window dates to data
@@ -244,6 +245,57 @@ mark_3m_done_in_ax_window <- function(data, id_as_char, ax_windows) {
     
   }
 
+  return(data)
+  
+}
+
+# Function to compute indicators of follow-up survey completion in assessment window for Phase 2
+mark_fu_done_in_ax_window <- function(data, survey_prefix, ax_windows) {
+  
+  # Define input columns based on "survey_prefix"
+  ax_window_start_org <- sym(paste0("ax_window_", survey_prefix, "_start_org"))
+  ax_window_end_org   <- sym(paste0("ax_window_", survey_prefix, "_end_org"))
+  ax_window_start_ext <- sym(paste0("ax_window_", survey_prefix, "_start_ext"))
+  ax_window_end_ext   <- sym(paste0("ax_window_", survey_prefix, "_end_ext"))
+  
+  # Define output columns based on "survey_prefix"
+  in_window_org <- paste0("in_window_", survey_prefix, "_org")
+  in_window_ext <- paste0("in_window_", survey_prefix, "_ext")
+  days_before_start_window_org <- paste0("days_before_start_window_", survey_prefix, "_org")
+  days_after_end_window_org <- paste0("days_after_end_window_", survey_prefix, "_org")
+  
+  # Add assessment window dates to data
+  data <- data %>%
+    left_join(ax_windows, by = "lsmh_id", relationship = "many-to-one") %>%
+    mutate(
+      
+      # Compute indicators of survey completion in original and extended windows
+      !!in_window_org := as_date(EndDate) >= !!ax_window_start_org & as_date(EndDate) <= !!ax_window_end_org,
+      !!in_window_ext := as_date(EndDate) >= !!ax_window_start_ext & as_date(EndDate) <= !!ax_window_end_ext,
+      
+      # If done early, compute days before start of original window
+      !!days_before_start_window_org := ifelse(
+        as_date(EndDate) < !!ax_window_start_org,
+        as_date(EndDate) - !!ax_window_start_org,
+        NA
+      ),
+      
+      # If done late, compute days after end of original window
+      !!days_after_end_window_org := ifelse(
+        as_date(EndDate) > !!ax_window_end_org,
+        as_date(EndDate) - !!ax_window_end_org,
+        NA
+      )
+      
+    )
+  
+  # Throw warning if any surveys were completed before start of original window
+  if (any(!is.na(data[[days_before_start_window_org]]))) {
+    
+    warning("Survey(s) completed before original window. Consider earlier start date for extended window.")
+    
+  }
+  
   return(data)
   
 }
@@ -581,4 +633,14 @@ load_p2_tracker <- function(tracker_path) {
       baseline_date
     )
   
+}
+
+# Function to compute assessment window start or end date via seq() method by
+# adding a given interval to a given reference date
+compute_date_w_seq <- function(reference_date, interval) {
+  if (is.na(reference_date)) {
+    NA
+  } else {
+    seq(from = reference_date, by = interval, length.out = 2)[2]
+  }
 }

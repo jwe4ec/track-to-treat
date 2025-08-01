@@ -30,6 +30,9 @@ clean_data_staging_intermediate_dir <- clean_data_staging_dir %+% "intermediate\
 yi_path <- raw_data_dir %+% "DP5 Phase 2 - Youth - Interventions_May 22, 2025_12.17_n.csv"
 yi_raw <- read_survey(yi_path, time_zone = "America/Denver")
 
+# Load dates for baseline Qualtrics survey and EMA computed when cleaning baseline survey
+yb_ema_dates <- readRDS(clean_data_staging_intermediate_dir %+% "Phase 2 Youth Qualtrics Baseline and EMA Dates.rds")
+
 
 ## Load ID lookup
 id_lookup <- read_csv(here("Phase 2", "2025.05.26 Track to Treat P2 ID Lookup.csv"))
@@ -160,18 +163,130 @@ identify_duplicates(yi_valid_ids, lsmh_id)
 yi_valid_ids <- compute_item_completion_rate(yi_valid_ids, "yi", phase = 2)
 
 
-### TODO: Remove any surveys (a) outside assessment window or (b) duplicated in window
-# TODO: Obtain baseline survey dates and compute intervention survey window
+### Remove any surveys (a) outside assessment window or (b) duplicated in window
+# Obtain EMA dates and compute intervention survey window
+# - Intervention surveys were manually scheduled (not using Qualtrics workflows) and 
+# completed with an RA on Zoom, in general starting 4 weeks after baseline completion 
+# and ending 3 weeks later (per Arielle Smith on 7/29/25-7/31/25). (Note: Even though
+# an Excel formula [see follow-up assessment windows below] was used to compute the 
+# intervention window start dates as 1 month after baseline completion, most RAs seem
+# to have computed the start dates as 4 weeks from the baseline completion date.)
+# - However, some may have been scheduled early (e.g., due to RA error) or late (e.g., 
+# due to youth availability). Thus, also compute an extended window whose start date is 
+# the day after the end of the EMA period and whose end date is 6 weeks later (i.e., ~7 
+# weeks after baseline, if EMA started right after baseline, plus a 14-day grace period).
+ax_windows_yi <- yb_ema_dates %>%
+  rowwise() %>%
+  mutate(
+    ax_window_yi_start_org = as_date(EndDate_yb) + weeks(4),
+    ax_window_yi_end_org = ax_window_yi_start_org + weeks(3),
+    
+    ax_window_yi_start_ext = end_ema_period + days(1),
+    ax_window_yi_end_ext = ax_window_yi_start_ext + weeks(6),
+  ) %>%
+  ungroup()
 
-# TODO: Compute indicator of intervention completion in window using helper function
+# Compute indicator of intervention completion in window using helper function
+# - LSMH01370 has two responses, one of which was completed 6 days before the end
+# of the EMA period (thus, this response is correctly marked as outside the window;
+# an earlier start date for the extended window is not needed)
+yi_valid_ids <- mark_fu_done_in_ax_window(yi_valid_ids, "yi", ax_windows_yi)
 
-# TODO: Print and remove any intervention surveys outside window
+# Print and remove any intervention surveys outside window
+yi_valid_ids %>%
+  filter(!in_window_yi_ext) %>%
+  select(lsmh_id, StartDate, EndDate, ax_window_yi_start_org, ax_window_yi_end_org, 
+         in_window_yi_org, days_before_start_window_yi_org, days_after_end_window_yi_org, 
+         ax_window_yi_start_ext, ax_window_yi_end_ext, in_window_yi_ext, item_completion_rate) %>%
+  arrange(lsmh_id, EndDate)
+
+yi_valid_ids <- yi_valid_ids %>%
+  filter(in_window_yi_ext)
 
 # Remove duplicates using helper function
 yi_deduplicated <- remove_duplicates(yi_valid_ids, lsmh_id)
 
 # Double-check deduplication
 identify_duplicates(yi_deduplicated, lsmh_id)
+
+
+### Use deduplicated data to define assessment windows for follow-up surveys in later scripts
+# Compute potential assessment windows based on intervention completion date
+# - In Phase I, 3-month assessment window start dates were computed manually by adding 3
+# to the month number and then rolling to the last real date of the prior month when this
+# yields a date that does not exist. In R, this is "as_date(EndDate) %m+% months(3)".
+# - In Phase II, follow-up window start dates were computed using Qualtrics Workflows such that 
+# once the intervention survey was completed, Qualtrics sent the 3-, 6-, 12-, 18-, and 24-month 
+# surveys to youth and parents after those number of months had passed since the intervention 
+# survey completion date stored in Qualtrics (per Arielle Smith on 7/31/25). Per Qualtrics Support, 
+# each month is defined as 30 days. Follow-up end dates were determined via two steps:
+#   - First, an Excel formula was used to approximate the start date (e.g., 3-month start date 
+#   based on intervention completion date in Cell A1: "=DATE(YEAR(A1), MONTH(A1) + 3, DAY(A1))"),
+#   which rolls forward to the closest real date (not necessarily the first date of the next month).
+#   In R, this is "seq(as_date(EndDate), by = "3 months", length.out = 2)[2]".
+#   - Second, 1 month from the approximated start date, the RA sent a final email and changed the
+#   participant's status to the next phase (e.g., from "3M" to "6M"). Given that window end dates
+#   were not recorded, have leeway and use the same Excel formula to approximate the end date that
+#   the RA might have had in mind based on the approximated start date.
+# - Because some surveys were completed late, also compute an extended window that
+# extends the original window's end date by a reasonable 14 days.
+ax_windows <- yi_deduplicated %>%
+  # Add intervention dates (when applicable) for participants with baseline surveys
+  select(
+    lsmh_id,
+    StartDate_yi = StartDate,
+    EndDate_yi = EndDate
+  ) %>%
+  right_join(ax_windows_yi, by = "lsmh_id", relationship = "one-to-one") %>%
+  relocate(all_of(names(ax_windows_yi))) %>%
+  arrange(lsmh_id) %>%
+  
+  # Compute follow-up windows (using helper function for seq() method)
+  rowwise() %>%
+  mutate(
+    
+    # 3-month follow-up
+    ax_window_3m_start_org = as_date(EndDate_yi) + days(3*30),
+    ax_window_3m_end_org = compute_date_w_seq(as_date(EndDate_yi), "3 months"),
+    ax_window_3m_end_org = compute_date_w_seq(ax_window_3m_end_org, "1 month"),
+    
+    ax_window_3m_start_ext = ax_window_3m_start_org,        # TODO: Consider extending earlier by 1-7 days
+    ax_window_3m_end_ext = ax_window_3m_end_org + days(14),
+    
+    # 6-month follow-up
+    ax_window_6m_start_org = as_date(EndDate_yi) + days(6*30),
+    ax_window_6m_end_org = compute_date_w_seq(as_date(EndDate_yi), "6 months"),
+    ax_window_6m_end_org = compute_date_w_seq(ax_window_6m_end_org, "1 month"),
+    
+    ax_window_6m_start_ext = ax_window_6m_start_org,
+    ax_window_6m_end_ext = ax_window_6m_end_org + days(14),
+    
+    # 12-month follow-up
+    ax_window_12m_start_org = as_date(EndDate_yi) + days(12*30),
+    ax_window_12m_end_org = compute_date_w_seq(as_date(EndDate_yi), "12 months"),
+    ax_window_12m_end_org = compute_date_w_seq(ax_window_12m_end_org, "1 month"),
+    
+    ax_window_12m_start_ext = ax_window_12m_start_org,
+    ax_window_12m_end_ext = ax_window_12m_end_org + days(14),
+    
+    # 18-month follow-up
+    ax_window_18m_start_org = as_date(EndDate_yi) + days(18*30),
+    ax_window_18m_end_org = compute_date_w_seq(as_date(EndDate_yi), "18 months"),
+    ax_window_18m_end_org = compute_date_w_seq(ax_window_18m_end_org, "1 month"),
+    
+    ax_window_18m_start_ext = ax_window_18m_start_org,
+    ax_window_18m_end_ext = ax_window_18m_end_org + days(14),
+    
+    # 24-month follow-up
+    ax_window_24m_start_org = as_date(EndDate_yi) + days(24*30),
+    ax_window_24m_end_org = compute_date_w_seq(as_date(EndDate_yi), "24 months"),
+    ax_window_24m_end_org = compute_date_w_seq(ax_window_24m_end_org, "1 month"),
+    
+    ax_window_24m_start_ext = ax_window_24m_start_org,
+    ax_window_24m_end_ext = ax_window_24m_end_org + days(14),
+    
+  ) %>%
+  ungroup()
 
 
 ### Clean columns
@@ -209,6 +324,13 @@ yi_recoded <- yi_deduplicated %>%
     yi_datetime = EndDate,
     yi_date = date(yi_datetime),
     yi_duration = EndDate - StartDate,
+    
+    # Follow-up survey completion in original and extended assessment 
+    # windows and days survey was completed before/after original window
+    yi_in_window_org = in_window_yi_org,
+    yi_in_window_ext = in_window_yi_ext,
+    yi_days_before_start_window_yi_org = days_before_start_window_yi_org,
+    yi_days_after_end_window_yi_org = days_after_end_window_yi_org,
     
     
     ## BADS-SF (Behavioral Activation for Depression Scale - Short Form)
@@ -272,6 +394,14 @@ yi_recoded <- yi_deduplicated %>%
     yi_datetime,
     yi_duration,
     condition,
+    ax_window_yi_start_org,
+    ax_window_yi_end_org,
+    ax_window_yi_start_ext,
+    ax_window_yi_end_ext,
+    yi_in_window_org,
+    yi_in_window_ext,
+    yi_days_before_start_window_yi_org,
+    yi_days_after_end_window_yi_org,
     
     # Measures
     matches("_bads_"),
@@ -310,58 +440,12 @@ walk(
 )
 
 
-### TODO (check and move up?): Use deduplicated data to establish assessment windows for follow-up surveys
-# Compute potential assessment windows based on intervention completion date
-# - In Phase I, 3-month assessment window start dates were computed manually by adding 3
-# to the month number and then rolling to the last real date of the prior month when this
-# yields a date that does not exist. In R, this is "as_date(EndDate) %m+% months(3)".
-# - In Phase II, follow-up start dates were computed using an Excel formula (e.g.,
-# 3-month start date based on Cell A1: "=DATE(YEAR(A1), MONTH(A1) + 3, DAY(A1))"),
-# which rolls forward to the closest real date (not necessarily the first date of
-# the next month). In R: "seq(as_date(EndDate), by = "3 months", length.out = 2)[2]".
-# - End dates for windows were not recorded. Thus, have leeway and use Phase II formula
-# above (more forgiving) to compute end dates from start dates for the original window.
-# - Because some surveys were completed late, also compute an extended window that
-# extends the original window's end date by a reasonable 14 days.
-ax_windows <- yi_recoded %>%
-  select(
-    lsmh_id,
-    yi_date
-  ) %>%
-  rowwise() %>%        # TODO: Investigate ax_windows and extend
-  mutate(
-    
-    # 3-month follow-up
-    ax_window_3m_start = seq(yi_date, by = "3 months", length.out = 2)[2],
-    ax_window_3m_end = seq(ax_window_3m_start, by = "1 month", length.out = 2)[2],
-
-    # 6-month follow-up
-    ax_window_6m_start = seq(yi_date, by = "6 months", length.out = 2)[2],
-    ax_window_6m_end = seq(ax_window_6m_start, by = "1 month", length.out = 2)[2],
-
-    # 12-month follow-up
-    ax_window_12m_start = seq(yi_date, by = "12 months", length.out = 2)[2],
-    ax_window_12m_end = seq(ax_window_12m_start, by = "1 month", length.out = 2)[2],
-
-    # 18-month follow-up
-    ax_window_18m_start = seq(yi_date, by = "18 months", length.out = 2)[2],
-    ax_window_18m_end = seq(ax_window_18m_start, by = "1 month", length.out = 2)[2],
-
-    # 24-month follow-up
-    ax_window_24m_start = seq(yi_date, by = "24 months", length.out = 2)[2],
-    ax_window_24m_end = seq(ax_window_24m_start, by = "1 month", length.out = 2)[2]
-    
-  ) %>%
-  ungroup()
-
-
 ### TODO: Check for exclusion criteria in free-response items
-
 
 
 ####  Save Data  ####
 # Save clean Qualtrics data
-saveRDS(yi_deduplicated, clean_data_staging_dir %+% "Phase 2 Youth Qualtrics Clean Data - Intervention.rds")
+saveRDS(yi_recoded, clean_data_staging_dir %+% "Phase 2 Youth Qualtrics Clean Data - Intervention.rds")
 
 # Save assessment windows
 saveRDS(ax_windows, clean_data_staging_intermediate_dir %+% "Phase 2 Assessment Windows.rds")

@@ -122,11 +122,31 @@ identify_duplicates(p3m_valid_ids, lsmh_id)
 p3m_valid_ids <- compute_item_completion_rate(p3m_valid_ids, "p3m", phase = 2)
 
 
-### TODO (move code up from below): Remove any surveys (a) outside assessment window or (b) duplicated in window
+### Remove any surveys (a) outside assessment window (or for parents of youth who 
+### did not complete intervention survey in window) or (b) duplicated in window
+# Compute indicators of survey completion in window using helper function
+p3m_valid_ids <- mark_fu_done_in_ax_window(p3m_valid_ids, "3m", ax_windows)
+
+# Print and remove any surveys outside window          # TODO: Finalize windows
+p3m_valid_ids %>%
+  filter(!in_window_3m_ext | is.na(in_window_3m_ext)) %>%
+  select(lsmh_id, StartDate, EndDate, ax_window_3m_start_org, ax_window_3m_end_org, 
+         in_window_3m_org, days_before_start_window_3m_org, days_after_end_window_3m_org, 
+         ax_window_3m_start_ext, ax_window_3m_end_ext, in_window_3m_ext, item_completion_rate) %>%
+  arrange(lsmh_id, EndDate)
+
+p3m_valid_ids <- p3m_valid_ids %>%
+  filter(in_window_3m_ext)
+
+# Remove duplicates using helper function
+p3m_deduplicated <- remove_duplicates(p3m_valid_ids, lsmh_id)
+
+# Double-check deduplication
+identify_duplicates(p3m_deduplicated, lsmh_id)
 
 
 ### Clean columns
-p3m_recoded <- p3m_valid_ids %>%
+p3m_recoded <- p3m_deduplicated %>%
   
   # Remove click, page time variables
   select(
@@ -169,6 +189,13 @@ p3m_recoded <- p3m_valid_ids %>%
     p3m_datetime = EndDate,
     p3m_date = date(p3m_datetime),
     p3m_duration = EndDate - StartDate,
+    
+    # Follow-up survey completion in original and extended assessment 
+    # windows and days survey was completed before/after original window
+    p3m_in_window_org = in_window_3m_org,
+    p3m_in_window_ext = in_window_3m_ext,
+    p3m_days_before_start_window_3m_org = days_before_start_window_3m_org,
+    p3m_days_after_end_window_3m_org = days_after_end_window_3m_org,
     
     
     ## Child treatment history (assessed at follow-ups only if "childtx_change" is Yes)
@@ -248,11 +275,17 @@ p3m_recoded <- p3m_valid_ids %>%
     # Metadata
     lsmh_id,
     p3m_complete,
-    StartDate,         # TODO: JE added "StartDate" and "EndDate" for testing windows below
-    EndDate,
     p3m_date,
     p3m_datetime,
     p3m_duration,
+    ax_window_3m_start_org,
+    ax_window_3m_end_org,
+    ax_window_3m_start_ext,
+    ax_window_3m_end_ext,
+    p3m_in_window_org,
+    p3m_in_window_ext,
+    p3m_days_before_start_window_3m_org,
+    p3m_days_after_end_window_3m_org,
 
     # Child treatment history
     matches("childtx_change"),
@@ -292,79 +325,10 @@ walk(
 )
 
 
-## Filter to assessment window              # TODO: JE testing (added "days_early" and "days_late")
-# Add assessment window information
-p3m_with_window <- p3m_recoded %>%
-  left_join(
-    ax_windows,
-    by = "lsmh_id",
-    relationship = "many-to-one"
-  ) %>%
-  mutate(
-    response_in_window = p3m_date >= ax_window_3m_start & p3m_date <= ax_window_3m_end,
-    response_too_early = p3m_date < ax_window_3m_start,
-    response_too_late = p3m_date > ax_window_3m_end,
-    
-    # If done early, compute days before start of original window
-    days_early = ifelse(
-      response_too_early,
-      p3m_date - ax_window_3m_start,
-      NA
-    ),
-    
-    # If done late, compute days after end of original window
-    days_late = ifelse(
-      response_too_late,
-      p3m_date - ax_window_3m_end,
-      NA
-    )
-  )
-
-
-
-p3m_with_window %>%                  # TODO: JE Testing
-  filter(!response_in_window) %>%
-  select(lsmh_id, "p3m_date", "StartDate", "EndDate", "ax_window_3m_start", "ax_window_3m_end",
-         "response_in_window", "days_early", "days_late", "item_completion_rate") %>%
-  arrange(lsmh_id, EndDate)
-
-table(p3m_with_window$days_early, useNA = "always")
-table(p3m_with_window$days_late, useNA = "always")
-
-
-
-
-# Responses by window
-p3m_with_window %>%
-  count(response_in_window, response_too_early, response_too_late)
-
-# Participants by window
-p3m_with_window %>%
-  group_by(lsmh_id) %>%
-  summarize(
-    any_response_in_window = any(response_in_window),
-    any_response_too_early = any(response_too_early),
-    any_response_too_late = any(response_too_late)
-  ) %>%
-  count(any_response_in_window, any_response_too_early, any_response_too_late)
-
-# Filter to in-window responses only
-p3m_in_window <- p3m_with_window %>%
-  filter(response_in_window)
-
-
-## Deduplicate
-# Remove duplicates
-p3m_deduplicated <- remove_duplicates(p3m_in_window, lsmh_id, p3m_datetime) # TODO: Change "p3m_datetime" to "EndDate"
-
-# Double-check deduplication
-identify_duplicates(p3m_deduplicated, lsmh_id, p3m_complete) # TODO: Change "p3m_complete" to "Finished"
-
-
 
 ####  Save Data  ####
 # Save clean Qualtrics data
-saveRDS(p3m_deduplicated, clean_data_staging_dir %+% "Phase 2 Parent Qualtrics Clean Data - 3m.rds")
+saveRDS(p3m_recoded, clean_data_staging_dir %+% "Phase 2 Parent Qualtrics Clean Data - 3m.rds")
 
 # Save log
 saveRDS(log, clean_data_staging_intermediate_dir %+% "Phase 2 Parent Qualtrics Clean Data Log - 3m.rds")

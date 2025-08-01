@@ -18,7 +18,7 @@ source(here("Qualtrics Data Cleaning Helper Functions.R"))
 source(here("Version Control Helper Functions.R"))
 
 
-## Load Qualtrics data
+## Load data
 # Save directories
 raw_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT P2\\Data\\Qualtrics\\Raw\\2025.05.22_interim\\"
 clean_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT P2\\Data\\Clean Data (Isaac)\\"
@@ -29,6 +29,9 @@ clean_data_staging_intermediate_dir <- clean_data_staging_dir %+% "intermediate\
 # - Note: Use "timeZone" specified for date columns (e.g., "StartDate") in third row of raw CSV
 yb_path <- raw_data_dir %+% "DP5+Phase+2+-+Youth+-+Baseline_May+6,+2025_09.43_n.csv"
 yb_raw <- read_survey(yb_path, time_zone = "America/Chicago")
+
+# Load clean LifePak data without free-response items (until these are deidentified)
+nis_clean_wout_free <- readRDS(clean_data_staging_dir %+% "Phase 2 LifePak Clean Data Without Free Responses.rds")
 
 
 ## Load ID lookup
@@ -123,18 +126,56 @@ identify_duplicates(yb_valid_ids, lsmh_id)
 yb_valid_ids <- compute_item_completion_rate(yb_valid_ids, "yb", phase = 2)
 
 
-### Remove any baseline surveys (a) outside assessment window or (b) duplicated in window
-# TODO: Obtain EMA notification dates from LifePak data and compute end of EMA period
+### Remove any baseline surveys (a) outside assessment window (or for youth who 
+### didn't start EMA) or (b) duplicated in window
+# Obtain EMA notification dates from LifePak data and compute end of EMA period
+ema_notif_dates <- nis_clean_wout_free %>%
+  group_by(lsmh_id) %>%
+  summarize(
+    lsmh_id = unique(lsmh_id),
+    first_ema_notif_date = min(notification_date),
+    last_ema_notif_date = max(notification_date),
+    end_ema_period = first_ema_notif_date + days(21),
+    .groups = "drop"
+  )
 
-# TODO: Compute indicator of baseline survey completion in window using helper function
+# Compute indicator of baseline survey completion in window using helper function
+yb_valid_ids <- mark_b_done_in_ax_window(yb_valid_ids, "lsmh_id", ema_notif_dates)
 
-# TODO: Print and remove any baseline surveys outside window
+# Print and remove any baseline surveys outside window
+# - LSMH01677's "EndDate" is "2022-02-18 14:56:15" (in "America/Chicago"), after
+# "first_ema_notif_date" of "2022-02-17" ("notification_datetime" is "2022-02-17 
+# 08:52:31"; likely in "America/Los_Angeles" per parent-reported address in baseline
+# Qualtrics survey, but exact time zone is unknown as participant's LifePak data lack
+# GPS data). Still, youth likely completed most of survey before EMA, as "StartDate"
+# is "2022-02-16 13:45:47" and "Progress" is 97; the RA likely confirmed near-100% 
+# progress before administering EMA (and parent completed baseline on 2022-02-16).
+#   - Thus, manually deem the survey to be within the window
+yb_valid_ids$in_window_b[yb_valid_ids$lsmh_id == "LSMH01677" & yb_valid_ids$EndDate == "2022-02-18 14:56:15"] <- TRUE
+
+yb_valid_ids %>%
+  filter(!in_window_b | is.na(in_window_b)) %>%
+  select(lsmh_id, "StartDate", "EndDate", "first_ema_notif_date", "in_window_b", "item_completion_rate") %>%
+  arrange(lsmh_id, EndDate)
+
+yb_valid_ids <- yb_valid_ids %>%
+  filter(in_window_b)
 
 # Remove duplicates using helper function
 yb_deduplicated <- remove_duplicates(yb_valid_ids, lsmh_id)
 
 # Double-check deduplication
 identify_duplicates(yb_deduplicated, lsmh_id)
+
+# Save dates for baseline survey and EMA for use in later scripts
+yb_ema_dates <- yb_deduplicated %>%
+  select(
+    lsmh_id = lsmh_id,
+    StartDate_yb = StartDate, 
+    EndDate_yb = EndDate, 
+    first_ema_notif_date, last_ema_notif_date, end_ema_period
+  ) %>%
+  ungroup()
 
 
 ### Clean columns
@@ -394,3 +435,6 @@ saveRDS(yb_recoded, clean_data_staging_dir %+% "Phase 2 Youth Qualtrics Clean Da
 
 # Save log
 saveRDS(log, clean_data_staging_intermediate_dir %+% "Phase 2 Youth Qualtrics Clean Data Log - Baseline.rds")
+
+# Save dates for baseline survey and EMA for use in later scripts
+saveRDS(yb_ema_dates, clean_data_staging_intermediate_dir %+% "Phase 2 Youth Qualtrics Baseline and EMA Dates.rds")
