@@ -79,6 +79,10 @@ Data cleaning notes:
 * Qualtrics data
   * When items are reverse-coded, cleaning scripts unreverse them (while retaining the original item name)
     * By contrast, in LifePak data, when items are reversed the suffix "_rev" is appended to the item name
+  * Item excluded from composite variables
+    * Parent BSI-18 item on suicidal thoughts, which was not administered
+  * Some youth and parent item names differ (compare item content before comparing responses)
+      * E.g., parent item `scared_b_16` corresponds to youth item `scared_c_1`
   * Log list files are created to log:
     * Items used to compute item completion rates (see `log$item_completion_rate`)
     * Items used to compute means and counts (see `log$mean_items` and `log$count_items`)
@@ -87,16 +91,12 @@ Data cleaning notes:
   * Take care when comparing timestamps between LifePak/Qualtrics datasets (different time zones)
   * Ranges of youth SITBI-SF items need to be checked against those expected
   * Phase 1 specifics:
-    * Clean Columns section lists raw data available that have not yet been cleaned
-    * Items excluded from composite variables
-      * Parent BSI-18 item on suicidal thoughts, which was not administered
+    * Additional items excluded from composite variables
       * Parent item `scared_c_1`, which was entered into survey incorrectly
       * Child item `scared_c_11`, which was absent from in-person baseline survey
-    * Some youth and parent item names differ (compare item content before comparing responses)
-      * E.g., parent item `scared_b_16` corresponds to youth item `scared_c_1`
+    * Clean Columns section lists raw data available that have not yet been cleaned
     * Raw timestamps are in "America/Denver" time zone
   * Phase 2 specifics:
-    * TODO: Determine which Phase 1 specifics also apply to Phase 2
     * Beck Hopelessness Scale-4 items had different scale in youth intervention survey vs. other surveys
       * Script recodes values from 1-4 to 0-3 for consistency over time (surveys did not display numbers)
       * But wording differences remain:

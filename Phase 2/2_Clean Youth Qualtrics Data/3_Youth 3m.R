@@ -275,7 +275,7 @@ y3m_recoded <- y3m_deduplicated %>%
     
     ## SCARED (Screen for Child Anxiety and Related Disorders)
     # Overall mean score
-    y3m_scared_mean = mean_across("y3m", "scared", name = "y3m_scared_mean", exclude = "y3m_scared_c_11"),
+    y3m_scared_mean = mean_across("y3m", "scared", name = "y3m_scared_mean"),
     
     # Panic disorder/significant somatic symptoms subscale
     y3m_scared_paso_mean = mean_across("y3m", "scared", "PA/SO", name = "y3m_scared_paso_mean"),
@@ -287,7 +287,7 @@ y3m_recoded <- y3m_deduplicated %>%
     y3m_scared_sep_mean = mean_across("y3m", "scared", "SEP", name = "y3m_scared_sep_mean"),
     
     # Social phobic disorder subscale
-    y3m_scared_soc_mean = mean_across("y3m", "scared", "SOC", name = "y3m_scared_soc_mean", exclude = "y3m_scared_c_11"),
+    y3m_scared_soc_mean = mean_across("y3m", "scared", "SOC", name = "y3m_scared_soc_mean"),
     
     # Significant school avoidance symptoms
     y3m_scared_sch_mean = mean_across("y3m", "scared", "SCH", name = "y3m_scared_sch_mean"),
