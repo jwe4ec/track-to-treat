@@ -36,7 +36,7 @@ raw_data <- lapply(raw_data_paths, read.csv)
 list2env(raw_data, envir = .GlobalEnv)
 
 # Load ID lookup
-id_lookup <- read_csv(here("Phase 2", "2025.05.26 Track to Treat P2 ID Lookup.csv"))
+id_lookup <- read_csv(here("Phase 2", "2025.08.01 Track to Treat P2 ID Lookup.csv"))
 
 
 ## Check raw LifePak data versions using helper function
@@ -231,14 +231,6 @@ nis_clean %>%
   count(lifepak_id)
   
 # Just FYI: This is how many IDs/rows included unknown LifePak IDs
-# - TODO: Alyssa found that LifePak ID "007996" in "nis_1" is in "LifePak" tab of
-# "Track to Treat P2 Tracking Log 2.0" with corresponding LSMH ID "LSMH02350". The
-# LSMH ID is in "id_lookup" but the LifePak ID isn't (needs to be added).
-# - TODO: LifePak ID "850326" in "nis_1" was entered for LifePak ID in youth baseline
-# Qualtrics survey for LSMH ID "LSMH02422". The LSMH ID is in "id_lookup" but the
-# LifePak ID isn't (needs to be added with "action" of "drop" given that per the
-# "README_ttt_p2_data_collection", the LifePak IDs "632541" and "095929" comprise
-# the participant's 21 days of EMA data)
 # - Unclear why "997505" in "nis_1" ("TRACK to TREAT P2" survey) is unknown
 # - Those in "nis_4" ("TRACK to TREAT P2 - Pilot 2" survey) are likely lab members testing/training
 nis_clean %>%
