@@ -154,6 +154,31 @@ yi_corrected_ids %>%
   count(lsmh_id)
 
 
+### Manually check selected free-text columns for the following exclusion criteria
+# - (a) lack of English fluency, (b) random text responses, (c) responses < 3 words
+# Export selected columns to check
+cols_to_check <- c(paste0("shar_feel_q_", 1:3), paste0("proj_pers_q_", 1:3), "abc_q_6", "abc_q_7_b", "abc_q_20")
+filename_to_check <- "2025.08.02 Phase 2 Youth Qualtrics Valid Data - Intervention Free-Responses to Check.csv"
+
+yi_valid_ids %>%
+  select(lsmh_id, condition, EndDate, all_of(cols_to_check)) %>%
+  arrange(condition, lsmh_id, EndDate) %>%
+  mutate(exclude = NA, # Mark as 0 or 1
+         exclude_not_fluent = NA, # If "exclude" is 1, mark reason(s) as 1 (otherwise leave as NA)
+         exclude_random_text = NA, 
+         exclude_too_short = NA,
+         note = NA) %>% # Make note if needed
+  write.csv(clean_data_staging_intermediate_dir %+% filename_to_check, row.names = FALSE)
+
+# Manually copy exported file and rename as follows
+filename_checked <- "2025.08.02 Phase 2 Youth Qualtrics Valid Data - Intervention Free-Responses Checked.csv"
+
+# TODO: Alyssa Gorkin to review responses in copied exported file and complete "exclude" columns
+
+# TODO: Load checked responses and exclude participants who meet exclusion criteria
+yi_valid_ids_free_text_checked <- read_csv(clean_data_staging_intermediate_dir %+% filename_checked)
+
+
 ### Identify duplicates and compute item completion rate for removing duplicates
 # Identify duplicates using helper function
 identify_duplicates(yi_valid_ids, lsmh_id)
@@ -439,8 +464,6 @@ walk(
   )
 )
 
-
-### TODO: Check for exclusion criteria in free-response items
 
 
 ####  Save Data  ####
