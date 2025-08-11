@@ -300,6 +300,31 @@ nis_deduplicated %>%
   count(lsmh_id, lifepak_id)
 
 
+## Manually deidentify free-text columns
+# Export selected columns to check
+cols_to_check <- c("most_pleasant", "most_unpleasant", "other")
+blank_values <- c("", "#skipped#")
+filename_to_check <- "2025.08.11 Phase 2 LifePak Clean Data - Free-Responses to Check.csv"
+
+nis_deduplicated %>%
+  filter(!(most_pleasant %in% blank_values & most_unpleasant %in% blank_values & other %in% blank_values)) %>%
+  select(lsmh_id, notification_datetime, response_end_datetime, all_of(cols_to_check)) %>%
+  mutate(deidentify = NA, # Mark as 0 or 1
+         deidentify_most_pleasant = NA, # If "deidentify" is 1, mark column(s) to deidentify as 1 (otherwise leave as NA)
+         deidentify_most_unpleasant = NA,
+         deidentify_other = NA,
+         note = NA) %>% # Make note if needed
+  write.csv(clean_data_staging_intermediate_dir %+% filename_to_check, row.names = FALSE)
+
+# Manually copy exported file and rename as follows
+filename_checked <- "2025.08.11 Phase 2 LifePak Clean Data - Free-Responses Checked.csv"
+
+# TODO: Alyssa Gorkin to review responses in copied exported file and complete "deidentify" columns
+
+# TODO: Load checked responses and deidentify data accordingly
+nis_deduplicated_free_text_checked <- read_csv(clean_data_staging_intermediate_dir %+% filename_checked)
+
+
 
 ####  Save Data  ####
 # Save clean LifePak data
