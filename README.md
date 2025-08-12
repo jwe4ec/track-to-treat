@@ -58,6 +58,8 @@ Data cleaning notes:
 * LifePak data
   * LifePak IDs here are 6 digits (5-digit IDs elsewhere have leading 0 here; take care when comparing IDs)
   * Clean data includes EMA surveys only (excludes "feedback surveys", which were given after EMA surveys)
+  * End-of-day free-responses in clean data are deidentified
+    * If future cleaning retains additional rows in clean data, those rows need to be deidentified
   * Raw `Notification.Time` is in local time zones of participants' devices (per LifeData support)
     * Clean timestamp stores these in UTC (actual time zones could be derived from [incomplete] GPS data)
   * Phase 1 specifics:
