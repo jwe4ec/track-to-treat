@@ -155,7 +155,8 @@ yi_corrected_ids %>%
 
 
 ### Manually check selected free-text columns for the following exclusion criteria
-# - (a) lack of English fluency, (b) random text responses, (c) responses < 3 words
+# - Check all columns below for (a) lack of English fluency and (b) random text responses
+# - Check all columns below except "abc_q_6" and "abc_q_20" for (c) responses < 3 words
 # Export selected columns to check
 cols_to_check <- c(paste0("shar_feel_q_", 1:3), paste0("proj_pers_q_", 1:3), "abc_q_6", "abc_q_7_b", "abc_q_20")
 filename_to_check <- "2025.08.02 Phase 2 Youth Qualtrics Valid Data - Intervention Free-Responses to Check.csv"
@@ -170,13 +171,21 @@ yi_valid_ids %>%
          note = NA) %>% # Make note if needed
   write.csv(clean_data_staging_intermediate_dir %+% filename_to_check, row.names = FALSE)
 
-# Manually copy exported file and rename as follows
+# Manually copy exported file and rename as follows for Alyssa Gorkin to complete "exclude" columns
 filename_checked <- "2025.08.02 Phase 2 Youth Qualtrics Valid Data - Intervention Free-Responses Checked.csv"
 
-# TODO: Alyssa Gorkin to review responses in copied exported file and complete "exclude" columns
+# Load checked responses and exclude surveys that meet exclusion criteria
+yi_valid_ids_free_text_checked <- read_csv(clean_data_staging_intermediate_dir %+% filename_checked) %>%
+  mutate(EndDate = force_tz(EndDate, tzone = "America/Denver"))
 
-# TODO: Load checked responses and exclude participants who meet exclusion criteria
-yi_valid_ids_free_text_checked <- read_csv(clean_data_staging_intermediate_dir %+% filename_checked)
+yi_valid_ids <- yi_valid_ids %>%
+  left_join(
+    yi_valid_ids_free_text_checked[c("lsmh_id", "EndDate", "exclude")],
+    by = c("lsmh_id", "EndDate"),
+    relationship = "one-to-one"
+  ) %>%
+  filter(exclude != 1) %>%
+  select(-exclude)
 
 
 ### Identify duplicates and compute item completion rate for removing duplicates
@@ -212,9 +221,6 @@ ax_windows_yi <- yb_ema_dates %>%
   ungroup()
 
 # Compute indicator of intervention completion in window using helper function
-# - LSMH01370 has two responses, one of which was completed 6 days before the end
-# of the EMA period (thus, this response is correctly marked as outside the window;
-# an earlier start date for the extended window is not needed)
 yi_valid_ids <- mark_fu_done_in_ax_window(yi_valid_ids, "yi", ax_windows_yi)
 
 # Print and remove any intervention surveys outside window
