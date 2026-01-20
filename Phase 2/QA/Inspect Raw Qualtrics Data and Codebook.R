@@ -7,7 +7,6 @@ groundhog.library(
   pkg = c("tidyverse", "tidylog", "lubridate", "qualtRics", "openxlsx", "here", "digest"),
   date = groundhog_date
 )
-`%+%` <- paste0
 
 
 ## Load helper functions
