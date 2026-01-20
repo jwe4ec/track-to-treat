@@ -27,11 +27,8 @@ y12m_path <- dirs$raw_data %+% "DP5+Phase+2+-+Youth+-+FU+3+-+12M_May+6,+2025_09.
 y12m_raw <- read_survey(y12m_path, time_zone = "America/Chicago")
 
 
-## Load ID lookup
+## Load ID lookup and (using helper function) item-level codebook
 id_lookup <- read_csv(here("Phase 2", "2025.08.01 Track to Treat P2 ID Lookup.csv"))
-
-
-## Load item-level codebook file using helper function
 codebook <- load_p2_codebook(here("Phase 2", "2025.07.02 Track to Treat P2 Codebook.xlsx"))
 
 
