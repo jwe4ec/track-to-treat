@@ -18,15 +18,12 @@ source(here("Version Control Helper Functions.R"))
 
 
 ## Load Qualtrics data
-# Save directories
-raw_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT P2\\Data\\Qualtrics\\Raw\\2025.05.22_interim\\"
-clean_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT P2\\Data\\Clean Data (Isaac)\\"
-clean_data_staging_dir <- clean_data_dir %+% "staging\\"
-clean_data_staging_intermediate_dir <- clean_data_staging_dir %+% "intermediate\\"
+# Get directories using helper function
+dirs <- get_p2_qualtrics_dirs()
 
 # Load raw Qualtrics datasets (storing paths) in this format: [respondent][wave]_[administration]_raw
 # - Note: Use "timeZone" specified for date columns (e.g., "StartDate") in third row of raw CSV
-p3m_path <- raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+1+-+3M_May+6,+2025_09.44_n.csv"
+p3m_path <- dirs$raw_data %+% "DP5+Phase+2+-+Parent+-+FU+1+-+3M_May+6,+2025_09.44_n.csv"
 p3m_raw <- read_survey(p3m_path, time_zone = "America/Chicago")
 
 
@@ -39,7 +36,7 @@ codebook <- load_p2_codebook(here("Phase 2", "2025.07.02 Track to Treat P2 Codeb
 
 
 ## Load assessment windows
-ax_windows <- readRDS(clean_data_staging_intermediate_dir %+% "Phase 2 Assessment Windows.rds")
+ax_windows <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Assessment Windows.rds")
 
 
 ## Check raw Qualtrics data versions using helper function
@@ -327,7 +324,7 @@ walk(
 
 ####  Save Data  ####
 # Save clean Qualtrics data
-saveRDS(p3m_recoded, clean_data_staging_dir %+% "Phase 2 Parent Qualtrics Clean Data - 3m.rds")
+saveRDS(p3m_recoded, dirs$clean_data_staging %+% "Phase 2 Parent Qualtrics Clean Data - 3m.rds")
 
 # Save log
-saveRDS(log, clean_data_staging_intermediate_dir %+% "Phase 2 Parent Qualtrics Clean Data Log - 3m.rds")
+saveRDS(log, dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Clean Data Log - 3m.rds")

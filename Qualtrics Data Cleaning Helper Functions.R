@@ -3,6 +3,24 @@
 # New syntax to paste strings together
 `%+%` <- paste0
 
+# Function to get directories for Phase 2 Qualtrics data
+get_p2_qualtrics_dirs <- function() {
+
+  raw_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT P2\\Data\\Qualtrics\\Raw\\2025.05.22_interim\\"
+  clean_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT P2\\Data\\Clean Data (Isaac)\\"
+  clean_data_staging_dir <- clean_data_dir %+% "staging\\"
+  clean_data_staging_intermediate_dir <- clean_data_staging_dir %+% "intermediate\\"
+  
+  dirs <- list(
+    raw_data = raw_data_dir,
+    clean_data = clean_data_dir,
+    clean_data_staging = clean_data_staging_dir,
+    clean_data_staging_intermediate = clean_data_staging_intermediate_dir
+  )
+  
+  return(dirs)
+}
+
 # Function to drop invalid responses
 remove_invalid_responses <- function(data, id) {
   

@@ -18,21 +18,19 @@ source(here("Version Control Helper Functions.R"))
 
 
 ## Load Qualtrics data
-# Save directories
-clean_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT P2\\Data\\Clean Data (Isaac)\\"
-clean_data_staging_dir <- clean_data_dir %+% "staging\\"
-clean_data_staging_intermediate_dir <- clean_data_staging_dir %+% "intermediate\\"
+# Get directories using helper function
+dirs <- get_p2_qualtrics_dirs()
 
 # Load clean data by wave
-pb_clean <- readRDS(clean_data_staging_dir %+% "Phase 2 Parent Qualtrics Clean Data - Baseline.rds")
-p3m_clean <- readRDS(clean_data_staging_dir %+% "Phase 2 Parent Qualtrics Clean Data - 3m.rds")
+pb_clean <- readRDS(dirs$clean_data_staging %+% "Phase 2 Parent Qualtrics Clean Data - Baseline.rds")
+p3m_clean <- readRDS(dirs$clean_data_staging %+% "Phase 2 Parent Qualtrics Clean Data - 3m.rds")
 
 # Load logs by wave
-pb_log <- readRDS(clean_data_staging_intermediate_dir %+% "Phase 2 Parent Qualtrics Clean Data Log - Baseline.rds")
-p3m_log <- readRDS(clean_data_staging_intermediate_dir %+% "Phase 2 Parent Qualtrics Clean Data Log - 3m.rds")
+pb_log <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Clean Data Log - Baseline.rds")
+p3m_log <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Clean Data Log - 3m.rds")
 
 # Load youth intervention data, for `condition`
-yi_clean <- readRDS(clean_data_staging_dir %+% "Phase 2 Youth Qualtrics Clean Data - Intervention.rds")
+yi_clean <- readRDS(dirs$clean_data_staging %+% "Phase 2 Youth Qualtrics Clean Data - Intervention.rds")
 
 
 ## Load item-level codebook file using helper function
@@ -99,7 +97,7 @@ p_log <- list(item_completion_rate = list(pb = pb_log$item_completion_rate$pb,
 
 ####  Save Data  ####
 # Save data
-saveRDS(p_merged_filtered, clean_data_staging_dir %+% "Phase 2 Parent Qualtrics Clean Data - All Waves.rds")
+saveRDS(p_merged_filtered, dirs$clean_data_staging %+% "Phase 2 Parent Qualtrics Clean Data - All Waves.rds")
 
 # Save log
-saveRDS(p_log, clean_data_staging_dir %+% "Phase 2 Parent Qualtrics Clean Data Log - All Waves.rds")
+saveRDS(p_log, dirs$clean_data_staging %+% "Phase 2 Parent Qualtrics Clean Data Log - All Waves.rds")

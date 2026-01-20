@@ -18,19 +18,16 @@ source(here("Version Control Helper Functions.R"))
 
 
 ## Load data
-# Save directories
-raw_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT P2\\Data\\Qualtrics\\Raw\\2025.05.22_interim\\"
-clean_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT P2\\Data\\Clean Data (Isaac)\\"
-clean_data_staging_dir <- clean_data_dir %+% "staging\\"
-clean_data_staging_intermediate_dir <- clean_data_staging_dir %+% "intermediate\\"
+# Get directories using helper function
+dirs <- get_p2_qualtrics_dirs()
 
 # Load raw Qualtrics datasets (storing paths) in this format: [respondent][wave]_[administration]_raw
 # - Note: Use "timeZone" specified for date columns (e.g., "StartDate") in third row of raw CSV
-yb_path <- raw_data_dir %+% "DP5+Phase+2+-+Youth+-+Baseline_May+6,+2025_09.43_n.csv"
+yb_path <- dirs$raw_data %+% "DP5+Phase+2+-+Youth+-+Baseline_May+6,+2025_09.43_n.csv"
 yb_raw <- read_survey(yb_path, time_zone = "America/Chicago")
 
 # Load clean LifePak data without free-response items (until these are deidentified)
-nis_clean_wout_free <- readRDS(clean_data_staging_dir %+% "Phase 2 LifePak Clean Data Without Free Responses.rds")
+nis_clean_wout_free <- readRDS(dirs$clean_data_staging %+% "Phase 2 LifePak Clean Data Without Free Responses.rds")
 
 
 ## Load ID lookup
@@ -430,10 +427,10 @@ walk(
 
 ####  Save Data  ####
 # Save clean Qualtrics data
-saveRDS(yb_recoded, clean_data_staging_dir %+% "Phase 2 Youth Qualtrics Clean Data - Baseline.rds")
+saveRDS(yb_recoded, dirs$clean_data_staging %+% "Phase 2 Youth Qualtrics Clean Data - Baseline.rds")
 
 # Save log
-saveRDS(log, clean_data_staging_intermediate_dir %+% "Phase 2 Youth Qualtrics Clean Data Log - Baseline.rds")
+saveRDS(log, dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data Log - Baseline.rds")
 
 # Save dates for baseline survey and EMA for use in later scripts
-saveRDS(yb_ema_dates, clean_data_staging_intermediate_dir %+% "Phase 2 Youth Qualtrics Baseline and EMA Dates.rds")
+saveRDS(yb_ema_dates, dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Baseline and EMA Dates.rds")

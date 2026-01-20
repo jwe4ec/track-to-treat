@@ -18,19 +18,16 @@ source(here("Version Control Helper Functions.R"))
 
 
 ## Load Qualtrics data
-# Save directories
-raw_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT P2\\Data\\Qualtrics\\Raw\\2025.05.22_interim\\"
-clean_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT P2\\Data\\Clean Data (Isaac)\\"
-clean_data_staging_dir <- clean_data_dir %+% "staging\\"
-clean_data_staging_intermediate_dir <- clean_data_staging_dir %+% "intermediate\\"
+# Get directories using helper function
+dirs <- get_p2_qualtrics_dirs()
 
 # Load raw Qualtrics datasets (storing paths) in this format: [respondent][wave]_[administration]_raw
 # - Note: Use "timeZone" specified for date columns (e.g., "StartDate") in third row of raw CSV
-yi_path <- raw_data_dir %+% "DP5 Phase 2 - Youth - Interventions_May 22, 2025_12.17_n.csv"
+yi_path <- dirs$raw_data %+% "DP5 Phase 2 - Youth - Interventions_May 22, 2025_12.17_n.csv"
 yi_raw <- read_survey(yi_path, time_zone = "America/Denver")
 
 # Load dates for baseline Qualtrics survey and EMA computed when cleaning baseline survey
-yb_ema_dates <- readRDS(clean_data_staging_intermediate_dir %+% "Phase 2 Youth Qualtrics Baseline and EMA Dates.rds")
+yb_ema_dates <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Baseline and EMA Dates.rds")
 
 
 ## Load ID lookup
@@ -168,13 +165,13 @@ yi_valid_ids %>%
          exclude_random_text = NA, 
          exclude_too_short = NA,
          note = NA) %>% # Make note if needed
-  write.csv(clean_data_staging_intermediate_dir %+% filename_to_check, row.names = FALSE)
+  write.csv(dirs$clean_data_staging_intermediate %+% filename_to_check, row.names = FALSE)
 
 # Manually copy exported file and rename as follows for Alyssa Gorkin to complete "exclude" columns
 filename_checked <- "2025.08.02 Phase 2 Youth Qualtrics Valid Data - Intervention Free-Responses Checked.csv"
 
 # Load checked responses and exclude surveys that meet exclusion criteria
-yi_valid_ids_free_text_checked <- read_csv(clean_data_staging_intermediate_dir %+% filename_checked) %>%
+yi_valid_ids_free_text_checked <- read_csv(dirs$clean_data_staging_intermediate %+% filename_checked) %>%
   mutate(EndDate = force_tz(EndDate, tzone = "America/Denver"))
 
 yi_valid_ids <- yi_valid_ids %>%
@@ -473,10 +470,10 @@ walk(
 
 ####  Save Data  ####
 # Save clean Qualtrics data
-saveRDS(yi_recoded, clean_data_staging_dir %+% "Phase 2 Youth Qualtrics Clean Data - Intervention.rds")
+saveRDS(yi_recoded, dirs$clean_data_staging %+% "Phase 2 Youth Qualtrics Clean Data - Intervention.rds")
 
 # Save assessment windows
-saveRDS(ax_windows, clean_data_staging_intermediate_dir %+% "Phase 2 Assessment Windows.rds")
+saveRDS(ax_windows, dirs$clean_data_staging_intermediate %+% "Phase 2 Assessment Windows.rds")
 
 # Save log
-saveRDS(log, clean_data_staging_intermediate_dir %+% "Phase 2 Youth Qualtrics Clean Data Log - Intervention.rds")
+saveRDS(log, dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data Log - Intervention.rds")
