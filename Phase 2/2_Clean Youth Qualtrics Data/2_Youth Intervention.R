@@ -19,11 +19,12 @@ source(here("Version Control Helper Functions.R"))
 
 ## Load Qualtrics data
 # Get directories using helper function
-dirs <- get_p2_qualtrics_dirs()
+dirs <- get_p2_qualtrics_dirs(c("interim_raw_data", "clean_data_staging", "clean_data_staging_intermediate"))
+raw_data_dir <- dirs$interim_raw_data
 
 # Load raw Qualtrics datasets (storing paths) in this format: [respondent][wave]_[administration]_raw
 # - Note: Use "timeZone" specified for date columns (e.g., "StartDate") in third row of raw CSV
-yi_path <- dirs$raw_data %+% "DP5 Phase 2 - Youth - Interventions_May 22, 2025_12.17_n.csv"
+yi_path <- raw_data_dir %+% "DP5 Phase 2 - Youth - Interventions_May 22, 2025_12.17_n.csv"
 yi_raw <- read_survey(yi_path, time_zone = "America/Denver")
 
 # Load dates for baseline Qualtrics survey and EMA computed when cleaning baseline survey
