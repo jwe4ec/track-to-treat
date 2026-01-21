@@ -172,12 +172,6 @@ pb_recoded <- pb_deduplicated %>%
   # Remove click, page time variables
   rm_click_page_time_vars() %>%
   
-  # Rename "mvps" to "mpvs" throughout
-  rename_with(
-    .cols = contains("mvps"),
-    .fn = ~ gsub("mvps", "mpvs", .x)
-  ) %>%
-  
   # Un-reverse code items
   mutate(
     across(

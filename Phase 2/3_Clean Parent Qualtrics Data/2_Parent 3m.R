@@ -145,12 +145,6 @@ p3m_recoded <- p3m_deduplicated %>%
   # Remove click, page time variables
   rm_click_page_time_vars() %>%
   
-  # Rename "mvps" to "mpvs" throughout
-  rename_with(
-    .cols = contains("mvps"),
-    .fn = ~ gsub("mvps", "mpvs", .x)
-  ) %>%
-  
   # Fix column name
   rename(p3m_accommodations_2 = `p3m\020_accom_2`) %>%
   
