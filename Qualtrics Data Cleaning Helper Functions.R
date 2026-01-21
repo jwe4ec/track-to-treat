@@ -126,6 +126,14 @@ rm_click_page_time_vars <- function(data) {
     )
 }
 
+# Function to rename "mvps" to "mpvs" throughout
+rename_mvps_to_mpvs <- function(data) {
+  data %>% rename_with(
+    .cols = contains("mvps"),
+    .fn = ~ gsub("mvps", "mpvs", .x)
+    )
+}
+
 # Function to compute item completion rate
 compute_item_completion_rate <- function(data, survey_prefix, phase = 1) {
   

@@ -151,10 +151,7 @@ y3m_recoded <- y3m_deduplicated %>%
   rm_click_page_time_vars() %>%
   
   # Rename "mvps" to "mpvs" throughout
-  rename_with(
-    .cols = contains("mvps"),
-    .fn = ~ gsub("mvps", "mpvs", .x)
-  ) %>%
+  rename_mvps_to_mpvs() %>%
   
   # Un-reverse code items
   mutate(
