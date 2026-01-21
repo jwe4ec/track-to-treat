@@ -134,6 +134,16 @@ rename_mvps_to_mpvs <- function(data) {
     )
 }
 
+# Function to un-reverse code items
+unreverse_code_items <- function(data, codebook) {
+  data %>% mutate(
+    across(
+      .cols = any_of(codebook$item[codebook$reversed %in% 1]),
+      .fns = ~ codebook$reverse_base[codebook$item == cur_column()] - .x
+    )
+  )
+}
+
 # Function to compute item completion rate
 compute_item_completion_rate <- function(data, survey_prefix, phase = 1) {
   

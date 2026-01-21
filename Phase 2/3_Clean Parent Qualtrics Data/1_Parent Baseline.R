@@ -169,16 +169,11 @@ identify_duplicates(pb_deduplicated, lsmh_id)
 ### Clean columns
 pb_recoded <- pb_deduplicated %>%
   
-  # Remove click, page time variables
+  # Remove click, page time variables with helper function
   rm_click_page_time_vars() %>%
   
-  # Un-reverse code items
-  mutate(
-    across(
-      .cols = any_of(codebook$item[codebook$reversed %in% 1]),
-      .fns = ~ codebook$reverse_base[codebook$item == cur_column()] - .x
-    )
-  ) %>%
+  # Un-reverse code items with helper function
+  unreverse_code_items(codebook) %>%
   
   # Clean remaining columns by row and create composites
   rowwise() %>%

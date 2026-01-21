@@ -175,19 +175,14 @@ yb_ema_dates <- yb_deduplicated %>%
 ### Clean columns
 yb_recoded <- yb_deduplicated %>%
 
-  # Remove click, page time variables
+  # Remove click, page time variables with helper function
   rm_click_page_time_vars() %>%
   
-  # Rename "mvps" to "mpvs" throughout
+  # Rename "mvps" to "mpvs" throughout with helper function
   rename_mvps_to_mpvs() %>%
   
-  # Un-reverse code items
-  mutate(
-    across(
-      .cols = any_of(codebook$item[codebook$reversed %in% 1]),
-      .fns = ~ codebook$reverse_base[codebook$item == cur_column()] - .x
-    )
-  ) %>%
+  # Un-reverse code items with helper function
+  unreverse_code_items(codebook) %>%
   
   # Clean remaining columns by row and create composites
   rowwise() %>%
