@@ -148,14 +148,7 @@ identify_duplicates(y3m_deduplicated, lsmh_id)
 y3m_recoded <- y3m_deduplicated %>%
   
   # Remove click, page time variables
-  select(
-    
-    -matches("Click Count"),
-    -matches("First Click"),
-    -matches("Last Click"),
-    -matches("Page Submit")
-    
-  ) %>%
+  rm_click_page_time_vars() %>%
   
   # Rename "mvps" to "mpvs" throughout
   rename_with(

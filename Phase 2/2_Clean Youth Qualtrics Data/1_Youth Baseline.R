@@ -176,14 +176,7 @@ yb_ema_dates <- yb_deduplicated %>%
 yb_recoded <- yb_deduplicated %>%
 
   # Remove click, page time variables
-  select(
-    
-    -matches("Click Count"),
-    -matches("First Click"),
-    -matches("Last Click"),
-    -matches("Page Submit")
-    
-  ) %>%
+  rm_click_page_time_vars() %>%
   
   # Rename "mvps" to "mpvs" throughout
   rename_with(

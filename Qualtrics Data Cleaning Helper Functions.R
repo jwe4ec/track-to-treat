@@ -116,6 +116,16 @@ identify_duplicates <- function(data, id, completion_indicator = Finished) {
   
 }
 
+# Function to remove click and page time variables
+rm_click_page_time_vars <- function(data) {
+  data %>% select(
+    -matches("Click Count"),
+    -matches("First Click"),
+    -matches("Last Click"),
+    -matches("Page Submit")
+    )
+}
+
 # Function to compute item completion rate
 compute_item_completion_rate <- function(data, survey_prefix, phase = 1) {
   

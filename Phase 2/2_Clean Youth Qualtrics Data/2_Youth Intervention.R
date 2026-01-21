@@ -318,14 +318,7 @@ ax_windows <- yi_deduplicated %>%
 yi_recoded <- yi_deduplicated %>%
   
   # Remove click, page time variables
-  select(
-    
-    -matches("Click Count"),
-    -matches("First Click"),
-    -matches("Last Click"),
-    -matches("Page Submit")
-    
-  ) %>%
+  rm_click_page_time_vars() %>%
   
   # Un-reverse code items
   mutate(
