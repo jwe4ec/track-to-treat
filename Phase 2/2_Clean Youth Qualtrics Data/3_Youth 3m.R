@@ -302,13 +302,7 @@ items_to_check <- y3m_recoded %>%
   ) %>%
   names()
 
-walk(
-  items_to_check,
-  ~ check_values( # Helper function
-    .data = y3m_recoded,
-    .item = .x
-  )
-)
+walk(items_to_check, check_values, y3m_recoded) # check_values() helper function
 
 
 

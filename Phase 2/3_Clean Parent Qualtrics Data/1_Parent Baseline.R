@@ -510,13 +510,7 @@ items_to_check <- pb_recoded %>%
   ) %>%
   names()
 
-walk(
-  items_to_check,
-  ~ check_values( # Helper function
-    .data = pb_recoded,
-    .item = .x
-  )
-)
+walk(items_to_check, check_values, pb_recoded) # check_values() helper function
 
 
 

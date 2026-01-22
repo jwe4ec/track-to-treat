@@ -772,8 +772,8 @@ scared_means <- function(.prefix) {
   
 }
 
-# Function to check that values of categorical items are as expected
-check_values <- function(.data, .item) {
+# Function to check that values of categorical items are as expected (for use in walk() )
+check_values <- function(.item, .data) {
   
   # Ensure item is in codebook and data
   if(!.item %in% colnames(.data)) stop(".item not in .data")

@@ -444,13 +444,7 @@ items_to_check <- yi_recoded %>%
   ) %>%
   names()
 
-walk(
-  items_to_check,
-  ~ check_values( # Helper function
-    .data = yi_recoded,
-    .item = .x
-  )
-)
+walk(items_to_check, check_values, yi_recoded) # check_values() helper function
 
 
 
