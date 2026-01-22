@@ -175,7 +175,7 @@ pb_recoded <- pb_deduplicated %>%
   # Un-reverse code items with helper function
   unreverse_code_items(codebook) %>%
   
-  # Clean remaining columns by row and create composites
+  # Clean remaining columns by row and create composites using helper functions
   rowwise() %>%
   mutate(
     
@@ -396,77 +396,37 @@ pb_recoded <- pb_deduplicated %>%
     pb_childtx_current = pb_childtx_3 == 1,
 
     
-    ## Child ACES
-    # Overall count
-    pb_child_aces_count = count_across("pb", "ace_y", name = "pb_child_aces_count"), # count_across() from helper function script
+    ## Child ACES overall count
+    pb_child_aces_count = count_across("pb", "ace_y", name = "pb_child_aces_count"),
 
     
-    ## Parent ACES
-    # Overall count
+    ## Parent ACES overall count
     pb_parent_aces_count = count_across("pb", "ace_p", name = "pb_parent_aces_count"),
 
     
-    ## CDI-2 (Children's Depression Inventory - 2)
-    # Overall mean score
-    pb_cdi_mean = mean_across("pb", "CDI-2 P", name = "pb_cdi_mean"),
-
-    # Emotional problems subscale
-    pb_cdi_emotional_mean = mean_across("pb", "CDI-2 P", "Emotional Problems", name = "pb_cdi_emo_mean"),
-
-    # Functional problems subscale
-    pb_cdi_functional_mean = mean_across("pb", "CDI-2 P", "Functional Problems", name = "pb_cdi_fun_mean"),
-
+    ## CDI-2-P (Children's Depression Inventory - 2 - Parent Report) overall mean score and subscales
+    !!!cdi_p_means("pb"),
     
-    ## BHS-4 (Beck Hopelessness Scale - 4-item)
-    # Overall mean score
+
+    ## BHS-4 (Beck Hopelessness Scale - 4-item) overall mean score
     pb_bhs_mean = mean_across("pb", "bhs", name = "pb_bhs_mean"),
 
     
-    ## BFAMG (Brief Family Assessment Measure - General Scale)
-    # Overall mean score
+    ## BFAMG (Brief Family Assessment Measure - General Scale) overall mean score
     pb_bfamg_mean = mean_across("pb", "bfamg", name = "pb_bfamg_mean"),
 
     
-    ## 17 items from BSI-18 (Brief Symptom Inventory-18)
-    # Overall mean score (without suicidal thoughts item)
-    pb_bsi_mean = mean_across("pb", "bsi", name = "pb_bsi_mean"),
-
-    # Somatization subscale
-    pb_bsi_s_mean = mean_across("pb", "bsi", "S", name = "pb_bsi_s_mean"),
-
-    # Depression subscale (without suicidal thoughts item)
-    pb_bsi_d_mean = mean_across("pb", "bsi", "D", name = "pb_bsi_d_mean"),
-
-    # Anxiety subscale
-    pb_bsi_a_mean = mean_across("pb", "bsi", "A", name = "pb_bsi_a_mean"),
+    ## 17 items from BSI-18 (Brief Symptom Inventory-18): overall mean score and subscales
+    # Overall mean score and depression subscale lack suicidal thoughts item
+    !!!bsi_means("pb"),
 
     
-    ## BACE (Barriers to Accessing Care Evaluation)
-    # Overall mean score
-    pb_bace_mean = mean_across("pb", "bace", name = "pb_bace_mean"),
-
-    # Treatment stigma subscale
-    pb_bace_stigma_mean = mean_across("pb", "bace", "Treatment Stigma", name = "pb_bace_stigma_mean"),
-
+    ## BACE (Barriers to Accessing Care Evaluation) overall mean score and subscale
+    !!!bace_means("pb"),
     
-    ## SCARED (Screen for Child Anxiety and Related Disorders)
-    # Overall mean score
-    pb_scared_mean = mean_across("pb", "scared", name = "pb_scared_mean"),
-
-    # Panic disorder/significant somatic symptoms subscale
-    pb_scared_paso_mean = mean_across("pb", "scared", "PA/SO", name = "pb_scared_paso_mean"),
-
-    # Generalized anxiety disorder subscale
-    pb_scared_ga_mean = mean_across("pb", "scared", "GA", name = "pb_scared_ga_mean"),
-
-    # Separation anxiety disorder subscale
-    pb_scared_sep_mean = mean_across("pb", "scared", "SEP", name = "pb_scared_sep_mean"),
-
-    # Social phobic disorder subscale
-    pb_scared_soc_mean = mean_across("pb", "scared", "SOC", name = "pb_scared_soc_mean"),
-
-    # Significant school avoidance symptoms
-    pb_scared_sch_mean = mean_across("pb", "scared", "SCH", name = "pb_scared_sch_mean"),
+    
+    ## SCARED-Parent (Screen for Child Anxiety and Related Disorders - Parent) overall mean score and subscales
+    !!!scared_means("pb")
 
   ) %>%
   ungroup() %>%

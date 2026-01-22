@@ -308,7 +308,7 @@ ax_windows <- yi_deduplicated %>%
     ax_window_24m_end_org = compute_date_w_seq(ax_window_24m_end_org, "1 month"),
     
     ax_window_24m_start_ext = ax_window_24m_start_org,
-    ax_window_24m_end_ext = ax_window_24m_end_org + days(14),
+    ax_window_24m_end_ext = ax_window_24m_end_org + days(14)
     
   ) %>%
   ungroup()

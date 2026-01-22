@@ -118,30 +118,36 @@ identify_duplicates <- function(data, id, completion_indicator = Finished) {
 
 # Function to remove click and page time variables
 rm_click_page_time_vars <- function(data) {
+  
   data %>% select(
     -matches("Click Count"),
     -matches("First Click"),
     -matches("Last Click"),
     -matches("Page Submit")
     )
+  
 }
 
 # Function to rename "mvps" to "mpvs" throughout
 rename_mvps_to_mpvs <- function(data) {
+  
   data %>% rename_with(
     .cols = contains("mvps"),
     .fn = ~ gsub("mvps", "mpvs", .x)
     )
+  
 }
 
 # Function to un-reverse code items
 unreverse_code_items <- function(data, codebook) {
+  
   data %>% mutate(
     across(
       .cols = any_of(codebook$item[codebook$reversed %in% 1]),
       .fns = ~ codebook$reverse_base[codebook$item == cur_column()] - .x
     )
   )
+  
 }
 
 # Function to compute item completion rate
@@ -501,6 +507,268 @@ count_across <- function(.prefix, .measure, .subscale, name, exclude) {
   log$count_items[[name]]$n_items <<- length(items)
   
   return(count)
+  
+}
+
+# Function to return expressions for computing BACE means (overall score and subscales)
+bace_means <- function(.prefix) {
+  
+  # Define names for means
+  overall <- paste0(.prefix, "_bace_mean")
+  stigma  <- paste0(.prefix, "_bace_stigma_mean")
+  
+  # Return list of expressions to splice into mutate()
+  exprs_for_mutate <- rlang::exprs(
+    # Overall mean score
+    !!overall := mean_across(!!.prefix, "bace", name = !!overall),
+    
+    # Treatment stigma subscale
+    !!stigma  := mean_across(!!.prefix, "bace", "Treatment Stigma", name = !!stigma)
+  )
+  
+  message("Returning these expressions to splice into mutate() for BACE means:")
+  str(exprs_for_mutate)
+  
+  return(exprs_for_mutate)
+  
+}
+
+# Function to return expressions for computing BADS means (subscales only)
+bads_means <- function(.prefix) {
+  
+  # Define names for means
+  ac <- paste0(.prefix, "_bads_ac_mean")
+  ar <- paste0(.prefix, "_bads_ar_mean")
+  ws <- paste0(.prefix, "_bads_ws_mean")
+  si <- paste0(.prefix, "_bads_si_mean")
+  
+  # Return list of expressions to splice into mutate()
+  exprs_for_mutate <- rlang::exprs(
+    # Activation subscale
+    !!ac := mean_across(!!.prefix, "bads", "AC", name = !!ac),
+    
+    # Avoidance/rumination subscale
+    !!ar := mean_across(!!.prefix, "bads", "AR", name = !!ar),
+    
+    # Work/school impairment subscale
+    !!ws := mean_across(!!.prefix, "bads", "WS", name = !!ws),
+    
+    # Social impairment subscale
+    !!si := mean_across(!!.prefix, "bads", "SI", name = !!si),
+    
+    # Overall score can also be computed (for instructions, see https://doi.org/b23r6w )
+  )
+  
+  message("Returning these expressions to splice into mutate() for BADS means:")
+  str(exprs_for_mutate)
+  
+  return(exprs_for_mutate)
+  
+}
+
+# Function to return expressions for computing BSI means (overall score and subscales)
+bsi_means <- function(.prefix) {
+  
+  # Define names for means
+  overall <- paste0(.prefix, "_bsi_mean")
+  s       <- paste0(.prefix, "_bsi_s_mean")
+  d       <- paste0(.prefix, "_bsi_d_mean")
+  a       <- paste0(.prefix, "_bsi_a_mean")
+  
+  # Return list of expressions to splice into mutate()
+  exprs_for_mutate <- rlang::exprs(
+    # Overall mean score (without suicidal thoughts item)
+    !!overall := mean_across(!!.prefix, "bsi", name = !!overall),
+    
+    # Somatization subscale
+    !!s       := mean_across(!!.prefix, "bsi", "S", name = !!s),
+    
+    # Depression subscale (without suicidal thoughts item)
+    !!d       := mean_across(!!.prefix, "bsi", "D", name = !!d),
+    
+    # Anxiety subscale
+    !!a       := mean_across(!!.prefix, "bsi", "A", name = !!a)
+  )
+  
+  message("Returning these expressions to splice into mutate() for BSI means:")
+  str(exprs_for_mutate)
+  
+  return(exprs_for_mutate)
+  
+}
+
+# Function to return expressions for computing CDI-2-P means (overall score and subscales)
+cdi_p_means <- function(.prefix) {
+  
+  # Define names for means
+  overall    <- paste0(.prefix, "_cdi_mean")
+  emotional  <- paste0(.prefix, "_cdi_emotional_mean")
+  functional <- paste0(.prefix, "_cdi_functional_mean")
+  
+  # Return list of expressions to splice into mutate()
+  exprs_for_mutate <- rlang::exprs(
+    # Overall mean score
+    !!overall    := mean_across(!!.prefix, "CDI-2 P", name = !!overall),
+    
+    # Emotional problems subscale
+    !!emotional  := mean_across(!!.prefix, "CDI-2 P", "Emotional Problems", name = !!emotional),
+    
+    # Functional problems subscale
+    !!functional := mean_across(!!.prefix, "CDI-2 P", "Functional Problems", name = !!functional)
+  )
+  
+  message("Returning these expressions to splice into mutate() for CDI-2-P means:")
+  str(exprs_for_mutate)
+  
+  return(exprs_for_mutate)
+  
+}
+
+# Function to return expressions for computing CDI-2-SR means (overall score and subscales)
+cdi_sr_means <- function(.prefix) {
+
+  # Define names for means
+  overall    <- paste0(.prefix, "_cdi_mean")
+  nmps       <- paste0(.prefix, "_cdi_nmps_mean")
+  nse        <- paste0(.prefix, "_cdi_nse_mean")
+  inef       <- paste0(.prefix, "_cdi_inef_mean")
+  inter      <- paste0(.prefix, "_cdi_inter_mean")
+  emotional  <- paste0(.prefix, "_cdi_emotional_mean")
+  functional <- paste0(.prefix, "_cdi_functional_mean")
+
+  # Return list of expressions to splice into mutate()
+  exprs_for_mutate <- rlang::exprs(
+    # Overall mean score
+    !!overall    := mean_across(!!.prefix, "CDI-2 SR", name = !!overall),
+
+    # Negative mood/physical symptoms subscale
+    !!nmps       := mean_across(!!.prefix, "CDI-2 SR", "Negative Mood/Physical Symptoms", name = !!nmps),
+
+    # Negative self-esteem subscale
+    !!nse        := mean_across(!!.prefix, "CDI-2 SR", "Negative Self-Esteem", name = !!nse),
+
+    # Ineffectiveness subscale
+    !!inef       := mean_across(!!.prefix, "CDI-2 SR", "Ineffectiveness", name = !!inef),
+
+    # Interpersonal problems subscale
+    !!inter      := mean_across(!!.prefix, "CDI-2 SR", "Interpersonal Problems", name = !!inter),
+
+    # Emotional problems subscale
+    !!emotional  := ( !!sym(nmps) * 9 + !!sym(nse) * 6 ) / 15,
+
+    # Functional problems subscale
+    !!functional := ( !!sym(inef) * 8 + !!sym(inter) * 5 ) / 13
+  )
+  
+  message("Returning these expressions to splice into mutate() for CDI-2-SR means:")
+  str(exprs_for_mutate)
+  
+  return(exprs_for_mutate)
+
+}
+
+# Function to return expressions for computing MPVS means (overall score and subscales)
+mpvs_means <- function(.prefix) {
+  
+  # Define names for means
+  overall  <- paste0(.prefix, "_mpvs_mean")
+  physical <- paste0(.prefix, "_mpvs_physical_mean")
+  social   <- paste0(.prefix, "_mpvs_social_mean")
+  verbal   <- paste0(.prefix, "_mpvs_verbal_mean")
+  property <- paste0(.prefix, "_mpvs_property_mean")
+  
+  # Return list of expressions to splice into mutate()
+  exprs_for_mutate <- rlang::exprs(
+    # Overall mean score
+    !!overall  := mean_across(!!.prefix, "mpvs", name = !!overall),
+    
+    # Physical victimization subscale
+    !!physical := mean_across(!!.prefix, "mpvs", "Physical Victimization", name = !!physical),
+    
+    # Social manipulation subscale
+    !!social   := mean_across(!!.prefix, "mpvs", "Social Manipulation", name = !!social),
+    
+    # Verbal victimization subscale
+    !!verbal   := mean_across(!!.prefix, "mpvs", "Verbal Victimization", name = !!verbal),
+    
+    # Attacks on property subscale
+    !!property := mean_across(!!.prefix, "mpvs", "Attacks on Property", name = !!property)
+  )
+  
+  message("Returning these expressions to splice into mutate() for MPVS means:")
+  str(exprs_for_mutate)
+  
+  return(exprs_for_mutate)
+  
+}
+
+# Function to return expressions for computing PCSC means (overall score and subscales)
+pcsc_means <- function(.prefix) {
+  
+  # Define names for means
+  overall     <- paste0(.prefix, "_pcsc_mean")
+  academic    <- paste0(.prefix, "_pcsc_academic_mean")
+  social      <- paste0(.prefix, "_pcsc_social_mean")
+  behavioral  <- paste0(.prefix, "_pcsc_behavioral_mean")
+  
+  # Return list of expressions to splice into mutate()
+  exprs_for_mutate <- rlang::exprs(
+    # Overall mean score
+    !!overall    := mean_across(!!.prefix, "pcsc", name = !!overall),
+    
+    # Academic subscale
+    !!academic   := mean_across(!!.prefix, "pcsc", "Academic", name = !!academic),
+    
+    # Social subscale
+    !!social     := mean_across(!!.prefix, "pcsc", "Social", name = !!social),
+    
+    # Behavioral subscale
+    !!behavioral := mean_across(!!.prefix, "pcsc", "Behavioral", name = !!behavioral)
+  )
+  
+  message("Returning these expressions to splice into mutate() for PCSC means:")
+  str(exprs_for_mutate)
+  
+  return(exprs_for_mutate)
+  
+}
+
+# Function to return expressions for computing SCARED (-Child and -Parent) means (overall score and subscales)
+scared_means <- function(.prefix) {
+  
+  # Define names for means
+  overall <- paste0(.prefix, "_scared_mean")
+  paso    <- paste0(.prefix, "_scared_paso_mean")
+  ga      <- paste0(.prefix, "_scared_ga_mean")
+  sep     <- paste0(.prefix, "_scared_sep_mean")
+  soc     <- paste0(.prefix, "_scared_soc_mean")
+  sch     <- paste0(.prefix, "_scared_sch_mean")
+  
+  # Return list of expressions to splice into mutate()
+  exprs_for_mutate <- rlang::exprs(
+    # Overall mean score
+    !!overall := mean_across(!!.prefix, "scared", name = !!overall),
+    
+    # Panic disorder/significant somatic symptoms subscale
+    !!paso    := mean_across(!!.prefix, "scared", "PA/SO", name = !!paso),
+    
+    # Generalized anxiety disorder subscale
+    !!ga      := mean_across(!!.prefix, "scared", "GA", name = !!ga),
+    
+    # Separation anxiety disorder subscale
+    !!sep     := mean_across(!!.prefix, "scared", "SEP", name = !!sep),
+    
+    # Social phobic disorder subscale
+    !!soc     := mean_across(!!.prefix, "scared", "SOC", name = !!soc),
+    
+    # Significant school avoidance subscale
+    !!sch     := mean_across(!!.prefix, "scared", "SCH", name = !!sch)
+  )
+  
+  message("Returning these expressions to splice into mutate() for SCARED means:")
+  str(exprs_for_mutate)
+  
+  return(exprs_for_mutate)
   
 }
 

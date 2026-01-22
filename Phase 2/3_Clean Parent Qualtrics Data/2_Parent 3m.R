@@ -151,7 +151,7 @@ p3m_recoded <- p3m_deduplicated %>%
   # Un-reverse code items with helper function
   unreverse_code_items(codebook) %>%
   
-  # Clean remaining columns by row and create composites
+  # Clean remaining columns by row and create composites using helper functions
   rowwise() %>%
   mutate(
     
@@ -179,69 +179,31 @@ p3m_recoded <- p3m_deduplicated %>%
     p3m_childtx_lifetime = p3m_childtx_1 == 1 | p3m_childtx_3 == 1,
     p3m_childtx_current = p3m_childtx_3 == 1,
     
-
-    ## CDI-2 (Children's Depression Inventory - 2)
-    # Overall mean score
-    p3m_cdi_mean = mean_across("p3m", "CDI-2 P", name = "p3m_cdi_mean"),
     
-    # Emotional problems subscale
-    p3m_cdi_emotional_mean = mean_across("p3m", "CDI-2 P", "Emotional Problems", name = "p3m_cdi_emo_mean"),
-    
-    # Functional problems subscale
-    p3m_cdi_functional_mean = mean_across("p3m", "CDI-2 P", "Functional Problems", name = "p3m_cdi_fun_mean"),
+    ## CDI-2-P (Children's Depression Inventory - 2 - Parent Report) overall mean score and subscales
+    !!!cdi_p_means("p3m"),
     
     
-    ## BHS-4 (Beck Hopelessness Scale - 4-item)
-    # Overall mean score
+    ## BHS-4 (Beck Hopelessness Scale - 4-item) overall mean score
     p3m_bhs_mean = mean_across("p3m", "bhs", name = "p3m_bhs_mean"),
     
     
-    ## BFAMG (Brief Family Assessment Measure - General Scale)
-    # Overall mean score
+    ## BFAMG (Brief Family Assessment Measure - General Scale) overall mean score
     p3m_bfamg_mean = mean_across("p3m", "bfamg", name = "p3m_bfamg_mean"),
     
     
-    ## 17 items from BSI-18 (Brief Symptom Inventory-18)
-    # Overall mean score (without suicidal thoughts item)
-    p3m_bsi_mean = mean_across("p3m", "bsi", name = "p3m_bsi_mean"),
+    ## 17 items from BSI-18 (Brief Symptom Inventory-18): overall mean score and subscales
+    # Overall mean score and depression subscale lack suicidal thoughts item
+    !!!bsi_means("p3m"),
+
     
-    # Somatization subscale
-    p3m_bsi_s_mean = mean_across("p3m", "bsi", "S", name = "p3m_bsi_s_mean"),
-    
-    # Depression subscale (without suicidal thoughts item)
-    p3m_bsi_d_mean = mean_across("p3m", "bsi", "D", name = "p3m_bsi_d_mean"),
-    
-    # Anxiety subscale
-    p3m_bsi_a_mean = mean_across("p3m", "bsi", "A", name = "p3m_bsi_a_mean"),
+    ## BACE (Barriers to Accessing Care Evaluation) overall mean score and subscale
+    !!!bace_means("p3m"),
     
     
-    ## BACE (Barriers to Accessing Care Evaluation)
-    # Overall mean score
-    p3m_bace_mean = mean_across("p3m", "bace", name = "p3m_bace_mean"),
-    
-    # Treatment stigma subscale
-    p3m_bace_stigma_mean = mean_across("p3m", "bace", "Treatment Stigma", name = "p3m_bace_stigma_mean"),
-    
-    
-    ## SCARED (Screen for Child Anxiety and Related Disorders)
-    # Overall mean score
-    p3m_scared_mean = mean_across("p3m", "scared", name = "p3m_scared_mean"),
-    
-    # Panic disorder/significant somatic symptoms subscale
-    p3m_scared_paso_mean = mean_across("p3m", "scared", "PA/SO", name = "p3m_scared_paso_mean"),
-    
-    # Generalized anxiety disorder subscale
-    p3m_scared_ga_mean = mean_across("p3m", "scared", "GA", name = "p3m_scared_ga_mean"),
-    
-    # Separation anxiety disorder subscale
-    p3m_scared_sep_mean = mean_across("p3m", "scared", "SEP", name = "p3m_scared_sep_mean"),
-    
-    # Social phobic disorder subscale
-    p3m_scared_soc_mean = mean_across("p3m", "scared", "SOC", name = "p3m_scared_soc_mean"),
-    
-    # Significant school avoidance symptoms
-    p3m_scared_sch_mean = mean_across("p3m", "scared", "SCH", name = "p3m_scared_sch_mean"),
-    
+    ## SCARED-Parent (Screen for Child Anxiety and Related Disorders - Parent) overall mean score and subscales
+    !!!scared_means("p3m")
+
   ) %>%
   ungroup() %>%
   
