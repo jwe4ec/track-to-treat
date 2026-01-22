@@ -79,22 +79,15 @@ pb_corrected_ids <- pb_renamed %>%
       lsmh_id == "LMSH00886" & pb_lsmh_id == "LSMH00886" ~ "LSMH00886",
       lsmh_id == "LSMH01836 Password: 3tp2_parent" ~ "LSMH01836",
       
-      # Cases where both match
-      lsmh_id == pb_lsmh_id ~ lsmh_id,
-      
-      # Cases where one is missing (keep the non-missing value)
-      is.na(lsmh_id) & !is.na(pb_lsmh_id) ~ pb_lsmh_id,
-      is.na(pb_lsmh_id) & !is.na(lsmh_id) ~ lsmh_id,
-      
-      # Cases where both are missing
-      is.na(lsmh_id) & is.na(pb_lsmh_id) ~ NA_character_,
-      
-      # Additional cases are flagged for cleaning
-      T ~ "ID Combination Unaccounted For (lsmh_id '" %+% lsmh_id %+% "', pb_lsmh_id '" %+% pb_lsmh_id %+% "')"
+      # All others (helper function for cases in which IDs are same or one/both IDs are missing)
+      TRUE ~ resolve_id_pair(lsmh_id, pb_lsmh_id)
       
     )
   ) %>%
   ungroup()
+
+# Check LSMH ID format
+warn_invalid_ids(pb_corrected_ids$lsmh_id)
 
 
 ### Remove invalid responses

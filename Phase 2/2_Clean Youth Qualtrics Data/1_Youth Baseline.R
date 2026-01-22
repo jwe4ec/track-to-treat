@@ -57,22 +57,15 @@ yb_corrected_ids <- yb_raw %>%
       lsmh_id == "Baseline" & is.na(yb_lsmh_id) & StartDate == "2023-04-17 17:28:45" ~ "LSMH02533",
       is.na(lsmh_id) & is.na(yb_lsmh_id) & StartDate == "2022-03-01 12:33:20" ~ "LSMH01791",
       
-      # Cases where both match
-      yb_lsmh_id == lsmh_id ~ lsmh_id,
-      
-      # Cases where one is missing (keep the non-missing value)
-      is.na(yb_lsmh_id) & !is.na(lsmh_id) ~ lsmh_id,
-      is.na(lsmh_id) & !is.na(yb_lsmh_id) ~ yb_lsmh_id,
-      
-      # Cases where both are missing
-      is.na(lsmh_id) & is.na(yb_lsmh_id) ~ NA_character_,
-      
-      # Additional cases are flagged for cleaning
-      T ~ "ID Combination Unaccounted For (" %+% lsmh_id %+% ", " %+% yb_lsmh_id %+% ")"
+      # All others (helper function for cases in which IDs are same or one/both IDs are missing)
+      TRUE ~ resolve_id_pair(lsmh_id, yb_lsmh_id)
       
     )
   ) %>%
   ungroup()
+
+# Check LSMH ID format
+warn_invalid_ids(yb_corrected_ids$lsmh_id)
 
 
 ### Remove invalid responses

@@ -103,22 +103,15 @@ yi_corrected_ids <- yi_renamed %>%
       lsmh_id_col1 == "LsmH00886" & lsmh_id_col2 == "LMSH00886" ~ "LSMH00886",
       lsmh_id_col1 == "lsmh01826" & lsmh_id_col2 == "LSMH01826" ~ "LSMH01826",
       
-      # Cases where both match
-      lsmh_id_col1 == lsmh_id_col2 ~ lsmh_id_col1,
-      
-      # Cases where one is missing (keep the non-missing value)
-      is.na(lsmh_id_col1) & !is.na(lsmh_id_col2) ~ lsmh_id_col2,
-      is.na(lsmh_id_col2) & !is.na(lsmh_id_col1) ~ lsmh_id_col1,
-      
-      # Cases where both are missing
-      is.na(lsmh_id_col1) & is.na(lsmh_id_col2) ~ NA_character_,
-      
-      # Additional cases are flagged for cleaning
-      T ~ "ID Combination Unaccounted For (" %+% lsmh_id_col1 %+% ", " %+% lsmh_id_col2 %+% ")"
-      
+      # All others (helper function for cases in which IDs are same or one/both IDs are missing)
+      TRUE ~ resolve_id_pair(lsmh_id_col1, lsmh_id_col2)
+
     )
   ) %>%
   ungroup()
+
+# Check LSMH ID format
+warn_invalid_ids(yi_corrected_ids$lsmh_id)
 
 
 ### Remove invalid responses

@@ -67,22 +67,15 @@ y3m_corrected_ids <- y3m_raw %>%
       lsmh_id == "LSMH02416" & y3m_lsmh_id == "LSMH ID, LSMH02416" ~ "LSMH02416",
       lsmh_id == "LSMH02471" & y3m_lsmh_id == "LSMH02471" & y3m_lsmh_id_check == "LSMH02571" ~ "LSMH02471",
       
-      # Cases where both match
-      lsmh_id == y3m_lsmh_id ~ lsmh_id,
-      
-      # Cases where one is missing (keep the non-missing value)
-      is.na(lsmh_id) & !is.na(y3m_lsmh_id) ~ y3m_lsmh_id,
-      is.na(y3m_lsmh_id) & !is.na(lsmh_id) ~ lsmh_id,
-      
-      # Cases where both are missing
-      is.na(lsmh_id) & is.na(y3m_lsmh_id) ~ NA_character_,
-      
-      # Additional cases are flagged for cleaning
-      T ~ "ID Combination Unaccounted For (lsmh_id '" %+% lsmh_id %+% "', y3m_lsmh_id '" %+% y3m_lsmh_id %+% "')"
+      # All others (helper function for cases in which IDs are same or one/both IDs are missing)
+      TRUE ~ resolve_id_pair(lsmh_id, y3m_lsmh_id)
       
     )
   ) %>%
   ungroup()
+
+# Check LSMH ID format
+warn_invalid_ids(y3m_corrected_ids$lsmh_id)
 
 
 ### Remove invalid responses

@@ -62,22 +62,15 @@ p3m_corrected_ids <- p3m_raw %>%
       # Cases to be manually recoded
       lsmh_id == "LMSH00886" ~ "LSMH00886",
       
-      # Cases where both match
-      lsmh_id == p3m_lsmh_id ~ lsmh_id,
-      
-      # Cases where one is missing (keep the non-missing value)
-      is.na(lsmh_id) & !is.na(p3m_lsmh_id) ~ p3m_lsmh_id,
-      is.na(p3m_lsmh_id) & !is.na(lsmh_id) ~ lsmh_id,
-      
-      # Cases where both are missing
-      is.na(lsmh_id) & is.na(p3m_lsmh_id) ~ NA_character_,
-      
-      # Additional cases are flagged for cleaning
-      T ~ "ID Combination Unaccounted For (lsmh_id '" %+% lsmh_id %+% "', p3m_lsmh_id '" %+% p3m_lsmh_id %+% "')"
+      # All others (helper function for cases in which IDs are same or one/both IDs are missing)
+      TRUE ~ resolve_id_pair(lsmh_id, p3m_lsmh_id)
       
     )
   ) %>%
   ungroup()
+
+# Check LSMH ID format
+warn_invalid_ids(p3m_corrected_ids$lsmh_id)
 
 
 ### Remove invalid responses

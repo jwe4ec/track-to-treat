@@ -27,6 +27,45 @@ get_p2_qualtrics_dirs <- function(type = c("interim_raw_data", "clean_data_stagi
   
 }
 
+# Function to resolve pairs of IDs in generic ways (for use in case_when() )
+resolve_id_pair <- function(id1, id2) {
+  id1_name <- deparse(substitute(id1))
+  id2_name <- deparse(substitute(id2))
+  
+  case_when(
+    
+    # Cases where both match
+    id1 == id2 ~ id1,
+    
+    # Cases where one is missing (keep the non-missing value)
+    is.na(id2) & !is.na(id1) ~ id1,
+    is.na(id1) & !is.na(id2) ~ id2,
+    
+    # Cases where both are missing
+    is.na(id1) & is.na(id2) ~ NA_character_,
+    
+    # Additional cases are flagged for cleaning
+    TRUE ~ paste0("ID combination unaccounted for (", 
+                  id1_name, " '", id1, "', ", id2_name, " '", id2, "')")
+    
+  )
+  
+}
+
+# Function to warn about LSMH IDs with invalid format
+warn_invalid_ids <- function(ids) {
+  
+  # Find non-NA IDs that don't match "LSMH" followed by 5 digits
+  invalid_ids <- ids[!is.na(ids) & !grepl("^LSMH\\d{5}$", ids)]
+  
+  if (length(invalid_ids) > 0) {
+    warning("Invalid ID format for:\n", paste(" ", invalid_ids, collapse = "\n"))
+  } else {
+    message("No invalid ID formats")
+  }
+
+}
+
 # Function to drop invalid responses
 remove_invalid_responses <- function(data, id) {
   
