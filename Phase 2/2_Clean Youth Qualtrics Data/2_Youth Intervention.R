@@ -19,13 +19,12 @@ source(here("Version Control Helper Functions.R"))
 
 ## Load Qualtrics data
 # Get directories using helper function
-dirs <- get_p2_qualtrics_dirs(c("interim_raw_data", "clean_data_staging", "clean_data_staging_intermediate"))
-raw_data_dir <- dirs$interim_raw_data
+dirs <- get_p2_qualtrics_dirs(c("raw_data", "clean_data_staging", "clean_data_staging_intermediate"))
 
 # Load raw Qualtrics datasets (storing paths) in this format: [respondent][wave]_[administration]_raw
 # - Note: Use "timeZone" specified for date columns (e.g., "StartDate") in third row of raw CSV
-yi_path <- raw_data_dir %+% "DP5 Phase 2 - Youth - Interventions_May 22, 2025_12.17_n.csv"
-yi_raw <- read_survey(yi_path, time_zone = "America/Denver")
+yi_path <- dirs$raw_data %+% "DP5+Phase+2+-+Youth+-+Interventions_January+21,+2026_11.25_n.csv"
+yi_raw <- read_survey(yi_path, time_zone = "America/Chicago")
 
 # Load dates for baseline Qualtrics survey and EMA computed when cleaning baseline survey
 yb_ema_dates <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Baseline and EMA Dates.rds")
@@ -146,24 +145,29 @@ yi_corrected_ids %>%
 # - Check all columns below except "abc_q_6" and "abc_q_20" for (c) responses < 3 words
 # Export selected columns to check
 cols_to_check <- c(paste0("shar_feel_q_", 1:3), paste0("proj_pers_q_", 1:3), "abc_q_6", "abc_q_7_b", "abc_q_20")
-filename_to_check <- "2025.08.02 Phase 2 Youth Qualtrics Valid Data - Intervention Free-Responses to Check.csv"
+filename_to_check <- "2026.01.21 Phase 2 Youth Qualtrics Valid Data - Intervention Free-Responses to Check.csv"
 
 yi_valid_ids %>%
   select(lsmh_id, condition, EndDate, all_of(cols_to_check)) %>%
   arrange(condition, lsmh_id, EndDate) %>%
-  mutate(exclude = NA, # Mark as 0 or 1
+  mutate(EndDate = format(EndDate, "%Y-%m-%d %H:%M:%S %Z"), # Character to avoid Excel parsing/stripping info
+         exclude = NA, # Mark as 0 or 1
          exclude_not_fluent = NA, # If "exclude" is 1, mark reason(s) as 1 (otherwise leave as NA)
          exclude_random_text = NA, 
          exclude_too_short = NA,
          note = NA) %>% # Make note if needed
   write.csv(dirs$clean_data_staging_intermediate %+% filename_to_check, row.names = FALSE)
 
-# Manually copy exported file and rename as follows for Alyssa Gorkin to complete "exclude" columns
-filename_checked <- "2025.08.02 Phase 2 Youth Qualtrics Valid Data - Intervention Free-Responses Checked.csv"
+# Manually copy exported file and rename as follows for Alyssa Gorkin (AG) to complete "exclude" columns.
+# AG initially did so using the 5/22/2025 interim youth intervention data on 8/2/2025, creating the file 
+# "2025.08.02 Phase 2 Youth Qualtrics Valid Data - Intervention Free-Responses Checked.csv" (whose "EndDate" 
+# was in "America/Denver"). Given that responses in the interim and final data are the same, Jeremy Eberle 
+# manually copied AG's "exclude" ratings into the file below (whose "EndDate" is in "America/Chicago").
+filename_checked <- "2026.01.21 Phase 2 Youth Qualtrics Valid Data - Intervention Free-Responses Checked.csv"
 
 # Load checked responses and exclude surveys that meet exclusion criteria
 yi_valid_ids_free_text_checked <- read_csv(dirs$clean_data_staging_intermediate %+% filename_checked) %>%
-  mutate(EndDate = force_tz(EndDate, tzone = "America/Denver"))
+  mutate(EndDate = ymd_hms(EndDate, tz = "America/Chicago"))
 
 yi_valid_ids <- yi_valid_ids %>%
   left_join(

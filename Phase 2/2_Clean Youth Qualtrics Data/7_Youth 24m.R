@@ -1,4 +1,4 @@
-## Track-to-Treat Phase 2 Data Cleaning, Youth Qualtrics, 12-Month Follow-Up
+## Track-to-Treat Phase 2 Data Cleaning, Youth Qualtrics, 24-Month Follow-Up
 # R version 4.4.3
 
 ####  Startup  ####
@@ -23,8 +23,8 @@ dirs <- get_p2_qualtrics_dirs(c("raw_data", "clean_data_staging", "clean_data_st
 
 # Load raw Qualtrics datasets (storing paths) in this format: [respondent][wave]_[administration]_raw
 # - Note: Use "timeZone" specified for date columns (e.g., "StartDate") in third row of raw CSV
-y12m_path <- dirs$raw_data %+% "DP5+Phase+2+-+Youth+-+FU+3+-+12M_January+21,+2026_11.24_n.csv"
-y12m_raw <- read_survey(y12m_path, time_zone = "America/Chicago")
+y24m_path <- dirs$raw_data %+% "DP5+Phase+2+-+Youth+-+FU+5+-+24M_January+21,+2026_11.25_n.csv"
+y24m_raw <- read_survey(y24m_path, time_zone = "America/Chicago")
 
 
 ## Load ID lookup and (using helper function) item-level codebook
@@ -38,4 +38,4 @@ ax_windows <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Assessme
 
 ## Check raw Qualtrics data versions using helper function
 raw_metadata <- read.csv(here("Phase 2", "Raw P2 Metadata.csv"))
-check_raw_data_ver(raw_metadata, list(y12m_path), list(y12m_raw), "y12m_qualtrics")
+check_raw_data_ver(raw_metadata, list(y24m_path), list(y24m_raw), "y24m_qualtrics")

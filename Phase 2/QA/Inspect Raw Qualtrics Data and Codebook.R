@@ -1,4 +1,6 @@
 ####  Startup  ####
+# R version 4.4.3
+
 ## Load packages
 library(groundhog) # 3.2.2
 groundhog_date <- "2025-03-28"
@@ -15,33 +17,38 @@ source(here("Version Control Helper Functions.R"))
 
 
 ## Load Qualtrics data at all waves
-raw_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT P2\\Data\\Qualtrics\\Raw\\2025.05.22_interim\\"
+dirs <- get_p2_qualtrics_dirs("raw_data")
+raw_data_dir <- dirs$raw_data
 
-yb_path <- raw_data_dir %+% "DP5+Phase+2+-+Youth+-+Baseline_May+6,+2025_09.43_n.csv"
-yi_path <- raw_data_dir %+% "DP5 Phase 2 - Youth - Interventions_May 22, 2025_12.17_n.csv"
-y3m_path <- raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+1+-+3M_May+6,+2025_09.45_n.csv"
-y6m_path <- raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+2+-+6M_May+6,+2025_09.47_n.csv"
-y12m_path <- raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+3+-+12M_May+6,+2025_09.49_n.csv"
-y18m_path <- raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+4+-+18M_May+6,+2025_09.51_n.csv"
+yb_path <- raw_data_dir %+% "DP5+Phase+2+-+Youth+-+Baseline_January+21,+2026_11.24_n.csv"
+yi_path <- raw_data_dir %+% "DP5+Phase+2+-+Youth+-+Interventions_January+21,+2026_11.25_n.csv"
+y3m_path <- raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+1+-+3M_January+21,+2026_11.24_n.csv"
+y6m_path <- raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+2+-+6M_January+21,+2026_11.24_n.csv"
+y12m_path <- raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+3+-+12M_January+21,+2026_11.24_n.csv"
+y18m_path <- raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+4+-+18M_January+21,+2026_11.25_n.csv"
+y24m_path <- raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+5+-+24M_January+21,+2026_11.25_n.csv"
 
-pb_path <- raw_data_dir %+% "DP5+Phase+2+-+Parent+-+Baseline_May+6,+2025_09.42_n.csv"
-p3m_path <- raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+1+-+3M_May+6,+2025_09.44_n.csv"
-p6m_path <- raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+2+-+6M_May+6,+2025_09.46_n.csv"
-p12m_path <- raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+3+-+12M_May+6,+2025_09.48_n.csv"
-p18m_path <- raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+4+-+18M_May+6,+2025_09.50_n.csv"
+pb_path <- raw_data_dir %+% "DP5+Phase+2+-+Parent+-+Baseline_January+21,+2026_11.17_n.csv"
+p3m_path <- raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+1+-+3M_January+21,+2026_11.18_n.csv"
+p6m_path <- raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+2+-+6M_January+21,+2026_11.18_n.csv"
+p12m_path <- raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+3+-+12M_January+21,+2026_11.18_n.csv"
+p18m_path <- raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+4+-+18M_January+21,+2026_11.18_n.csv"
+p24m_path <- raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+5+-+24M_January+21,+2026_11.19_n.csv"
 
 yb_raw <- read_survey(yb_path, time_zone = "America/Chicago")
-yi_raw <- read_survey(yi_path, time_zone = "America/Denver")
+yi_raw <- read_survey(yi_path, time_zone = "America/Chicago")
 y3m_raw <- read_survey(y3m_path, time_zone = "America/Chicago")
 y6m_raw <- read_survey(y6m_path, time_zone = "America/Chicago")
 y12m_raw <- read_survey(y12m_path, time_zone = "America/Chicago")
 y18m_raw <- read_survey(y18m_path, time_zone = "America/Chicago")
+y24m_raw <- read_survey(y24m_path, time_zone = "America/Chicago")
 
 pb_raw <- read_survey(pb_path, time_zone = "America/Chicago")
 p3m_raw <- read_survey(p3m_path, time_zone = "America/Chicago")
 p6m_raw <- read_survey(p6m_path, time_zone = "America/Chicago")
 p12m_raw <- read_survey(p12m_path, time_zone = "America/Chicago")
 p18m_raw <- read_survey(p18m_path, time_zone = "America/Chicago")
+p24m_raw <- read_survey(p24m_path, time_zone = "America/Chicago")
 
 # Collect waves in list
 dat_ls <- list(yb_raw = yb_raw,
@@ -50,11 +57,13 @@ dat_ls <- list(yb_raw = yb_raw,
                y6m_raw = y6m_raw,
                y12m_raw = y12m_raw,
                y18m_raw = y18m_raw,
+               y24m_raw = y24m_raw,
                pb_raw = pb_raw,
                p3m_raw = p3m_raw,
                p6m_raw = p6m_raw,
                p12m_raw = p12m_raw,
-               p18m_raw = p18m_raw)
+               p18m_raw = p18m_raw,
+               p24m_raw = p24m_raw)
 
 
 ## Load ID lookup
@@ -96,13 +105,13 @@ dat_ls_cols <- lapply(dat_ls, function(dat) {
                       "childemail", "parent_email_1", "parent_email_2", "email_id", "parentemail",
                       "address",
                       paste0("SC", 0:12), "status", "interview",
-                      "condition")
+                      "condition",
+                      "summary_report")
   other_cols <- names(dat)[grepl(paste0(other_patterns, collapse = "|"), names(dat))]
   
   non_item_cols <- c(q_meta_cols, click_submit_cols, id_cols, date_cols, test_cols, other_cols)
   
   # Identify SSI item columns
-  
   ssi_item_cols <- setdiff(names(dat)[grepl("shar_feel_|proj_pers_|abc_", names(dat))],
                            click_submit_cols)
   
@@ -145,7 +154,7 @@ lapply(dat_ls_cols, function(dat_cols) {
 # In "p3m_raw", "020_accom_2", for "p3m_accommodations_2", is incorrectly named (renamed in data)
 # TODO: In "p12m_raw", "p12m_accommodations_", for "p12m_accommodations_2", is incorrectly named (rename in data)
 # TODO: In "p18m_raw", "p18m_accommodations_", for "p18m_accommodations_2", is incorrectly named (rename in data)
-
+# TODO: In "p24m_raw", "p24m_accom_2", for "p24m_accommodations_2", is incorrectly named (rename in data)
 
 
 #### Check for codebook items not in data ####
@@ -164,12 +173,11 @@ diff_mpvs_cols        <- sort(setdiff(codebook$item[codebook$measure == "mpvs"],
 diff_scared_cols      <- sort(setdiff(codebook$item[codebook$measure == "scared"], all_meas_item_cols))
 names(dat_ls$p6m_raw)[grepl("scared_b|scared_c", names(dat_ls$p6m_raw))]
 
-# TODO: "p24m_childtx_change" will be fixed once 24-month data are cleaned, and
 # 2 other PDS and SCSC columns will be resolved once fixed above
 ignore_measures <- c("demographic", "ace_p", "ace_y", "mpvs", "scared", "other")
 diff_other_cols       <- sort(setdiff(codebook$item[!(codebook$measure %in% ignore_measures) &
                                                         codebook$item != "condition"], all_meas_item_cols))
-diff_other_cols == c("p24m_childtx_change", "y12m_pds_7", "y18m_scsc_20")
+diff_other_cols == c("y12m_pds_7", "y18m_scsc_20")
 
 
 
@@ -293,7 +301,7 @@ check_item_pattern_label <- function(dat_ls, pattern) {
 
 
 ## SCARED item "scared_c_11", which was absent from youth baseline survey in Phase 1
-# It's present in Phase 2 as "I am shy" at "yb", "y3m", "y6m", "y12m", and "y18m"
+# It's present in Phase 2 as "I am shy" at "yb", "y3m", "y6m", "y12m", "y18m", and "y24m"
 check_item_pattern(dat_ls_cols, "scared_c_11", "meas_item_cols")
 check_item_pattern_label(dat_ls, "scared_c_11")
 

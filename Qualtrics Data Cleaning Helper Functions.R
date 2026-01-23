@@ -4,16 +4,15 @@
 `%+%` <- paste0
 
 # Function to get directories for Phase 2 Qualtrics data
-get_p2_qualtrics_dirs <- function(type = c("interim_raw_data", "clean_data_staging", 
-                                           "clean_data_staging_intermediate")) {
+get_p2_qualtrics_dirs <- function(type = c("raw_data", "clean_data_staging", "clean_data_staging_intermediate")) {
   
-  interim_raw_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT P2\\Data\\Qualtrics\\Raw\\2025.05.22_interim\\"
+  raw_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT P2\\Data\\Qualtrics\\Raw\\2026.01.21_final\\"
   clean_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT P2\\Data\\Clean Data (Isaac)\\"
   clean_data_staging_dir <- clean_data_dir %+% "staging\\"
   clean_data_staging_intermediate_dir <- clean_data_staging_dir %+% "intermediate\\"
   
   all_dirs <- list(
-    interim_raw_data = interim_raw_data_dir,
+    raw_data = raw_data_dir,
     clean_data_staging = clean_data_staging_dir,
     clean_data_staging_intermediate = clean_data_staging_intermediate_dir
   )
@@ -956,7 +955,7 @@ load_p2_codebook <- function(codebook_path) {
         # If "[x]" is in the item name...
         grepl("\\[x\\]", item),
         # ... make `waves` a list with one value per wave, otherwise...
-        list(c("b", "3m", "6m", "12m", "18m")),
+        list(c("b", "3m", "6m", "12m", "18m", "24m")),
         # ... make it an empty list
         list(c(""))
       )
