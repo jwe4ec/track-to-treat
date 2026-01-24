@@ -172,25 +172,25 @@ p3m_recoded <- p3m_deduplicated %>%
     p3m_childtx_current = p3m_childtx_3 == 1,
     
     
-    ## CDI-2-P (Children's Depression Inventory - 2 - Parent Report) overall mean score and subscales
-    !!!cdi_p_means("p3m"),
-    
-    
-    ## BHS-4 (Beck Hopelessness Scale - 4-item) overall mean score
-    p3m_bhs_mean = mean_across("p3m", "bhs", name = "p3m_bhs_mean"),
+    ## BACE (Barriers to Accessing Care Evaluation) overall mean score and subscale
+    !!!bace_means("p3m"),
     
     
     ## BFAMG (Brief Family Assessment Measure - General Scale) overall mean score
     p3m_bfamg_mean = mean_across("p3m", "bfamg", name = "p3m_bfamg_mean"),
     
     
+    ## BHS-4 (Beck Hopelessness Scale - 4-item) overall mean score
+    p3m_bhs_mean = mean_across("p3m", "bhs", name = "p3m_bhs_mean"),
+    
+    
     ## 17 items from BSI-18 (Brief Symptom Inventory-18): overall mean score and subscales
     # Overall mean score and depression subscale lack suicidal thoughts item
     !!!bsi_means("p3m"),
-
     
-    ## BACE (Barriers to Accessing Care Evaluation) overall mean score and subscale
-    !!!bace_means("p3m"),
+    
+    ## CDI-2-P (Children's Depression Inventory - 2 - Parent Report) overall mean score and subscales
+    !!!cdi_p_means("p3m"),
     
     
     ## SCARED-Parent (Screen for Child Anxiety and Related Disorders - Parent) overall mean score and subscales
@@ -223,11 +223,11 @@ p3m_recoded <- p3m_deduplicated %>%
     matches("childtx_current"),
     
     # Measures
-    matches("_cdi_"),
-    matches("_bhs_"),
-    matches("_bfamg_"),
-    matches("_bsi_"),
     matches("_bace_"),
+    matches("_bfamg_"),
+    matches("_bhs_"),
+    matches("_bsi_"),
+    matches("_cdi_"),
     matches("_scared_")
     
   )
@@ -236,11 +236,11 @@ p3m_recoded <- p3m_deduplicated %>%
 ### Check that values are in expected range
 items_to_check <- p3m_recoded %>%
   select(
-    matches("_cdi_"),
-    matches("_bhs_"),
-    matches("_bfamg_"),
-    matches("_bsi_"),
     matches("_bace_"),
+    matches("_bfamg_"),
+    matches("_bhs_"),
+    matches("_bsi_"),
+    matches("_cdi_"),
     matches("_scared_"),
     -ends_with("mean")
   ) %>%

@@ -171,28 +171,24 @@ y3m_recoded <- y3m_deduplicated %>%
     y3m_days_after_end_window_3m_org = days_after_end_window_3m_org,
     
     
-    ## CDI-2-SR (Children's Depression Inventory - 2 - Self-Report) overall mean score and subscales
-    !!!cdi_sr_means("y3m"),
+    ## BADS (Behavioral Activation for Depression Scale) subscales
+    !!!bads_means("y3m"),
+    
+    
+    ## BFAMG (Brief Family Assessment Measure - General Scale) overall mean score
+    y3m_bfamg_mean = mean_across("y3m", "bfamg", name = "y3m_bfamg_mean"),
     
     
     ## BHS-4 (Beck Hopelessness Scale - 4-item) overall mean score
     y3m_bhs_mean = mean_across("y3m", "bhs", name = "y3m_bhs_mean"),
     
     
-    ## PCSC (Primary Control Scale for Children) overall mean score and subscales
-    !!!pcsc_means("y3m"),
+    ## CDI-2-SR (Children's Depression Inventory - 2 - Self-Report) overall mean score and subscales
+    !!!cdi_sr_means("y3m"),
     
     
-    ## SCSC (Secondary Control Scale for Children) overall mean score
-    y3m_scsc_mean = mean_across("y3m", "scsc", name = "y3m_scsc_mean"),
-    
-    
-    ## BADS (Behavioral Activation for Depression Scale) subscales
-    !!!bads_means("y3m"),
-
-    
-    ## SHS (Self-Hate Scale) overall mean score
-    y3m_self_hate_mean = mean_across("y3m", "self_hate_scale", name = "y3m_self_hate_mean"),
+    ## DRS (Dietary Restriction Screener)
+    # Two items that do not need to be recoded or combined
     
     
     ## IDAS-II (Inventory of Depression and Anxiety Symptoms - II)
@@ -200,32 +196,36 @@ y3m_recoded <- y3m_deduplicated %>%
     # not score them (see Table 1 of https://doi.org/f4b85p for scale info)
     
     
+    ## IPTQ (Implicit Personality Theory Questionnaire) overall mean score
+    y3m_iptq_mean = mean_across("y3m", "iptq", name = "y3m_iptq_mean"),
+    
+    
+    ## MPVS (Multidimensional Peer Victimization Scale) overall mean score and subscales
+    !!!mpvs_means("y3m"),
+    
+    
+    ## PCSC (Primary Control Scale for Children) overall mean score and subscales
+    !!!pcsc_means("y3m"),
+    
+    
     ## SCARED-Child (Screen for Child Anxiety and Related Disorders - Child) overall mean score and subscales
     !!!scared_means("y3m"),
+    
+    
+    ## SCSC (Secondary Control Scale for Children) overall mean score
+    y3m_scsc_mean = mean_across("y3m", "scsc", name = "y3m_scsc_mean"),
     
     
     ## SHAPS (Snaith-Hamilton Pleasure Scale) overall mean score
     y3m_shaps_mean = mean_across("y3m", "shaps", name = "y3m_shaps_mean"),
     
     
-    ## DRS (Dietary Restriction Screener)
-    # Two items that do not need to be recoded or combined
+    ## SHS (Self-Hate Scale) overall mean score
+    y3m_self_hate_mean = mean_across("y3m", "self_hate_scale", name = "y3m_self_hate_mean"),
     
     
     ## SITBI-SF (Self-Injurious Thoughts and Behaviors Interview - Short Form)
     # Many items but no recoding or combining (but ranges need to be checked)
-    
-    
-    ## IPTQ (Implicit Personality Theory Questionnaire) overall mean score
-    y3m_iptq_mean = mean_across("y3m", "iptq", name = "y3m_iptq_mean"),
-    
-    
-    ## BFAMG (Brief Family Assessment Measure - General Scale) overall mean score
-    y3m_bfamg_mean = mean_across("y3m", "bfamg", name = "y3m_bfamg_mean"),
-    
-    
-    ## MPVS (Multidimensional Peer Victimization Scale) overall mean score and subscales
-    !!!mpvs_means("y3m"),
     
     
     ## UCLA (UCLA Loneliness Scale, aka ULS) overall mean score
@@ -253,21 +253,21 @@ y3m_recoded <- y3m_deduplicated %>%
     y3m_days_after_end_window_3m_org,
     
     # Measures
-    matches("_cdi_"),
-    matches("_bhs_"),
-    matches("_pcsc_"),
-    matches("_scsc_"),
     matches("_bads_"),
+    matches("_bfamg_"),
+    matches("_bhs_"),
+    matches("_cdi_"),
+    matches("_drs_"),
+    matches("_idas_"),
+    matches("_iptq_"),
+    matches("_mpvs_"),
+    matches("_pcsc_"),
+    matches("_scared_"),
+    matches("_scsc_"),
+    matches("_shaps_"),
     matches("_shs_"),
     matches("_self_hate_"),
-    matches("_idas_"),
-    matches("_scared_"),
-    matches("_shaps_"),
-    matches("_drs_"),
     matches("_sitbi_"), - matches("sitbi_.*_TEXT"),
-    matches("_iptq_"),
-    matches("_bfamg_"),
-    matches("_mpvs_"),
     matches("_ucla_")
     
   )
@@ -276,19 +276,19 @@ y3m_recoded <- y3m_deduplicated %>%
 ### Check that values are in expected range
 items_to_check <- y3m_recoded %>%
   select(
-    matches("_cdi_"),
-    matches("_bhs_"),
-    matches("_pcsc_"),
-    matches("_scsc_"),
     matches("_bads_"),
-    matches("_shs_"),
-    matches("_idas_"),
-    matches("_scared_"),
-    matches("_shaps_"),
-    matches("_drs_"),
-    matches("_iptq_"),
     matches("_bfamg_"),
+    matches("_bhs_"),
+    matches("_cdi_"),
+    matches("_drs_"),
+    matches("_idas_"),
+    matches("_iptq_"),
     matches("_mpvs_"),
+    matches("_pcsc_"),
+    matches("_scared_"),
+    matches("_scsc_"),
+    matches("_shaps_"),
+    matches("_shs_"),
     matches("_ucla_"),
     -ends_with("mean")
   ) %>%

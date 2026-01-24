@@ -366,30 +366,30 @@ yi_recoded <- yi_deduplicated %>%
     yi_post_bhs_mean = mean_across("yi_post", "bhs", name = "yi_post_bhs_mean"),
     
     
-    ## SHS (*State Hope* Scale)
-    # Pathways subscale
-    yi_pre_pathways_mean = mean_across("yi_pre", "state_hope_scale", "pathways", name = "yi_pre_pathways_mean"),
-    yi_post_pathways_mean = mean_across("yi_post", "state_hope_scale", "pathways", name = "yi_post_pathways_mean"),
-    
-    # Agency subscale
-    yi_pre_agency_mean = mean_across("yi_pre", "state_hope_scale", "agency", name = "yi_pre_agency_mean"),
-    yi_post_agency_mean = mean_across("yi_post", "state_hope_scale", "agency", name = "yi_post_agency_mean"),
-    
-    # Overall score can also be computed (see https://doi.org/fwc2xc; p. 334)
-    
-    
     ## IPTQ (Implicit Personality Theory Questionnaire)
     yi_pre_iptq_mean = mean_across("yi_pre", "iptq", name = "yi_pre_iptq_mean"),
     yi_post_iptq_mean = mean_across("yi_post", "iptq", name = "yi_post_iptq_mean"),
     
     
-    ## PFS (Program Feedback Scale; developed by LSMH)
-    # - "subscale" for ordinal PFS items is "pfs" in codebook (vs. NA for free-text PFS items)
-    yi_post_pfs_mean = mean_across("yi", "pfs", "pfs", name = "yi_post_pfs_mean")
-    
-    
     ## Perceived Change
     # Two post-intervention items that do not need to be recoded or combined
+    
+    
+    ## PFS (Program Feedback Scale; developed by LSMH)
+    # - "subscale" for ordinal PFS items is "pfs" in codebook (vs. NA for free-text PFS items)
+    yi_post_pfs_mean = mean_across("yi", "pfs", "pfs", name = "yi_post_pfs_mean"),
+    
+    
+    ## SHS (*State Hope* Scale)
+    # Agency subscale
+    yi_pre_agency_mean = mean_across("yi_pre", "state_hope_scale", "agency", name = "yi_pre_agency_mean"),
+    yi_post_agency_mean = mean_across("yi_post", "state_hope_scale", "agency", name = "yi_post_agency_mean"),
+    
+    # Pathways subscale
+    yi_pre_pathways_mean = mean_across("yi_pre", "state_hope_scale", "pathways", name = "yi_pre_pathways_mean"),
+    yi_post_pathways_mean = mean_across("yi_post", "state_hope_scale", "pathways", name = "yi_post_pathways_mean")
+    
+    # Overall score can also be computed (see https://doi.org/fwc2xc; p. 334)
     
   ) %>%
   ungroup() %>%
@@ -416,13 +416,13 @@ yi_recoded <- yi_deduplicated %>%
     # Measures
     matches("_bads_"),
     matches("_bhs_"),
-    matches("_shs_"),
-    matches("_pathways_"),
-    matches("_agency_"),
     matches("_iptq_"),
-    matches("_pfs_"),
     yi_perc_change_hope,
-    yi_perc_change_prob
+    yi_perc_change_prob,
+    matches("_pfs_"),
+    matches("_shs_"),
+    matches("_agency_"),
+    matches("_pathways_")
     
   )
 
@@ -432,11 +432,11 @@ items_to_check <- yi_recoded %>%
   select(
     matches("_bads_"),
     matches("_bhs_"),
-    matches("_shs_"),
     matches("_iptq_"),
-    matches("_pfs_[1-7]"),
     yi_perc_change_hope,
     yi_perc_change_prob,
+    matches("_pfs_[1-7]"),
+    matches("_shs_"),
     -ends_with("mean")
   ) %>%
   names()

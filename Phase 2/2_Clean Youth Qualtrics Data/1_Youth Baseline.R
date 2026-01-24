@@ -192,68 +192,68 @@ yb_recoded <- yb_deduplicated %>%
     yb_duration = EndDate - StartDate,
     
     
+    ## BADS (Behavioral Activation for Depression Scale) subscales
+    !!!bads_means("yb"),
+    
+    
+    ## BFAMG (Brief Family Assessment Measure - General Scale) overall mean score
+    yb_bfamg_mean = mean_across("yb", "bfamg", name = "yb_bfamg_mean"),
+    
+    
+    ## BHS-4 (Beck Hopelessness Scale - 4-item) overall mean score
+    yb_bhs_mean = mean_across("yb", "bhs", name = "yb_bhs_mean"),
+    
+    
     ## CDI-2-SR (Children's Depression Inventory - 2 - Self-Report) overall mean score and subscales
     !!!cdi_sr_means("yb"),
 
     
-    ## BHS-4 (Beck Hopelessness Scale - 4-item) overall mean score
-    yb_bhs_mean = mean_across("yb", "bhs", name = "yb_bhs_mean"),
-
+    ## DRS (Dietary Restriction Screener)
+    # Two items that do not need to be recoded or combined
     
-    ## PCSC (Primary Control Scale for Children) overall mean score and subscales
-    !!!pcsc_means("yb"),
-    
-
-    ## SCSC (Secondary Control Scale for Children) overall mean score
-    yb_scsc_mean = mean_across("yb", "scsc", name = "yb_scsc_mean"),
-
-    
-    ## BADS (Behavioral Activation for Depression Scale) subscales
-    !!!bads_means("yb"),
-
-
-    ## SHS (Self-Hate Scale) overall mean score
-    yb_self_hate_mean = mean_across("yb", "self_hate_scale", name = "yb_self_hate_mean"),
-
     
     ## IDAS-II (Inventory of Depression and Anxiety Symptoms - II)
     # Given that scoring likely depends on intended use, we output items but do 
     # not score them (see Table 1 of https://doi.org/f4b85p for scale info)
     
     
+    ## IPTQ (Implicit Personality Theory Questionnaire) overall mean score
+    yb_iptq_mean = mean_across("yb", "iptq", name = "yb_iptq_mean"),
+    
+    
+    ## MPVS (Multidimensional Peer Victimization Scale) overall mean score and subscales
+    !!!mpvs_means("yb"),
+    
+    
+    ## PCSC (Primary Control Scale for Children) overall mean score and subscales
+    !!!pcsc_means("yb"),
+    
+    
     ## SCARED-Child (Screen for Child Anxiety and Related Disorders - Child) overall mean score and subscales
     !!!scared_means("yb"),
     
+
+    ## SCSC (Secondary Control Scale for Children) overall mean score
+    yb_scsc_mean = mean_across("yb", "scsc", name = "yb_scsc_mean"),
+
     
     ## SHAPS (Snaith-Hamilton Pleasure Scale) overall mean score
     yb_shaps_mean = mean_across("yb", "shaps", name = "yb_shaps_mean"),
+    
 
-    
-    ## SRET (Self-Referential Encoding Task)
-    # (Currently a low priority to code given how time-intensive this is; see
-    # Dainer-Best et al., 2018)
-    # Items: "SRET", "SRET.keys", "SRET.time", "SRET.words", "tlcond"
-    
-    
-    ## DRS (Dietary Restriction Screener)
-    # Two items that do not need to be recoded or combined
-    
+    ## SHS (Self-Hate Scale) overall mean score
+    yb_self_hate_mean = mean_across("yb", "self_hate_scale", name = "yb_self_hate_mean"),
+
     
     ## SITBI-SF (Self-Injurious Thoughts and Behaviors Interview - Short Form)
     # Many items but no recoding or combining (but ranges need to be checked)
     
     
-    ## IPTQ (Implicit Personality Theory Questionnaire) overall mean score
-    yb_iptq_mean = mean_across("yb", "iptq", name = "yb_iptq_mean"),
-
+    ## SRET (Self-Referential Encoding Task)
+    # (Not currently outputted and a low priority to code given how time-intensive 
+    # this is; see Dainer-Best et al., 2018)
+    # Items: "SRET", "SRET.keys", "SRET.time", "SRET.words", "tlcond"
     
-    ## BFAMG (Brief Family Assessment Measure - General Scale) overall mean score
-    yb_bfamg_mean = mean_across("yb", "bfamg", name = "yb_bfamg_mean"),
-
-    
-    ## MPVS (Multidimensional Peer Victimization Scale) overall mean score and subscales
-    !!!mpvs_means("yb"),
-
     
     ## UCLA (UCLA Loneliness Scale, aka ULS) overall mean score
     yb_ucla_mean = mean_across("yb", "ucla", name = "yb_ucla_mean")
@@ -272,21 +272,21 @@ yb_recoded <- yb_deduplicated %>%
     yb_duration,
 
     # Measures
-    matches("_cdi_"),
-    matches("_bhs_"),
-    matches("_pcsc_"),
-    matches("_scsc_"),
     matches("_bads_"),
+    matches("_bfamg_"),
+    matches("_bhs_"),
+    matches("_cdi_"),
+    matches("_drs_"),
+    matches("_idas_"),
+    matches("_iptq_"),
+    matches("_mpvs_"),
+    matches("_pcsc_"),
+    matches("_scared_"),
+    matches("_scsc_"),
+    matches("_shaps_"),
     matches("_shs_"),
     matches("_self_hate_"),
-    matches("_idas_"),
-    matches("_scared_"),
-    matches("_shaps_"),
-    matches("_drs_"),
     matches("_sitbi_"), - matches("sitbi_.*_TEXT"),
-    matches("_iptq_"),
-    matches("_bfamg_"),
-    matches("_mpvs_"),
     matches("_ucla_")
     
   )
@@ -295,19 +295,19 @@ yb_recoded <- yb_deduplicated %>%
 ### Check that values are in expected range
 items_to_check <- yb_recoded %>%
   select(
-    matches("_cdi_"),
-    matches("_bhs_"),
-    matches("_pcsc_"),
-    matches("_scsc_"),
     matches("_bads_"),
-    matches("_shs_"),
-    matches("_idas_"),
-    matches("_scared_"),
-    matches("_shaps_"),
-    matches("_drs_"),
-    matches("_iptq_"),
     matches("_bfamg_"),
+    matches("_bhs_"),
+    matches("_cdi_"),
+    matches("_drs_"),
+    matches("_idas_"),
+    matches("_iptq_"),
     matches("_mpvs_"),
+    matches("_pcsc_"),
+    matches("_scared_"),
+    matches("_scsc_"),
+    matches("_shaps_"),
+    matches("_shs_"),
     matches("_ucla_"),
     -ends_with("mean")
   ) %>%
