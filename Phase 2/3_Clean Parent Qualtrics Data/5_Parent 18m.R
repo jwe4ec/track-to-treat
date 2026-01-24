@@ -39,3 +39,14 @@ ax_windows <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Assessme
 ## Check raw Qualtrics data versions using helper function
 raw_metadata <- read.csv(here("Phase 2", "Raw P2 Metadata.csv"))
 check_raw_data_ver(raw_metadata, list(p18m_path), list(p18m_raw), "p18m_qualtrics")
+
+
+
+####  Clean Data  ####
+### Create log
+# Create lists for logging (a) items used to compute item completion rate below via
+# compute_item_completion_rate() and (b) items used to compute means via mean_across()
+log <- list(
+  item_completion_rate = list(),
+  mean_items = list()
+)
