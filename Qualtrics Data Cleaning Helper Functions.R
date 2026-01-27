@@ -463,6 +463,36 @@ mark_fu_done_in_ax_window <- function(data, survey_prefix, ax_windows) {
   
 }
 
+# Function to get any surveys outside window (for surveys at or after 3m follow-up)
+get_surveys_outside_window_3m_onward <- function(data, survey_prefix) {
+  
+  # Define input columns based on "survey_prefix"
+  ax_window_start_org          <- sym(paste0("ax_window_", survey_prefix, "_start_org"))
+  ax_window_end_org            <- sym(paste0("ax_window_", survey_prefix, "_end_org"))
+  ax_window_start_ext          <- sym(paste0("ax_window_", survey_prefix, "_start_ext"))
+  ax_window_end_ext            <- sym(paste0("ax_window_", survey_prefix, "_end_ext"))
+  in_window_org                <- sym(paste0("in_window_", survey_prefix, "_org"))
+  in_window_ext                <- sym(paste0("in_window_", survey_prefix, "_ext"))
+  days_before_start_window_org <- sym(paste0("days_before_start_window_", survey_prefix, "_org"))
+  days_after_end_window_org    <- sym(paste0("days_after_end_window_", survey_prefix, "_org"))
+  
+  # Get surveys outside of window
+  out <- data %>%
+    filter(! (!!in_window_ext) | is.na(!!in_window_ext)) %>%
+    select(lsmh_id, StartDate, EndDate, 
+           !!ax_window_start_org, !!ax_window_end_org, !!in_window_org, 
+           !!days_before_start_window_org, !!days_after_end_window_org, 
+           !!ax_window_start_ext, !!ax_window_end_ext, !!in_window_ext, 
+           item_completion_rate) %>%
+    arrange(lsmh_id, EndDate)
+  
+  # Print filter criteria
+  message("Returning surveys for which '", rlang::as_string(in_window_ext), "' is FALSE or NA")
+  
+  return(out)
+  
+}
+
 # Function to deduplicate datasets, keeping first (most) complete response
 remove_duplicates <- function(data, id, date = EndDate) {
   
