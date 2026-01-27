@@ -81,6 +81,14 @@ warn_invalid_id_format(y12m_corrected_ids$lsmh_id)
 y12m_valid_ids <- remove_invalid_p2_qualtrics_responses(y12m_corrected_ids, id_lookup)
 
 
+### Identify duplicates and compute item completion rate for removing duplicates
+# Identify duplicates using helper function
+identify_duplicates(y12m_valid_ids, lsmh_id, phase = 2)
+
+# Compute item completion rate using helper function (given that Qualtrics's "Progress"
+# and "Finished" variables reflect only clicking through survey, not completing items)
+y12m_valid_ids <- compute_item_completion_rate(y12m_valid_ids, "y12m", phase = 2)
+
 
 
 

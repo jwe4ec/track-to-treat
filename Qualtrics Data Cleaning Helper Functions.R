@@ -293,11 +293,19 @@ compute_item_completion_rate <- function(data, survey_prefix, phase = 1) {
       "pb_homephone", "pb_parentcell", "pb_childcell", "pb_workphone", "pb_parentemail",
       "pb_childemail", "pb_interview", "Test", "test_col1", "test_col2",
       "p3m_lsmh_id", "p3m_childname", "p3m_date",
+      "p6m_lsmh_id", "p6m_childname", "p6m_date",
+      "p12m_lsmh_id", "p12m_childname", "p12m_date", "test",
+      "p18m_lsmh_id", "p18m_childname", "p18m_date",
+      "p24m_lsmh_id", "p24m_childname", "p24m_date", "p24m_summary_report",
       "yb_assent_name", "yb_assent_signature_Id", "yb_assent_signature_Name", 
       "yb_assent_signature_Size", "yb_assent_signature_Type", "yb_interview", "yb_lifepak", 
       "yb_lifepak_check", "yb_lsmh_id", "yb_password_child", "yb_phone", "yb_phone_check",
       "yi_teen_name", "yi_parent_email_1", "yi_parent_email_2",
-      "y3m_lsmh_id", "y3m_lsmh_id_check", "y3m_childname"
+      "y3m_lsmh_id", "y3m_lsmh_id_check", "y3m_childname",
+      "y6m_lsmh_id", "y6m_childname",
+      "y12m_lsmh_id", "y12m_lsmh_id_check", "y12m_childname",
+      "y18m_lsmh_id", "y18m_lsmh_id_check", "y18m_childname",
+      "y24m_lsmh_id", "y24m_lsmh_id_check", "y24m_childname"
       )
     
     # Columns with click and time on page information
