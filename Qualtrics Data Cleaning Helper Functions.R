@@ -52,13 +52,13 @@ resolve_id_pair <- function(id1, id2) {
 }
 
 # Function to warn about LSMH IDs with invalid format
-warn_invalid_ids <- function(ids) {
+warn_invalid_id_format <- function(ids) {
   
   # Find non-NA IDs that don't match "LSMH" followed by 5 digits
-  invalid_ids <- ids[!is.na(ids) & !grepl("^LSMH\\d{5}$", ids)]
+  ids_invalid_format <- ids[!is.na(ids) & !grepl("^LSMH\\d{5}$", ids)]
   
-  if (length(invalid_ids) > 0) {
-    warning("Invalid ID format for:\n", paste(" ", invalid_ids, collapse = "\n"))
+  if (length(ids_invalid_format) > 0) {
+    warning("Invalid ID format for:\n", paste(" ", ids_invalid_format, collapse = "\n"))
   } else {
     message("No invalid ID formats")
   }
@@ -94,6 +94,59 @@ remove_invalid_responses <- function(data, id) {
   
 }
 
+# Function to drop invalid Phase 2 Qualtrics responses
+remove_invalid_p2_qualtrics_responses <- function(data, id_lookup) {
+  
+  # Get known valid LSMH IDs (avoiding tidylog output)
+  valid_ids <- id_lookup %>%
+    dplyr::filter(action == "keep") %>%
+    dplyr::distinct(lsmh_id)
+  
+  # Filter to known valid LSMH IDs
+  message("Filtering to known valid LSMH IDs:")
+  
+  out <- data %>%
+    inner_join(
+      valid_ids,
+      by = "lsmh_id",
+      relationship = "many-to-one"
+    )
+  
+  # Distinguish known invalid LSMH IDs from unknown LSMH IDs
+  # - Can't base invalid LSMH IDs on "action = 'drop'" in ID lookup because some 
+  # LSMH IDs have both "keep" and "drop" rows in ID lookup
+
+  invalid_or_unknown_ids <- unique(setdiff(data$lsmh_id, valid_ids$lsmh_id))
+  
+  invalid_ids <- intersect(invalid_or_unknown_ids, id_lookup$lsmh_id)
+  unknown_ids <- setdiff(invalid_or_unknown_ids, id_lookup$lsmh_id)
+  
+  # Print number of rows removed for known invalid LSMH IDs (avoiding tidylog output)
+  
+  rows_rm_invalid_ids <- data %>%
+    dplyr::filter(lsmh_id %in% invalid_ids) %>%
+    dplyr::count(lsmh_id)
+  
+  message("Just FYI, ", sum(rows_rm_invalid_ids$n), " rows removed for ",
+          length(invalid_ids), " known invalid LSMH IDs:")
+  
+  print(rows_rm_invalid_ids)
+  
+  # Print number of rows removed for unknown LSMH IDs (avoiding tidylog output)
+  rows_rm_unknown_ids <- data %>%
+    dplyr::filter(lsmh_id %in% unknown_ids) %>%
+    dplyr::count(lsmh_id)
+  
+  message("Just FYI, ", sum(rows_rm_unknown_ids$n), " rows removed for ",
+          length(unknown_ids), " unknown LSMH IDs ",
+          "(if these rows show errors in IDs, fix them in mutate() above):")
+  
+  print(rows_rm_unknown_ids)
+  
+  return(out)
+  
+}
+
 # Function to fill LifePak ID across duplicates (there is at least one case where a 
 # respondent provided their LifePak ID only in a duplicated, noncomplete response)
 fill_lifepak_id <- function(data, lsmh_id, lifepak_id) {
@@ -120,16 +173,22 @@ fill_lifepak_id <- function(data, lsmh_id, lifepak_id) {
 }
 
 # Function to identify duplicates
-identify_duplicates <- function(data, id, completion_indicator = Finished) {
+identify_duplicates <- function(data, id, completion_indicator = Finished, phase = 1) {
   
-  # Taking the data...
-  out <- data %>%
-    # ... filter out cases where the ID is missing or in invalid_ids...
-    filter(
-      !is.na({{id}}),
-      !{{id}} %in% invalid_ids
-    ) %>%
-    # ... then, grouping by the ID variable...
+  if (phase == 1) {
+    # Filter out cases where the ID is missing or in invalid_ids
+    data_filtered <- data %>%
+      filter(
+        !is.na({{id}}),
+        !{{id}} %in% invalid_ids
+      )
+  } else if (phase == 2) {
+    # Data have already been filtered to valid IDs
+    data_filtered <- data
+  }
+  
+  out <- data_filtered %>%
+    # ... Now, grouping by the ID variable...
     group_by({{id}}) %>%
     # ... count the total number of rows and the number of rows with completed responses.
     summarize(

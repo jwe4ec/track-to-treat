@@ -50,3 +50,39 @@ log <- list(
   item_completion_rate = list(),
   mean_items = list()
 )
+
+
+### Correct LSMH IDs (manually as necessary)
+p12m_corrected_ids <- p12m_raw %>%
+  rowwise() %>%
+  mutate(
+    lsmh_id = case_when(
+      
+      # TODO (any others?): Cases to be manually recoded
+      lsmh_id == "LSMH01710" & p12m_lsmh_id == "LSMH17100" ~ "LSMH01710",
+      lsmh_id == "LSMH0194" & p12m_lsmh_id == "LSMH01940" ~ "LSMH01940",
+      lsmh_id == "LSMH0194" & p12m_lsmh_id == "LSMH01940" ~ "LSMH01940",
+      is.na(lsmh_id) & is.na(p12m_lsmh_id) & StartDate == "2024-06-18 09:45:57" ~ "LSMH02661",
+      
+      
+      
+
+      
+      # All others (helper function for cases in which IDs are same or one/both IDs are missing)
+      TRUE ~ resolve_id_pair(lsmh_id, p12m_lsmh_id)
+      
+    )
+  ) %>%
+  ungroup()
+
+# Check LSMH ID format
+warn_invalid_id_format(p12m_corrected_ids$lsmh_id)
+
+
+### Remove invalid responses
+# Filter to known valid LSMH IDs (marked "keep" in id_lookup) using helper function
+p12m_valid_ids <- remove_invalid_p2_qualtrics_responses(p12m_corrected_ids, id_lookup)
+
+
+
+

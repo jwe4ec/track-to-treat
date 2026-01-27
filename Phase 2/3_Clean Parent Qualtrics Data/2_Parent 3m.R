@@ -69,39 +69,17 @@ p3m_corrected_ids <- p3m_raw %>%
   ungroup()
 
 # Check LSMH ID format
-warn_invalid_ids(p3m_corrected_ids$lsmh_id)
+warn_invalid_id_format(p3m_corrected_ids$lsmh_id)
 
 
 ### Remove invalid responses
-# Known valid LSMH IDs
-valid_ids <- id_lookup %>%
-  filter(action == "keep") %>%
-  distinct(lsmh_id)
-
-invalid_ids <- setdiff(p3m_corrected_ids$lsmh_id, valid_ids$lsmh_id)
-
-p3m_valid_ids <- p3m_corrected_ids %>%
-  inner_join(
-    valid_ids,
-    by = "lsmh_id",
-    relationship = "many-to-one"
-  )
-
-# Just FYI: This is how many IDs/rows included known LSMH IDs matched for removal
-p3m_corrected_ids %>%
-  filter(lsmh_id %in% id_lookup$lsmh_id[id_lookup$action == "drop"]) %>%
-  count(lsmh_id)
-
-# Just FYI: No rows contained unknown LSMH IDs (good!)
-# If these rows indicate typos or other errors in the IDs, fix them in the mutate() above
-p3m_corrected_ids %>%
-  filter(!lsmh_id %in% id_lookup$lsmh_id) %>%
-  count(lsmh_id)
+# Filter to known valid LSMH IDs (marked "keep" in id_lookup) using helper function
+p3m_valid_ids <- remove_invalid_p2_qualtrics_responses(p3m_corrected_ids, id_lookup)
 
 
 ### Identify duplicates and compute item completion rate for removing duplicates
 # Identify duplicates using helper function
-identify_duplicates(p3m_valid_ids, lsmh_id)
+identify_duplicates(p3m_valid_ids, lsmh_id, phase = 2)
 
 # Compute item completion rate using helper function (given that Qualtrics's "Progress"
 # and "Finished" variables reflect only clicking through survey, not completing items)
@@ -128,7 +106,7 @@ p3m_valid_ids <- p3m_valid_ids %>%
 p3m_deduplicated <- remove_duplicates(p3m_valid_ids, lsmh_id)
 
 # Double-check deduplication
-identify_duplicates(p3m_deduplicated, lsmh_id)
+identify_duplicates(p3m_deduplicated, lsmh_id, phase = 2)
 
 
 ### Clean columns

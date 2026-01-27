@@ -42,6 +42,15 @@ check_raw_data_ver(raw_metadata, list(yb_path), list(yb_raw), "yb_qualtrics")
 
 
 ####  Clean Data  ####
+### Create log
+# Create lists for logging (a) items used to compute item completion rate below via
+# compute_item_completion_rate() and (b) items used to compute means via mean_across()
+log <- list(
+  item_completion_rate = list(),
+  mean_items = list()
+)
+
+
 ### Correct LSMH IDs (manually as necessary)
 yb_corrected_ids <- yb_raw %>%
   rowwise() %>%
@@ -64,48 +73,17 @@ yb_corrected_ids <- yb_raw %>%
   ungroup()
 
 # Check LSMH ID format
-warn_invalid_ids(yb_corrected_ids$lsmh_id)
+warn_invalid_id_format(yb_corrected_ids$lsmh_id)
 
 
 ### Remove invalid responses
-# Known valid LSMH IDs
-valid_ids <- id_lookup %>%
-  filter(action == "keep") %>%
-  distinct(lsmh_id)
-
-invalid_ids <- setdiff(yb_corrected_ids$lsmh_id, valid_ids$lsmh_id)
-
-yb_valid_ids <- yb_corrected_ids %>%
-  inner_join(
-    valid_ids,
-    by = "lsmh_id",
-    relationship = "many-to-one"
-  )
-
-# Just FYI: This is how many IDs/rows included known LSMH IDs matched for removal
-yb_corrected_ids %>%
-  filter(lsmh_id %in% id_lookup$lsmh_id[id_lookup$action == "drop"]) %>%
-  count(lsmh_id)
-
-# Just FYI: No rows contained unknown LSMH IDs (good!)
-# If these rows indicate typos or other errors in the IDs, fix them in the mutate() above
-yb_corrected_ids %>%
-  filter(!lsmh_id %in% id_lookup$lsmh_id) %>%
-  count(lsmh_id)
-
-
-### Create log
-# Create lists for logging (a) items used to compute item completion rate below via
-# compute_item_completion_rate() and (b) items used to compute means via mean_across()
-log <- list(
-  item_completion_rate = list(),
-  mean_items = list()
-)
+# Filter to known valid LSMH IDs (marked "keep" in id_lookup) using helper function
+yb_valid_ids <- remove_invalid_p2_qualtrics_responses(yb_corrected_ids, id_lookup)
 
 
 ### Identify duplicates and compute item completion rate for removing duplicates
 # Identify duplicates using helper function
-identify_duplicates(yb_valid_ids, lsmh_id)
+identify_duplicates(yb_valid_ids, lsmh_id, phase = 2)
 
 # Compute item completion rate using helper function (given that Qualtrics's "Progress"
 # and "Finished" variables reflect only clicking through survey, not completing items)
@@ -151,7 +129,7 @@ yb_valid_ids <- yb_valid_ids %>%
 yb_deduplicated <- remove_duplicates(yb_valid_ids, lsmh_id)
 
 # Double-check deduplication
-identify_duplicates(yb_deduplicated, lsmh_id)
+identify_duplicates(yb_deduplicated, lsmh_id, phase = 2)
 
 # Save dates for baseline survey and EMA for use in later scripts
 yb_ema_dates <- yb_deduplicated %>%

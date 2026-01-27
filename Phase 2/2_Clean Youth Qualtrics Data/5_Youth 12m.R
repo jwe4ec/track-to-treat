@@ -50,3 +50,37 @@ log <- list(
   item_completion_rate = list(),
   mean_items = list()
 )
+
+
+### Correct LSMH IDs (manually as necessary)
+y12m_corrected_ids <- y12m_raw %>%
+  rowwise() %>%
+  mutate(
+    lsmh_id = case_when(
+      
+      # TODO (any others?): Cases to be manually recoded
+      lsmh_id == "LSM" & y12m_lsmh_id == "LSMH01370" ~ "LSMH01370",
+      
+      
+    
+      
+      
+      # All others (helper function for cases in which IDs are same or one/both IDs are missing)
+      TRUE ~ resolve_id_pair(lsmh_id, y12m_lsmh_id)
+      
+    )
+  ) %>%
+  ungroup()
+
+# Check LSMH ID format
+warn_invalid_id_format(y12m_corrected_ids$lsmh_id)
+
+
+### Remove invalid responses
+# Filter to known valid LSMH IDs (marked "keep" in id_lookup) using helper function
+y12m_valid_ids <- remove_invalid_p2_qualtrics_responses(y12m_corrected_ids, id_lookup)
+
+
+
+
+
