@@ -89,4 +89,24 @@ identify_duplicates(y18m_valid_ids, lsmh_id, phase = 2)
 y18m_valid_ids <- compute_item_completion_rate(y18m_valid_ids, "y18m", phase = 2)
 
 
+### Remove any surveys (a) outside assessment window (or for youth who did not 
+### complete intervention survey in window) or (b) duplicated in window
+# Compute indicators of survey completion in window using helper function
+y18m_valid_ids <- mark_fu_done_in_ax_window(y18m_valid_ids, "18m", ax_windows)
+
+# Print (using helper function) and remove any surveys outside window          # TODO: Finalize windows
+y18m_valid_ids_out_window <- get_surveys_outside_window_3m_onward(y18m_valid_ids, "18m") %>% print()
+
+y18m_valid_ids <- y18m_valid_ids %>%
+  filter(in_window_18m_ext)
+
+# Remove duplicates using helper function
+y18m_deduplicated <- remove_duplicates(y18m_valid_ids, lsmh_id)
+
+# Double-check deduplication
+identify_duplicates(y18m_deduplicated, lsmh_id, phase = 2)
+
+
+
+
 
