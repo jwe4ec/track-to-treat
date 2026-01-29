@@ -117,7 +117,32 @@ y6m_recoded <- y6m_deduplicated %>%
   rm_click_page_time_vars() %>%
   
   # Rename "mvps" to "mpvs" throughout with helper function
-  rename_mvps_to_mpvs()
+  rename_mvps_to_mpvs() %>%
+
+  # Un-reverse code items with helper function
+  unreverse_code_items(codebook) %>%
+  
+  # Clean remaining columns by row and create composites using helper functions
+  rowwise() %>%
+  mutate(
+    
+    ## Metadata
+    # ID ("lsmh_id" cleaned above)
+    
+    # Survey completion
+    y6m_complete = !is.na(EndDate),
+    
+    # Survey datetime and duration
+    y6m_datetime = EndDate,
+    y6m_date = date(y6m_datetime),
+    y6m_duration = EndDate - StartDate,
+    
+    # Follow-up survey completion in original and extended assessment 
+    # windows and days survey was completed before/after original window
+    y6m_in_window_org = in_window_6m_org,
+    y6m_in_window_ext = in_window_6m_ext,
+    y6m_days_before_start_window_6m_org = days_before_start_window_6m_org,
+    y6m_days_after_end_window_6m_org = days_after_end_window_6m_org)
 
 
 

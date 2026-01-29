@@ -23,7 +23,7 @@ dirs <- get_p2_qualtrics_dirs(c("raw_data", "clean_data_staging", "clean_data_st
 
 # Load raw Qualtrics datasets (storing paths) in this format: [respondent][wave]_[administration]_raw
 # - Note: Use "timeZone" specified for date columns (e.g., "StartDate") in third row of raw CSV
-y24m_path <- dirs$raw_data %+% "DP5+Phase+2+-+Youth+-+FU+5+-+24M_January+21,+2026_11.25_n.csv"
+y24m_path <- dirs$raw_data %+% "DP5+Phase+2+-+Youth+-+FU+5+-+24M_January+29,+2026_10.59_n.csv"
 y24m_raw <- read_survey(y24m_path, time_zone = "America/Chicago")
 
 
@@ -114,7 +114,32 @@ y24m_recoded <- y24m_deduplicated %>%
   rm_click_page_time_vars() %>%
   
   # Rename "mvps" to "mpvs" throughout with helper function
-  rename_mvps_to_mpvs()
+  rename_mvps_to_mpvs() %>%
+  
+  # Un-reverse code items with helper function
+  unreverse_code_items(codebook) %>%
+  
+  # Clean remaining columns by row and create composites using helper functions
+  rowwise() %>%
+  mutate(
+    
+    ## Metadata
+    # ID ("lsmh_id" cleaned above)
+    
+    # Survey completion
+    y24m_complete = !is.na(EndDate),
+    
+    # Survey datetime and duration
+    y24m_datetime = EndDate,
+    y24m_date = date(y24m_datetime),
+    y24m_duration = EndDate - StartDate,
+    
+    # Follow-up survey completion in original and extended assessment 
+    # windows and days survey was completed before/after original window
+    y24m_in_window_org = in_window_24m_org,
+    y24m_in_window_ext = in_window_24m_ext,
+    y24m_days_before_start_window_24m_org = days_before_start_window_24m_org,
+    y24m_days_after_end_window_24m_org = days_after_end_window_24m_org)
 
 
 

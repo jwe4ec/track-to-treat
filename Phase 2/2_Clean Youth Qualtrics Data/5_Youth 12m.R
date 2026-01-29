@@ -118,7 +118,32 @@ y12m_recoded <- y12m_deduplicated %>%
   rename_mvps_to_mpvs() %>%
   
   # Fix column name
-  rename(y12m_pds_7 = y312_pds_7)
+  rename(y12m_pds_7 = y312_pds_7) %>%
+  
+  # Un-reverse code items with helper function
+  unreverse_code_items(codebook) %>%
+  
+  # Clean remaining columns by row and create composites using helper functions
+  rowwise() %>%
+  mutate(
+    
+    ## Metadata
+    # ID ("lsmh_id" cleaned above)
+    
+    # Survey completion
+    y12m_complete = !is.na(EndDate),
+    
+    # Survey datetime and duration
+    y12m_datetime = EndDate,
+    y12m_date = date(y12m_datetime),
+    y12m_duration = EndDate - StartDate,
+    
+    # Follow-up survey completion in original and extended assessment 
+    # windows and days survey was completed before/after original window
+    y12m_in_window_org = in_window_12m_org,
+    y12m_in_window_ext = in_window_12m_ext,
+    y12m_days_before_start_window_12m_org = days_before_start_window_12m_org,
+    y12m_days_after_end_window_12m_org = days_after_end_window_12m_org)
 
 
 

@@ -26,7 +26,7 @@ y3m_path <- raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+1+-+3M_January+21,+2026_1
 y6m_path <- raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+2+-+6M_January+21,+2026_11.24_n.csv"
 y12m_path <- raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+3+-+12M_January+21,+2026_11.24_n.csv"
 y18m_path <- raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+4+-+18M_January+21,+2026_11.25_n.csv"
-y24m_path <- raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+5+-+24M_January+21,+2026_11.25_n.csv"
+y24m_path <- raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+5+-+24M_January+29,+2026_10.59_n.csv"
 
 pb_path <- raw_data_dir %+% "DP5+Phase+2+-+Parent+-+Baseline_January+21,+2026_11.17_n.csv"
 p3m_path <- raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+1+-+3M_January+21,+2026_11.18_n.csv"
@@ -72,6 +72,23 @@ id_lookup <- read_csv(here("Phase 2", "2025.08.01 Track to Treat P2 ID Lookup.cs
 
 ## Load item-level codebook file using helper function
 codebook <- load_p2_codebook(here("Phase 2", "2025.07.02 Track to Treat P2 Codebook.xlsx"))
+
+
+
+#### Check that all "_n" files are indeed numeric (based on example columns)
+ex_col_classes <- lapply(names(dat_ls), function(name) {
+  dat <- dat_ls[[name]]
+  
+  if (name == "yi_raw") {
+    ex_col <- grep("bads_1$", names(dat), value = TRUE)
+  } else {
+    ex_col <- grep("cdi_1$", names(dat), value = TRUE)
+  }
+  
+  return(class(dat[[ex_col]]))
+})
+
+all(ex_col_classes == "numeric")
 
 
 
