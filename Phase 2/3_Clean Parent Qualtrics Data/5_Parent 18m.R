@@ -141,7 +141,90 @@ p18m_recoded <- p18m_deduplicated %>%
     p18m_in_window_org = in_window_18m_org,
     p18m_in_window_ext = in_window_18m_ext,
     p18m_days_before_start_window_18m_org = days_before_start_window_18m_org,
-    p18m_days_after_end_window_18m_org = days_after_end_window_18m_org)
+    p18m_days_after_end_window_18m_org = days_after_end_window_18m_org,
+    
+    
+    ## Child treatment history (assessed at follow-ups only if "childtx_change" is Yes)
+    # Current and lifetime treatment
+    p18m_childtx_lifetime = p18m_childtx_1 == 1 | p18m_childtx_3 == 1,
+    p18m_childtx_current = p18m_childtx_3 == 1,
+    
+    
+    ## BACE (Barriers to Accessing Care Evaluation) overall mean score and subscale
+    !!!bace_means("p18m"),
+    
+    
+    ## BFAMG (Brief Family Assessment Measure - General Scale) overall mean score
+    p18m_bfamg_mean = mean_across("p18m", "bfamg", name = "p18m_bfamg_mean"),
+    
+    
+    ## BHS-4 (Beck Hopelessness Scale - 4-item) overall mean score
+    p18m_bhs_mean = mean_across("p18m", "bhs", name = "p18m_bhs_mean"),
+    
+    
+    ## 17 items from BSI-18 (Brief Symptom Inventory-18): overall mean score and subscales
+    # Overall mean score and depression subscale lack suicidal thoughts item
+    !!!bsi_means("p18m"),
+    
+    
+    ## CDI-2-P (Children's Depression Inventory - 2 - Parent Report) overall mean score and subscales
+    !!!cdi_p_means("p18m"),
+    
+    
+    ## SCARED-Parent (Screen for Child Anxiety and Related Disorders - Parent) overall mean score and subscales
+    !!!scared_means("p18m")
+    
+  ) %>%
+  ungroup() %>%
+  
+  # Select variables
+  select(
+    
+    # Metadata
+    lsmh_id,
+    p18m_complete,
+    p18m_date,
+    p18m_datetime,
+    p18m_duration,
+    ax_window_18m_start_org,
+    ax_window_18m_end_org,
+    ax_window_18m_start_ext,
+    ax_window_18m_end_ext,
+    p18m_in_window_org,
+    p18m_in_window_ext,
+    p18m_days_before_start_window_18m_org,
+    p18m_days_after_end_window_18m_org,
+    
+    # Child treatment history
+    matches("childtx_change"),
+    matches("childtx_lifetime"),
+    matches("childtx_current"),
+    
+    # Measures
+    matches("_bace_"),
+    matches("_bfamg_"),
+    matches("_bhs_"),
+    matches("_bsi_"),
+    matches("_cdi_"),
+    matches("_scared_")
+    
+  )
+
+
+### Check that values are in expected range
+items_to_check <- p18m_recoded %>%
+  select(
+    matches("_bace_"),
+    matches("_bfamg_"),
+    matches("_bhs_"),
+    matches("_bsi_"),
+    matches("_cdi_"),
+    matches("_scared_"),
+    -ends_with("mean")
+  ) %>%
+  names()
+
+walk(items_to_check, check_values, p18m_recoded) # check_values() helper function
 
 
 
