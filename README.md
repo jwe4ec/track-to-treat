@@ -107,7 +107,6 @@ Data cleaning notes:
       * TODO
     * Parent data collected but not cleaned:
       * TODO
-    * Raw timestamps are mostly in "America/Chicago", but youth intervention survey is in "America/Denver"
 
 Version control:
   * Expected raw data versions are tracked in "Raw <P1/P2> Metadata.csv" files
