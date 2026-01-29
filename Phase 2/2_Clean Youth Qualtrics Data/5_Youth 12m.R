@@ -143,7 +143,133 @@ y12m_recoded <- y12m_deduplicated %>%
     y12m_in_window_org = in_window_12m_org,
     y12m_in_window_ext = in_window_12m_ext,
     y12m_days_before_start_window_12m_org = days_before_start_window_12m_org,
-    y12m_days_after_end_window_12m_org = days_after_end_window_12m_org)
+    y12m_days_after_end_window_12m_org = days_after_end_window_12m_org,
+    
+    
+    ## BADS (Behavioral Activation for Depression Scale) subscales
+    !!!bads_means("y12m"),
+    
+    
+    ## BFAMG (Brief Family Assessment Measure - General Scale) overall mean score
+    y12m_bfamg_mean = mean_across("y12m", "bfamg", name = "y12m_bfamg_mean"),
+    
+    
+    ## BHS-4 (Beck Hopelessness Scale - 4-item) overall mean score
+    y12m_bhs_mean = mean_across("y12m", "bhs", name = "y12m_bhs_mean"),
+    
+    
+    ## CDI-2-SR (Children's Depression Inventory - 2 - Self-Report) overall mean score and subscales
+    !!!cdi_sr_means("y12m"),
+    
+    
+    ## DRS (Dietary Restriction Screener)
+    # Two items that do not need to be recoded or combined
+    
+    
+    ## IDAS-II (Inventory of Depression and Anxiety Symptoms - II)
+    # Given that scoring likely depends on intended use, we output items but do 
+    # not score them (see Table 1 of https://doi.org/f4b85p for scale info)
+    
+    
+    ## IPTQ (Implicit Personality Theory Questionnaire) overall mean score
+    y12m_iptq_mean = mean_across("y12m", "iptq", name = "y12m_iptq_mean"),
+    
+    
+    ## MPVS (Multidimensional Peer Victimization Scale) overall mean score and subscales
+    !!!mpvs_means("y12m"),
+    
+    
+    ## PCSC (Primary Control Scale for Children) overall mean score and subscales
+    !!!pcsc_means("y12m"),
+    
+    
+    ## SCARED-Child (Screen for Child Anxiety and Related Disorders - Child) overall mean score and subscales
+    !!!scared_means("y12m"),
+    
+    
+    ## SCSC (Secondary Control Scale for Children) overall mean score
+    y12m_scsc_mean = mean_across("y12m", "scsc", name = "y12m_scsc_mean"),
+    
+    
+    ## SHAPS (Snaith-Hamilton Pleasure Scale) overall mean score
+    y12m_shaps_mean = mean_across("y12m", "shaps", name = "y12m_shaps_mean"),
+    
+    
+    ## SHS (Self-Hate Scale) overall mean score
+    y12m_self_hate_mean = mean_across("y12m", "self_hate_scale", name = "y12m_self_hate_mean"),
+    
+    
+    ## SITBI-SF (Self-Injurious Thoughts and Behaviors Interview - Short Form)
+    # Many items but no recoding or combining (but ranges need to be checked)
+    
+    
+    ## UCLA (UCLA Loneliness Scale, aka ULS) overall mean score
+    y12m_ucla_mean = mean_across("y12m", "ucla", name = "y12m_ucla_mean")
+    
+  ) %>%
+  ungroup() %>%
+  
+  # Select variables
+  select(
+    
+    # Metadata
+    lsmh_id,
+    y12m_complete,
+    y12m_date,
+    y12m_datetime,
+    y12m_duration,
+    ax_window_12m_start_org,
+    ax_window_12m_end_org,
+    ax_window_12m_start_ext,
+    ax_window_12m_end_ext,
+    y12m_in_window_org,
+    y12m_in_window_ext,
+    y12m_days_before_start_window_12m_org,
+    y12m_days_after_end_window_12m_org,
+    
+    # Measures
+    matches("_bads_"),
+    matches("_bfamg_"),
+    matches("_bhs_"),
+    matches("_cdi_"),
+    matches("_drs_"),
+    matches("_idas_"),
+    matches("_iptq_"),
+    matches("_mpvs_"),
+    matches("_pcsc_"),
+    matches("_scared_"),
+    matches("_scsc_"),
+    matches("_shaps_"),
+    matches("_shs_"),
+    matches("_self_hate_"),
+    matches("_sitbi_"), - matches("sitbi_.*_TEXT"),
+    matches("_ucla_")
+    
+  )
+
+
+### Check that values are in expected range
+items_to_check <- y12m_recoded %>%
+  select(
+    matches("_bads_"),
+    matches("_bfamg_"),
+    matches("_bhs_"),
+    matches("_cdi_"),
+    matches("_drs_"),
+    matches("_idas_"),
+    matches("_iptq_"),
+    matches("_mpvs_"),
+    matches("_pcsc_"),
+    matches("_scared_"),
+    matches("_scsc_"),
+    matches("_shaps_"),
+    matches("_shs_"),
+    matches("_ucla_"),
+    -ends_with("mean")
+  ) %>%
+  names()
+
+walk(items_to_check, check_values, y12m_recoded) # check_values() helper function
 
 
 
