@@ -99,6 +99,7 @@ Data cleaning notes:
     * Clean Columns section lists raw data available that have not yet been cleaned
     * Raw timestamps are in "America/Denver" time zone
   * Phase 2 specifics:
+    * Self-reported `_date` columns in parent data are overwritten with date from `EndDate` timestamp
     * Beck Hopelessness Scale-4 items had different scale in youth intervention survey vs. other surveys
       * Script recodes values from 1-4 to 0-3 for consistency over time (surveys did not display numbers)
       * But wording differences remain:
