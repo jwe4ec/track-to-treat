@@ -108,5 +108,18 @@ p6m_deduplicated <- remove_duplicates(p6m_valid_ids, lsmh_id)
 identify_duplicates(p6m_deduplicated, lsmh_id, phase = 2)
 
 
+### Clean columns
+p6m_recoded <- p6m_deduplicated %>%
+  
+  # Remove click, page time variables with helper function
+  rm_click_page_time_vars() %>%
+  
+  # Fix prefix of "scared_b" and "scared_c" items
+  rename_with(
+    .cols = contains(c("scared_b", "scared_c")),
+    .fn = ~ sub("^p3m_", "p6m_", .x)
+  )
+
+
 
 

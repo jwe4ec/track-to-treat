@@ -111,5 +111,15 @@ p12m_deduplicated <- remove_duplicates(p12m_valid_ids, lsmh_id)
 identify_duplicates(p12m_deduplicated, lsmh_id, phase = 2)
 
 
+### Clean columns
+p12m_recoded <- p12m_deduplicated %>%
+  
+  # Remove click, page time variables with helper function
+  rm_click_page_time_vars() %>%
+  
+  # Fix column name
+  rename(p12m_accommodations_2 = p12m_accommodations_)
+
+
 
 

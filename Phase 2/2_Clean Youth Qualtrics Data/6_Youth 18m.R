@@ -107,6 +107,18 @@ y18m_deduplicated <- remove_duplicates(y18m_valid_ids, lsmh_id)
 identify_duplicates(y18m_deduplicated, lsmh_id, phase = 2)
 
 
+### Clean columns
+y18m_recoded <- y18m_deduplicated %>%
+  
+  # Remove click, page time variables with helper function
+  rm_click_page_time_vars() %>%
+  
+  # Rename "mvps" to "mpvs" throughout with helper function
+  rename_mvps_to_mpvs() %>%
+  
+  # Fix column name
+  rename(y18m_scsc_20 = y18n_scsc_20)
+
 
 
 

@@ -110,6 +110,14 @@ y6m_deduplicated <- remove_duplicates(y6m_valid_ids, lsmh_id)
 identify_duplicates(y6m_deduplicated, lsmh_id, phase = 2)
 
 
+### Clean columns
+y6m_recoded <- y6m_deduplicated %>%
+  
+  # Remove click, page time variables with helper function
+  rm_click_page_time_vars() %>%
+  
+  # Rename "mvps" to "mpvs" throughout with helper function
+  rename_mvps_to_mpvs()
 
 
 

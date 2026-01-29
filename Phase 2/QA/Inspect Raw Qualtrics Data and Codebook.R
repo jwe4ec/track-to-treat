@@ -148,13 +148,13 @@ lapply(dat_ls_cols, function(dat_cols) {
   setdiff(dat_cols$meas_item_cols, codebook$item)
 })
 
-# TODO: MPVS items in codebook are named "mvps_" in youth data across waves (rename in data)
-# TODO: In "y12m_raw", prefix for 1 PDS item ("y312_pds_7") is incorrect (rename in data)
-# TODO: In "y18m_raw", prefix for 1 SCSC item ("y18n_scsc_20") is incorrect (rename in data)
-# In "p3m_raw", "020_accom_2", for "p3m_accommodations_2", is incorrectly named (renamed in data)
-# TODO: In "p12m_raw", "p12m_accommodations_", for "p12m_accommodations_2", is incorrectly named (rename in data)
-# TODO: In "p18m_raw", "p18m_accommodations_", for "p18m_accommodations_2", is incorrectly named (rename in data)
-# TODO: In "p24m_raw", "p24m_accom_2", for "p24m_accommodations_2", is incorrectly named (rename in data)
+# MPVS items in codebook are named "mvps_" in youth data across waves (renamed in clean data)
+# In "y12m_raw", prefix for 1 PDS item ("y312_pds_7") is incorrect (renamed in clean data)
+# In "y18m_raw", prefix for 1 SCSC item ("y18n_scsc_20") is incorrect (renamed in clean data)
+# In "p3m_raw", "020_accom_2", for "p3m_accommodations_2", is incorrectly named (renamed in clean data)
+# In "p12m_raw", "p12m_accommodations_", for "p12m_accommodations_2", is incorrectly named (renamed in clean data)
+# In "p18m_raw", "p18m_accommodations_", for "p18m_accommodations_2", is incorrectly named (renamed in clean data)
+# In "p24m_raw", "p24m_accom_2", for "p24m_accommodations_2", is incorrectly named (renamed in clean data)
 
 
 #### Check for codebook items not in data ####
@@ -162,18 +162,18 @@ all_meas_item_cols <- unlist(lapply(dat_ls_cols, function(dat_cols) {
   dat_cols$meas_item_cols
 }), use.names = FALSE)
 
-# TODO: "accommodations_2" columns will be resolved once fixed above
+# "accommodations_2" columns resolved above
 diff_accommodations_cols <- sort(setdiff(codebook$item[codebook$measure == "demographic" &
                                            grepl("accommodations", codebook$item)], all_meas_item_cols))
 
-# TODO: MPVS columns will be resolved once "mvps" columns are renamed in data
+# MPVS columns resolved above
 diff_mpvs_cols        <- sort(setdiff(codebook$item[codebook$measure == "mpvs"], all_meas_item_cols))
 
-# TODO: In "p6m_raw", "scared_b" and "scared_c" items have incorrect prefix "p3m" (rename in data)
+# In "p6m_raw", "scared_b" and "scared_c" items have incorrect prefix "p3m" (renamed in clean data)
 diff_scared_cols      <- sort(setdiff(codebook$item[codebook$measure == "scared"], all_meas_item_cols))
 names(dat_ls$p6m_raw)[grepl("scared_b|scared_c", names(dat_ls$p6m_raw))]
 
-# 2 other PDS and SCSC columns will be resolved once fixed above
+# 2 other PDS and SCSC columns resolved above
 ignore_measures <- c("demographic", "ace_p", "ace_y", "mpvs", "scared", "other")
 diff_other_cols       <- sort(setdiff(codebook$item[!(codebook$measure %in% ignore_measures) &
                                                         codebook$item != "condition"], all_meas_item_cols))
@@ -189,18 +189,18 @@ lapply(dat_ls_cols, function(dat_cols) {
   table(meas_item_col_prefixes, useNA = "always")
 })
 
-# TODO: "yb_raw" lacks prefixes for SRET items ("SRET", "SRET.keys", "SRET.time", "SRET.words", "tlcond")
+# "yb_raw" lacks prefixes for SRET items (fixed in codebook and cleaning script)
 # "yi_raw" contains prefixes 9 columns ("bads" items) with prefix "b" (changed to "yi" in codebook and data)
-# TODO: "y12m_raw" contains 1 column ("y312_pds_7") with incorrect prefix "y312"
-# TODO: "y18m_raw" contains 1 column (y18n_scsc_20) with incorrect prefix "y18n"
+# "y12m_raw" contains 1 column ("y312_pds_7") with incorrect prefix "y312" (fixed in clean data)
+# "y18m_raw" contains 1 column (y18n_scsc_20) with incorrect prefix "y18n" (fixed in clean data)
 # "p3m_raw" contains 1 column ("p3m\020") with incorrect prefix "p3m\020" (fixed in clean data)
-# TODO: "p6m_raw" contains 26 columns ("scared_b" and "scared_c" items) with incorrect prefix "p3m"
+# "p6m_raw" contains 26 columns ("scared_b" and "scared_c" items) with incorrect prefix "p3m" (fixed in clean data)
 
 ## In codebook
 codebook_prefixes <- str_split_fixed(codebook$item, "_", 2)[, 1]
 table(codebook_prefixes, useNA = "always")
 
-# TODO: SRET items ("SRET", "SRET.keys", "SRET.time", "SRET.words", "tlcond") lack prefixes
+# SRET items ("SRET", "SRET.keys", "SRET.time", "SRET.words", "tlcond") lack prefixes (fixed in codebook and cleaning script)
 lapply(dat_ls_cols, function(dat_cols) {
   dat_cols$meas_item_cols[grepl("SRET|tlcond", dat_cols$meas_item_cols)]
 })

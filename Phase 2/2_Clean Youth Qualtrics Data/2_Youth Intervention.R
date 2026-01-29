@@ -65,7 +65,7 @@ names(yi_renamed)[names(yi_renamed) == lsmh_id_col1_qname] <- "lsmh_id_col1"
 names(yi_renamed)[names(yi_renamed) == lsmh_id_col2_qname] <- "lsmh_id_col2"
 
 
-### Correct item prefixes in data and codebook
+### Fix item prefixes in data and codebook
 # For BADS-SF items with prefixes "b_" instead of "yi_"
 
 yi_bads_items_raw <- paste0("b_bads_", 1:9)

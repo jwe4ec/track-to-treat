@@ -107,5 +107,15 @@ p24m_deduplicated <- remove_duplicates(p24m_valid_ids, lsmh_id)
 identify_duplicates(p24m_deduplicated, lsmh_id, phase = 2)
 
 
+### Clean columns
+p24m_recoded <- p24m_deduplicated %>%
+  
+  # Remove click, page time variables with helper function
+  rm_click_page_time_vars() %>%
+  
+  # Fix column name
+  rename(p24m_accommodations_2 = p24m_accom_2)
+
+
 
 

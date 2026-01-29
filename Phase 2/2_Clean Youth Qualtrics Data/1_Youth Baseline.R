@@ -51,8 +51,27 @@ log <- list(
 )
 
 
+### Fix item prefixes in data and codebook
+# Add prefix to SRET items
+
+yb_sret_items_raw <- c("SRET", "SRET.keys", "SRET.time", "SRET.words", "tlcond")
+
+yb_renamed <- yb_raw %>%
+  rename_with(
+    .cols = all_of(yb_sret_items_raw),
+    .fn   = ~ paste0("yb_", .x)
+  )
+
+codebook$item[codebook$item %in% yb_sret_items_raw] <-
+  paste0("yb_", codebook$item[codebook$item %in% yb_sret_items_raw])
+
+
+### Add codebook with clean youth baseline items to log
+log$yb_codebook_clean <- codebook
+
+
 ### Correct LSMH IDs (manually as necessary)
-yb_corrected_ids <- yb_raw %>%
+yb_corrected_ids <- yb_renamed %>%
   rowwise() %>%
   mutate(
     lsmh_id = case_when(
@@ -230,7 +249,7 @@ yb_recoded <- yb_deduplicated %>%
     ## SRET (Self-Referential Encoding Task)
     # (Not currently outputted and a low priority to code given how time-intensive 
     # this is; see Dainer-Best et al., 2018)
-    # Items: "SRET", "SRET.keys", "SRET.time", "SRET.words", "tlcond"
+    # Items: "yb_SRET", "yb_SRET.keys", "yb_SRET.time", "yb_SRET.words", "yb_tlcond"
     
     
     ## UCLA (UCLA Loneliness Scale, aka ULS) overall mean score
