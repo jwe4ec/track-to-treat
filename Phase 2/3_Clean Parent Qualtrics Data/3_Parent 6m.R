@@ -118,7 +118,32 @@ p6m_recoded <- p6m_deduplicated %>%
   rename_with(
     .cols = contains(c("scared_b", "scared_c")),
     .fn = ~ sub("^p3m_", "p6m_", .x)
-  )
+  ) %>%
+  
+  # Un-reverse code items with helper function
+  unreverse_code_items(codebook) %>%
+  
+  # Clean remaining columns by row and create composites using helper functions
+  rowwise() %>%
+  mutate(
+    
+    ## Metadata
+    # ID ("lsmh_id" cleaned above)
+    
+    # Survey completion
+    p6m_complete = !is.na(EndDate),
+    
+    # Survey datetime and duration
+    p6m_datetime = EndDate,
+    p6m_date = date(p6m_datetime),
+    p6m_duration = EndDate - StartDate,
+    
+    # Follow-up survey completion in original and extended assessment 
+    # windows and days survey was completed before/after original window
+    p6m_in_window_org = in_window_6m_org,
+    p6m_in_window_ext = in_window_6m_ext,
+    p6m_days_before_start_window_6m_org = days_before_start_window_6m_org,
+    p6m_days_after_end_window_6m_org = days_after_end_window_6m_org)
 
 
 

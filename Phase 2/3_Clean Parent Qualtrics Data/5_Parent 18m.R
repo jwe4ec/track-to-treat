@@ -116,7 +116,32 @@ p18m_recoded <- p18m_deduplicated %>%
   rm_click_page_time_vars() %>%
   
   # Fix column name
-  rename(p18m_accommodations_2 = p18m_accommodations_)
+  rename(p18m_accommodations_2 = p18m_accommodations_) %>%
+  
+  # Un-reverse code items with helper function
+  unreverse_code_items(codebook) %>%
+  
+  # Clean remaining columns by row and create composites using helper functions
+  rowwise() %>%
+  mutate(
+    
+    ## Metadata
+    # ID ("lsmh_id" cleaned above)
+    
+    # Survey completion
+    p18m_complete = !is.na(EndDate),
+    
+    # Survey datetime and duration
+    p18m_datetime = EndDate,
+    p18m_date = date(p18m_datetime),
+    p18m_duration = EndDate - StartDate,
+    
+    # Follow-up survey completion in original and extended assessment 
+    # windows and days survey was completed before/after original window
+    p18m_in_window_org = in_window_18m_org,
+    p18m_in_window_ext = in_window_18m_ext,
+    p18m_days_before_start_window_18m_org = days_before_start_window_18m_org,
+    p18m_days_after_end_window_18m_org = days_after_end_window_18m_org)
 
 
 
