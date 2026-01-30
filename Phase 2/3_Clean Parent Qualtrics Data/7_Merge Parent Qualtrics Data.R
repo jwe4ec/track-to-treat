@@ -21,21 +21,25 @@ source(here("Version Control Helper Functions.R"))
 # Get directories using helper function
 dirs <- get_p2_qualtrics_dirs(c("clean_data_staging", "clean_data_staging_intermediate"))
 
-# Load clean data by wave
-pb_clean <- readRDS(dirs$clean_data_staging %+% "Phase 2 Parent Qualtrics Clean Data - Baseline.rds")
-p3m_clean <- readRDS(dirs$clean_data_staging %+% "Phase 2 Parent Qualtrics Clean Data - 3m.rds")
-p6m_clean <- readRDS(dirs$clean_data_staging %+% "Phase 2 Parent Qualtrics Clean Data - 6m.rds")
-p12m_clean <- readRDS(dirs$clean_data_staging %+% "Phase 2 Parent Qualtrics Clean Data - 12m.rds")
-p18m_clean <- readRDS(dirs$clean_data_staging %+% "Phase 2 Parent Qualtrics Clean Data - 18m.rds")
-p24m_clean <- readRDS(dirs$clean_data_staging %+% "Phase 2 Parent Qualtrics Clean Data - 24m.rds")
+# Load clean data by wave into list
+p_clean <- list()
 
-# Load logs by wave
-pb_log <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Clean Data Log - Baseline.rds")
-p3m_log <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Clean Data Log - 3m.rds")
-p6m_log <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Clean Data Log - 6m.rds")
-p12m_log <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Clean Data Log - 12m.rds")
-p18m_log <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Clean Data Log - 18m.rds")
-p24m_log <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Clean Data Log - 24m.rds")
+p_clean$pb <- readRDS(dirs$clean_data_staging %+% "Phase 2 Parent Qualtrics Clean Data - Baseline.rds")
+p_clean$p3m <- readRDS(dirs$clean_data_staging %+% "Phase 2 Parent Qualtrics Clean Data - 3m.rds")
+p_clean$p6m <- readRDS(dirs$clean_data_staging %+% "Phase 2 Parent Qualtrics Clean Data - 6m.rds")
+p_clean$p12m <- readRDS(dirs$clean_data_staging %+% "Phase 2 Parent Qualtrics Clean Data - 12m.rds")
+p_clean$p18m <- readRDS(dirs$clean_data_staging %+% "Phase 2 Parent Qualtrics Clean Data - 18m.rds")
+p_clean$p24m <- readRDS(dirs$clean_data_staging %+% "Phase 2 Parent Qualtrics Clean Data - 24m.rds")
+
+# Load logs by wave into list
+p_log <- list()
+
+p_log$pb <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Clean Data Log - Baseline.rds")
+p_log$p3m <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Clean Data Log - 3m.rds")
+p_log$p6m <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Clean Data Log - 6m.rds")
+p_log$p12m <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Clean Data Log - 12m.rds")
+p_log$p18m <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Clean Data Log - 18m.rds")
+p_log$p24m <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Clean Data Log - 24m.rds")
 
 # Load youth intervention data, for `condition`
 yi_clean <- readRDS(dirs$clean_data_staging %+% "Phase 2 Youth Qualtrics Clean Data - Intervention.rds")
@@ -46,44 +50,36 @@ codebook <- load_p2_codebook(here("Phase 2", "2025.07.02 Track to Treat P2 Codeb
 
 
 
-
-
-# TODO: Continue updating below
-
-
-
-
-
 ####  Merge Data  ####
-# Remove columns as needed
-pb_selected <- pb_clean %>%
-  select(-item_completion_rate)
+# No IDs in follow-up surveys not in baseline
+lsmh_ids_after_pb <- p_clean %>%
+  map(~ .x$lsmh_id) %>%
+  unlist() %>%
+  unique()
 
-p3m_selected <- p3m_clean %>%
-  select(-c(item_completion_rate, yi_date))
+stopifnot(length(setdiff(lsmh_ids_after_pb, p_clean$pb$lsmh_id)) == 0)
 
-yi_selected <- yi_clean %>%
+# Get condition
+yi_condition <- yi_clean %>%
   select(lsmh_id, condition)
 
 # Merge
-p_merged <- yi_selected %>%
-  full_join(
-    pb_selected,
-    by = "lsmh_id",
-    relationship = "one-to-one"
-  ) %>%
-  full_join(
-    p3m_selected,
-    by = "lsmh_id",
-    relationship = "one-to-one"
-  )
+p_merged <- reduce(
+  .init = yi_condition,
+  .x = p_clean,
+  full_join,
+  by = "lsmh_id",
+  relationship = "one-to-one"
+)
 
-# Check duplicated data in primary outcome over time
-check_dups_over_time(p_merged, c("pb", "p3m"), "CDI-2 P")
 
-ids_to_drop <- check_dups_over_time(p_merged, c("pb", "p3m"), "CDI-2 P") %>%
-  drop_na() %>%
+
+####  Check Duplicated Data in Primary Outcome Over Time  ####
+ids_to_drop <- check_dups_over_time(p_merged, c("pb", "p3m", "p6m", "p12m", "p18m", "p24m"), "CDI-2 P") %>%
+  filter(dup_other == TRUE) %>%  # TODO: Finalize criteria for dropping
   distinct(lsmh_id)
+
+stopifnot(ids_to_drop$lsmh_id == c("LSMH00827", "LSMH00854"))
 
 p_merged_filtered <- p_merged %>%
   anti_join(
@@ -91,23 +87,44 @@ p_merged_filtered <- p_merged %>%
     by = "lsmh_id"
   )
 
-# Completion rates
+# TODOs
+# - Move clean data at individual time points to "intermediate" directory
+# given that they include participants need to get dropped
+# - Ensure all columns contain a time point prefix (for easy conversion to long format)
+
+
+
+
+
+####  Inspect Completion Rates  ####
+# Where completion means response is present but not necessarily complete
 p_merged_filtered %>%
   count(
-    !is.na(pb_date),
-    !is.na(p3m_date)
-  )
+    pb_complete = !is.na(pb_complete),
+    p3m_complete = !is.na(p3m_complete),
+    p6m_complete = !is.na(p6m_complete),
+    p12m_complete = !is.na(p12m_complete),
+    p18m_complete = !is.na(p18m_complete),
+    p24m_complete = !is.na(p24m_complete),
+  ) %>% 
+  print(n = Inf)
 
 
 
-####  Merge Logs  ####
-# Include codebook (unedited to date)
-p_log <- list(item_completion_rate = list(pb = pb_log$item_completion_rate$pb,
-                                          p3m = p3m_log$item_completion_rate$p3m),
-              mean_items = c(pb_log$mean_items,
-                             p3m_log$mean_items),
-              count_items = pb_log$count_items,
-              p_codebook_clean = codebook)
+####  Restructure Log  ####
+# Items used to compute item completion rates
+item_completion_rate <- lapply(names(p_log), \(prefix) p_log[[prefix]]$item_completion_rate[[prefix]])
+names(item_completion_rate) <- names(p_log)
+
+# Items used to compute means and counts
+mean_items <- lapply(p_log, \(log) log$mean_items)
+count_items <- lapply(p_log, \(log) log$count_items)
+
+# Clean codebook (unedited to date)
+p_codebook_clean <- codebook
+
+# Restructured log
+p_log_restructured <- mget(c("item_completion_rate", "mean_items", "count_items", "p_codebook_clean"))
 
 
 
@@ -116,4 +133,4 @@ p_log <- list(item_completion_rate = list(pb = pb_log$item_completion_rate$pb,
 saveRDS(p_merged_filtered, dirs$clean_data_staging %+% "Phase 2 Parent Qualtrics Clean Data - All Waves.rds")
 
 # Save log
-saveRDS(p_log, dirs$clean_data_staging %+% "Phase 2 Parent Qualtrics Clean Data Log - All Waves.rds")
+saveRDS(p_log_restructured, dirs$clean_data_staging %+% "Phase 2 Parent Qualtrics Clean Data Log - All Waves.rds")

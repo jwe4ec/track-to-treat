@@ -997,18 +997,35 @@ check_dups_over_time <- function(data, prefixes, .measure, .subscale, exclude) {
                  values_to = "value") %>%
     pivot_wider(names_from = "item", values_from = "value") %>%
     select(-survey)
-
-  # Check for duplicate responses over time
-  dup_ids <- unique(data$lsmh_id[duplicated(data)])
+  
+  # Check for duplicate responses over time (ignoring rows with NA for every item),
+  # labeling them (and whether they reflect 0 for all items or another pattern)
+  data <- data %>%
+    drop_na(-lsmh_id) %>%
+    group_by(lsmh_id) %>%
+    mutate(
+      dup = duplicated(across(all_of(item_cols_no_prefix))) |
+        duplicated(across(all_of(item_cols_no_prefix)), fromLast = TRUE),
+      dup_all_zero = dup & if_all(all_of(item_cols_no_prefix), ~ .x == 0),
+      dup_other = dup & !dup_all_zero
+    ) %>%
+    ungroup()
+  
+  dup_ids <- unique(data$lsmh_id[data$dup])
+  dup_all_zero_ids <- unique(data$lsmh_id[data$dup_all_zero])
+  dup_other_ids <- unique(data$lsmh_id[data$dup_other])
   
   if (length(dup_ids) == 0) {
     
-    cat("No duplicated responses over time")
+    message("No duplicated responses over time")
     
   } else {
     
-    cat("Duplicated responses over time for these IDs (see below): ", dup_ids, "\n\n")
-    print(data[data$lsmh_id %in% dup_ids, ])
+    message("Duplicated responses (all 0) over time for these IDs: ",
+            if(length(dup_all_zero_ids) == 0) "None" else toString(dup_all_zero_ids))
+    message("Duplicated responses (other) over time for these IDs: ",
+            if(length(dup_other_ids) == 0) "None" else toString(dup_other_ids), "\n")
+    print(data[data$lsmh_id %in% dup_ids, ], n = Inf)
     
   }
 
