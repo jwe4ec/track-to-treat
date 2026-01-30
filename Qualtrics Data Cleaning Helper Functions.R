@@ -1,6 +1,6 @@
 ## Helper functions for Qualtrics data cleaning
 
-# New syntax to paste strings together
+# New syntax to paste strings together for Phases 1-2
 `%+%` <- paste0
 
 # Function to get directories for Phase 2 Qualtrics data
@@ -26,7 +26,7 @@ get_p2_qualtrics_dirs <- function(type = c("raw_data", "clean_data_staging", "cl
   
 }
 
-# Function to resolve pairs of IDs in generic ways (for use in case_when() )
+# Function to resolve pairs of IDs in generic ways (for use in case_when() ) for Phase 2
 resolve_id_pair <- function(id1, id2) {
   id1_name <- deparse(substitute(id1))
   id2_name <- deparse(substitute(id2))
@@ -51,7 +51,7 @@ resolve_id_pair <- function(id1, id2) {
   
 }
 
-# Function to warn about LSMH IDs with invalid format
+# Function to warn about LSMH IDs with invalid format for Phase 2
 warn_invalid_id_format <- function(ids) {
   
   # Find non-NA IDs that don't match "LSMH" followed by 5 digits
@@ -65,7 +65,7 @@ warn_invalid_id_format <- function(ids) {
 
 }
 
-# Function to drop invalid responses
+# Function to drop invalid responses for Phase 1
 remove_invalid_responses <- function(data, id) {
   
   # Taking the data, filter out cases where ID variable is missing (unclear why) or in invalid_ids
@@ -147,8 +147,8 @@ remove_invalid_p2_qualtrics_responses <- function(data, id_lookup) {
   
 }
 
-# Function to fill LifePak ID across duplicates (there is at least one case where a 
-# respondent provided their LifePak ID only in a duplicated, noncomplete response)
+# Function to fill LifePak ID across duplicates for Phase 1 (there is at least one case 
+# where a respondent gave their LifePak ID only in a duplicated, noncomplete response)
 fill_lifepak_id <- function(data, lsmh_id, lifepak_id) {
 
   ## Check that each LSMH ID has <= 1 LifePak ID
@@ -172,7 +172,7 @@ fill_lifepak_id <- function(data, lsmh_id, lifepak_id) {
   
 }
 
-# Function to identify duplicates
+# Function to identify duplicates for Phases 1-2
 identify_duplicates <- function(data, id, completion_indicator = Finished, phase = 1) {
   
   if (phase == 1) {
@@ -213,7 +213,7 @@ identify_duplicates <- function(data, id, completion_indicator = Finished, phase
   
 }
 
-# Function to remove click and page time variables
+# Function to remove click and page time variables for Phase 2
 rm_click_page_time_vars <- function(data) {
   
   data %>% select(
@@ -225,7 +225,7 @@ rm_click_page_time_vars <- function(data) {
   
 }
 
-# Function to rename "mvps" to "mpvs" throughout
+# Function to rename "mvps" to "mpvs" throughout for Phase 2
 rename_mvps_to_mpvs <- function(data) {
   
   data %>% rename_with(
@@ -235,7 +235,7 @@ rename_mvps_to_mpvs <- function(data) {
   
 }
 
-# Function to un-reverse code items
+# Function to un-reverse code items for Phase 2
 unreverse_code_items <- function(data, codebook) {
   
   data %>% mutate(
@@ -247,7 +247,7 @@ unreverse_code_items <- function(data, codebook) {
   
 }
 
-# Function to compute item completion rate
+# Function to compute item completion rate for Phases 1-2
 compute_item_completion_rate <- function(data, survey_prefix, phase = 1) {
   
   qualtrics_metadata_both_phases <- c(
@@ -341,7 +341,7 @@ compute_item_completion_rate <- function(data, survey_prefix, phase = 1) {
   
 }
 
-# Function to compute indicator of baseline survey completion in assessment window
+# Function to compute indicator of baseline survey completion in assessment window for Phases 1-2
 mark_b_done_in_ax_window <- function(data, id_as_char, ema_notif_dates) {
   
   # Add EMA notification dates to data
@@ -463,7 +463,7 @@ mark_fu_done_in_ax_window <- function(data, survey_prefix, ax_windows) {
   
 }
 
-# Function to get any surveys outside window (for surveys at or after 3m follow-up)
+# Function to get any surveys outside window (for surveys at or after 3m follow-up) for Phase 2
 get_surveys_outside_window_3m_onward <- function(data, survey_prefix) {
   
   # Define input columns based on "survey_prefix"
@@ -493,7 +493,7 @@ get_surveys_outside_window_3m_onward <- function(data, survey_prefix) {
   
 }
 
-# Function to deduplicate datasets, keeping first (most) complete response
+# Function to deduplicate datasets, keeping first (most) complete response for Phases 1-2
 remove_duplicates <- function(data, id, date = EndDate) {
   
   # Taking the data...
@@ -513,7 +513,7 @@ remove_duplicates <- function(data, id, date = EndDate) {
   
 }
 
-# Function to return items from the codebook file, given some criteria
+# Function to return items from the codebook file, given some criteria, for Phases 1-2
 get_items <- function(.prefix, .measure, .subscale) {
   
   # Confirm provided measure and subscale are in the codebook
@@ -570,7 +570,7 @@ get_items <- function(.prefix, .measure, .subscale) {
 }
 
 # Function to take the mean across items from get_items() and to log the items
-# used to compute the mean
+# used to compute the mean for Phases 1-2
 mean_across <- function(.prefix, .measure, .subscale, name, exclude) {
   
   # Get items
@@ -609,7 +609,7 @@ mean_across <- function(.prefix, .measure, .subscale, name, exclude) {
 }
 
 # Function to take the sum (count) across items from get_items() and to log the items
-# used to compute the sum
+# used to compute the sum for Phases 1-2
 count_across <- function(.prefix, .measure, .subscale, name, exclude) {
   
   # Get items
@@ -645,7 +645,7 @@ count_across <- function(.prefix, .measure, .subscale, name, exclude) {
   
 }
 
-# Function to return expressions for computing BACE means (overall score and subscales)
+# Function to return expressions for computing BACE means (overall score and subscales) for Phase 2
 bace_means <- function(.prefix) {
   
   # Define names for means
@@ -668,7 +668,7 @@ bace_means <- function(.prefix) {
   
 }
 
-# Function to return expressions for computing BADS means (subscales only)
+# Function to return expressions for computing BADS means (subscales only) for Phase 2
 bads_means <- function(.prefix) {
   
   # Define names for means
@@ -701,7 +701,7 @@ bads_means <- function(.prefix) {
   
 }
 
-# Function to return expressions for computing BSI means (overall score and subscales)
+# Function to return expressions for computing BSI means (overall score and subscales) for Phase 2
 bsi_means <- function(.prefix) {
   
   # Define names for means
@@ -732,7 +732,7 @@ bsi_means <- function(.prefix) {
   
 }
 
-# Function to return expressions for computing CDI-2-P means (overall score and subscales)
+# Function to return expressions for computing CDI-2-P means (overall score and subscales) for Phase 2
 cdi_p_means <- function(.prefix) {
   
   # Define names for means
@@ -759,7 +759,7 @@ cdi_p_means <- function(.prefix) {
   
 }
 
-# Function to return expressions for computing CDI-2-SR means (overall score and subscales)
+# Function to return expressions for computing CDI-2-SR means (overall score and subscales) for Phase 2
 cdi_sr_means <- function(.prefix) {
 
   # Define names for means
@@ -802,7 +802,7 @@ cdi_sr_means <- function(.prefix) {
 
 }
 
-# Function to return expressions for computing MPVS means (overall score and subscales)
+# Function to return expressions for computing MPVS means (overall score and subscales) for Phase 2
 mpvs_means <- function(.prefix) {
   
   # Define names for means
@@ -837,7 +837,7 @@ mpvs_means <- function(.prefix) {
   
 }
 
-# Function to return expressions for computing PCSC means (overall score and subscales)
+# Function to return expressions for computing PCSC means (overall score and subscales) for Phase 2
 pcsc_means <- function(.prefix) {
   
   # Define names for means
@@ -868,7 +868,8 @@ pcsc_means <- function(.prefix) {
   
 }
 
-# Function to return expressions for computing SCARED (-Child and -Parent) means (overall score and subscales)
+# Function to return expressions for computing SCARED (-Child and -Parent) means 
+# (overall score and subscales) for Phase 2
 scared_means <- function(.prefix) {
   
   # Define names for means
@@ -907,7 +908,7 @@ scared_means <- function(.prefix) {
   
 }
 
-# Function to check that values of categorical items are as expected (for use in walk() )
+# Function to check that values of categorical items are as expected (for use in walk() ) for Phases 1-2
 check_values <- function(.item, .data) {
   
   # Ensure item is in codebook and data
@@ -931,7 +932,7 @@ check_values <- function(.item, .data) {
   
 }
 
-# Function to check for duplicate responses to measure's (or subscale's) items over time
+# Function to check for duplicate responses to measure's (or subscale's) items over time for Phases 1-2
 # - Note: If excluding items, provide the items' names at every time point
 check_dups_over_time <- function(data, prefixes, .measure, .subscale, exclude) {
 
@@ -1031,7 +1032,7 @@ check_dups_over_time <- function(data, prefixes, .measure, .subscale, exclude) {
 
 }
 
-# Function to load and clean phase 2 codebook, as this is done in each script
+# Function to load and clean Phase 2 codebook, as this is done in each script
 load_p2_codebook <- function(codebook_path) {
   
   sheet_name <- "Qualtrics Measure Variables"
@@ -1089,7 +1090,7 @@ load_p2_codebook <- function(codebook_path) {
   
 }
 
-# Function to load and clean phase 2 participant tracker, as this is done in each script
+# Function to load and clean Phase 2 participant tracker, as this is done in each script
 load_p2_tracker <- function(tracker_path) {
   
   tracker <- read_csv(tracker_path, col_types = "c") %>%
@@ -1108,7 +1109,7 @@ load_p2_tracker <- function(tracker_path) {
 }
 
 # Function to compute assessment window start or end date via seq() method by
-# adding a given interval to a given reference date
+# adding a given interval to a given reference date for Phase 2
 compute_date_w_seq <- function(reference_date, interval) {
   if (is.na(reference_date)) {
     NA
