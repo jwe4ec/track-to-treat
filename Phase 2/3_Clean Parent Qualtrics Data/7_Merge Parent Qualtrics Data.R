@@ -90,7 +90,6 @@ p_merged_filtered <- p_merged %>%
 # TODOs
 # - Move clean data at individual time points to "intermediate" directory
 # given that they include participants need to get dropped
-# - Ensure all columns contain a time point prefix (for easy conversion to long format)
 
 
 
