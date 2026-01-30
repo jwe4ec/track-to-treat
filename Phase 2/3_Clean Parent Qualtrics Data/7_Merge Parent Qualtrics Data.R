@@ -24,10 +24,18 @@ dirs <- get_p2_qualtrics_dirs(c("clean_data_staging", "clean_data_staging_interm
 # Load clean data by wave
 pb_clean <- readRDS(dirs$clean_data_staging %+% "Phase 2 Parent Qualtrics Clean Data - Baseline.rds")
 p3m_clean <- readRDS(dirs$clean_data_staging %+% "Phase 2 Parent Qualtrics Clean Data - 3m.rds")
+p6m_clean <- readRDS(dirs$clean_data_staging %+% "Phase 2 Parent Qualtrics Clean Data - 6m.rds")
+p12m_clean <- readRDS(dirs$clean_data_staging %+% "Phase 2 Parent Qualtrics Clean Data - 12m.rds")
+p18m_clean <- readRDS(dirs$clean_data_staging %+% "Phase 2 Parent Qualtrics Clean Data - 18m.rds")
+p24m_clean <- readRDS(dirs$clean_data_staging %+% "Phase 2 Parent Qualtrics Clean Data - 24m.rds")
 
 # Load logs by wave
 pb_log <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Clean Data Log - Baseline.rds")
 p3m_log <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Clean Data Log - 3m.rds")
+p6m_log <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Clean Data Log - 6m.rds")
+p12m_log <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Clean Data Log - 12m.rds")
+p18m_log <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Clean Data Log - 18m.rds")
+p24m_log <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Clean Data Log - 24m.rds")
 
 # Load youth intervention data, for `condition`
 yi_clean <- readRDS(dirs$clean_data_staging %+% "Phase 2 Youth Qualtrics Clean Data - Intervention.rds")
@@ -35,6 +43,14 @@ yi_clean <- readRDS(dirs$clean_data_staging %+% "Phase 2 Youth Qualtrics Clean D
 
 ## Load item-level codebook file using helper function
 codebook <- load_p2_codebook(here("Phase 2", "2025.07.02 Track to Treat P2 Codebook.xlsx"))
+
+
+
+
+
+# TODO: Continue updating below
+
+
 
 
 

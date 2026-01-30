@@ -25,16 +25,32 @@ dirs <- get_p2_qualtrics_dirs(c("clean_data_staging", "clean_data_staging_interm
 yb_clean <- readRDS(dirs$clean_data_staging %+% "Phase 2 Youth Qualtrics Clean Data - Baseline.rds")
 yi_clean <- readRDS(dirs$clean_data_staging %+% "Phase 2 Youth Qualtrics Clean Data - Intervention.rds")
 y3m_clean <- readRDS(dirs$clean_data_staging %+% "Phase 2 Youth Qualtrics Clean Data - 3m.rds")
+y6m_clean <- readRDS(dirs$clean_data_staging %+% "Phase 2 Youth Qualtrics Clean Data - 6m.rds")
+y12m_clean <- readRDS(dirs$clean_data_staging %+% "Phase 2 Youth Qualtrics Clean Data - 12m.rds")
+y18m_clean <- readRDS(dirs$clean_data_staging %+% "Phase 2 Youth Qualtrics Clean Data - 18m.rds")
+y24m_clean <- readRDS(dirs$clean_data_staging %+% "Phase 2 Youth Qualtrics Clean Data - 24m.rds")
 
 # Load logs by wave
 yb_log <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data Log - Baseline.rds")
 yi_log <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data Log - Intervention.rds")
 y3m_log <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data Log - 3m.rds")
+y6m_log <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data Log - 6m.rds")
+y12m_log <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data Log - 12m.rds")
+y18m_log <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data Log - 18m.rds")
+y24m_log <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data Log - 24m.rds")
 
 
 ## Load ID lookup and (using helper function) item-level codebook
 id_lookup <- read_csv(here("Phase 2", "2025.08.01 Track to Treat P2 ID Lookup.csv"))
 codebook <- load_p2_codebook(here("Phase 2", "2025.07.02 Track to Treat P2 Codebook.xlsx"))
+
+
+
+
+
+# TODO: Continue updating below
+
+
 
 
 

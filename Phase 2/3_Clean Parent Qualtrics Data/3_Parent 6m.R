@@ -230,4 +230,9 @@ walk(items_to_check, check_values, p6m_recoded) # check_values() helper function
 
 
 
+####  Save Data  ####
+# Save clean Qualtrics data
+saveRDS(p6m_recoded, dirs$clean_data_staging %+% "Phase 2 Parent Qualtrics Clean Data - 6m.rds")
 
+# Save log
+saveRDS(log, dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Clean Data Log - 6m.rds")

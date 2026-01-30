@@ -269,4 +269,9 @@ walk(items_to_check, check_values, y24m_recoded) # check_values() helper functio
 
 
 
+####  Save Data  ####
+# Save clean Qualtrics data
+saveRDS(y24m_recoded, dirs$clean_data_staging %+% "Phase 2 Youth Qualtrics Clean Data - 24m.rds")
 
+# Save log
+saveRDS(log, dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data Log - 24m.rds")
