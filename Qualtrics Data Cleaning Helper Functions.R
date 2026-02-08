@@ -452,13 +452,6 @@ mark_fu_done_in_ax_window <- function(data, survey_prefix, ax_windows) {
       
     )
   
-  # Throw warning if any surveys were completed before start of original window
-  if (any(!is.na(data[[days_before_start_window_org]]))) {
-    
-    warning("Survey(s) completed before original window. Consider earlier start date for extended window.")
-    
-  }
-  
   return(data)
   
 }
