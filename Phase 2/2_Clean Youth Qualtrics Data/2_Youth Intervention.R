@@ -228,8 +228,8 @@ identify_duplicates(yi_deduplicated, lsmh_id, phase = 2)
 #   participant's status to the next phase (e.g., from "3M" to "6M"). Given that window end dates
 #   were not recorded, have leeway and use the same Excel formula to approximate the end date that
 #   the RA might have had in mind based on the approximated start date.
-# - Because some surveys were completed late, also compute an extended window that
-# extends the original window's end date by a reasonable 14 days.
+# - Because some surveys were completed early or late, also compute an extended window that
+# extends the original window's start and end dates by a reasonable 7 and 14 days, respectively.
 ax_windows <- yi_deduplicated %>%
   # Add intervention dates (when applicable) for participants with baseline surveys
   select(
@@ -250,7 +250,7 @@ ax_windows <- yi_deduplicated %>%
     ax_window_3m_end_org = compute_date_w_seq(as_date(EndDate_yi), "3 months"),
     ax_window_3m_end_org = compute_date_w_seq(ax_window_3m_end_org, "1 month"),
     
-    ax_window_3m_start_ext = ax_window_3m_start_org,        # TODO: Consider extending earlier by 1-7 days
+    ax_window_3m_start_ext = ax_window_3m_start_org - days(7),
     ax_window_3m_end_ext = ax_window_3m_end_org + days(14),
     
     # 6-month follow-up
@@ -258,7 +258,7 @@ ax_windows <- yi_deduplicated %>%
     ax_window_6m_end_org = compute_date_w_seq(as_date(EndDate_yi), "6 months"),
     ax_window_6m_end_org = compute_date_w_seq(ax_window_6m_end_org, "1 month"),
     
-    ax_window_6m_start_ext = ax_window_6m_start_org,
+    ax_window_6m_start_ext = ax_window_6m_start_org - days(7),
     ax_window_6m_end_ext = ax_window_6m_end_org + days(14),
     
     # 12-month follow-up
@@ -266,7 +266,7 @@ ax_windows <- yi_deduplicated %>%
     ax_window_12m_end_org = compute_date_w_seq(as_date(EndDate_yi), "12 months"),
     ax_window_12m_end_org = compute_date_w_seq(ax_window_12m_end_org, "1 month"),
     
-    ax_window_12m_start_ext = ax_window_12m_start_org,
+    ax_window_12m_start_ext = ax_window_12m_start_org - days(7),
     ax_window_12m_end_ext = ax_window_12m_end_org + days(14),
     
     # 18-month follow-up
@@ -274,7 +274,7 @@ ax_windows <- yi_deduplicated %>%
     ax_window_18m_end_org = compute_date_w_seq(as_date(EndDate_yi), "18 months"),
     ax_window_18m_end_org = compute_date_w_seq(ax_window_18m_end_org, "1 month"),
     
-    ax_window_18m_start_ext = ax_window_18m_start_org,
+    ax_window_18m_start_ext = ax_window_18m_start_org - days(7),
     ax_window_18m_end_ext = ax_window_18m_end_org + days(14),
     
     # 24-month follow-up
@@ -282,7 +282,7 @@ ax_windows <- yi_deduplicated %>%
     ax_window_24m_end_org = compute_date_w_seq(as_date(EndDate_yi), "24 months"),
     ax_window_24m_end_org = compute_date_w_seq(ax_window_24m_end_org, "1 month"),
     
-    ax_window_24m_start_ext = ax_window_24m_start_org,
+    ax_window_24m_start_ext = ax_window_24m_start_org - days(7),
     ax_window_24m_end_ext = ax_window_24m_end_org + days(14)
     
   ) %>%

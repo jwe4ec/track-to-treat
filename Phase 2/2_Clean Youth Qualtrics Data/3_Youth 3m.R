@@ -96,7 +96,7 @@ y3m_valid_ids <- compute_item_completion_rate(y3m_valid_ids, "y3m", phase = 2)
 # Compute indicators of survey completion in window using helper function
 y3m_valid_ids <- mark_fu_done_in_ax_window(y3m_valid_ids, "3m", ax_windows)
 
-# Print (using helper function) and remove any surveys outside window          # TODO: Finalize windows
+# Print (using helper function) and remove any surveys outside window
 y3m_valid_ids_out_window <- get_surveys_outside_window_3m_onward(y3m_valid_ids, "3m") %>% print()
 
 y3m_valid_ids <- y3m_valid_ids %>%

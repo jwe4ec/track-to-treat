@@ -98,7 +98,7 @@ p12m_valid_ids <- compute_item_completion_rate(p12m_valid_ids, "p12m", phase = 2
 # Compute indicators of survey completion in window using helper function
 p12m_valid_ids <- mark_fu_done_in_ax_window(p12m_valid_ids, "12m", ax_windows)
 
-# Print (using helper function) and remove any surveys outside window          # TODO: Finalize windows
+# Print (using helper function) and remove any surveys outside window
 p12m_valid_ids_out_window <- get_surveys_outside_window_3m_onward(p12m_valid_ids, "12m") %>% print()
 
 p12m_valid_ids <- p12m_valid_ids %>%
