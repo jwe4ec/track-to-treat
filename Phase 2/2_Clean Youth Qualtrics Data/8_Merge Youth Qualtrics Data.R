@@ -69,25 +69,12 @@ y_merged <- reduce(
 
 
 
-####  Check Duplicated Data in Primary Outcome Over Time  ####
-ids_to_drop <- check_dups_over_time(y_merged, c("yb", "y3m", "y6m", "y12m", "y18m", "y24m"), "CDI-2 SR") %>%
-  filter(dup_other == TRUE) %>%  # TODO: Finalize criteria for dropping
-  distinct(lsmh_id)
-
-stopifnot(length(ids_to_drop$lsmh_id) == 0)
-
-y_merged_filtered <- y_merged %>%
-  anti_join(
-    ids_to_drop,
-    by = "lsmh_id"
-  )
-
+####  Filter Data  ####
 # TODOs
-# - Also drop participants flagged for youth intervention survey issues
+# - Drop participants flagged for youth intervention survey issues
 # - Move clean data at individual time points to "intermediate" directory
 # given that they include participants need to get dropped
-
-
+y_merged_filtered <- y_merged
 
 
 

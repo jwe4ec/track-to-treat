@@ -74,25 +74,12 @@ p_merged <- reduce(
 
 
 
-####  Check Duplicated Data in Primary Outcome Over Time  ####
-ids_to_drop <- check_dups_over_time(p_merged, c("pb", "p3m", "p6m", "p12m", "p18m", "p24m"), "CDI-2 P") %>%
-  filter(dup_other == TRUE) %>%  # TODO: Finalize criteria for dropping
-  distinct(lsmh_id)
-
-stopifnot(ids_to_drop$lsmh_id == c("LSMH00827", "LSMH00854"))
-
-p_merged_filtered <- p_merged %>%
-  anti_join(
-    ids_to_drop,
-    by = "lsmh_id"
-  )
-
+####  Filter Data  ####
 # TODOs
-# - Also drop participants flagged for youth intervention survey issues
+# - Drop participants flagged for youth intervention survey issues
 # - Move clean data at individual time points to "intermediate" directory
 # given that they include participants need to get dropped
-
-
+p_merged_filtered <- p_merged
 
 
 
