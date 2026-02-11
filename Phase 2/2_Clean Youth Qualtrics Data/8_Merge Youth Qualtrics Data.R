@@ -43,9 +43,12 @@ y_log$y12m <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qu
 y_log$y18m <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data Log - 18m.rds")
 y_log$y24m <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data Log - 24m.rds")
 
+# Load LSMH IDs meeting exclusion criteria per youth intervention free-text responses
+# - These were identified and exported in "Youth Intervention.R" (see script for details)
+exclude_ids <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 LSMH IDs Meeting Free-Text Exclusion Criteria.rds")
 
-## Load ID lookup and (using helper function) item-level codebook
-id_lookup <- read_csv(here("Phase 2", "2025.08.01 Track to Treat P2 ID Lookup.csv"))
+
+## Load item-level codebook using helper function
 codebook <- load_p2_codebook(here("Phase 2", "2025.07.02 Track to Treat P2 Codebook.xlsx"))
 
 
@@ -70,11 +73,20 @@ y_merged <- reduce(
 
 
 ####  Filter Data  ####
-# TODOs
-# - Drop participants flagged for youth intervention survey issues
-# - Move clean data at individual time points to "intermediate" directory
-# given that they include participants need to get dropped
-y_merged_filtered <- y_merged
+# Drop LSMH IDs meeting exclusion criteria per youth intervention free-text responses
+y_merged_filtered <- y_merged %>%
+  left_join(
+    exclude_ids[c("lsmh_id", "exclude")],
+    by = "lsmh_id",
+    relationship = "one-to-one"
+  ) %>%
+  filter(exclude != 1 | is.na(exclude)) %>%
+  select(-exclude)
+
+# TODO: Move clean data at individual time points to "intermediate" directory
+# given that they include participants who need to get dropped
+
+
 
 
 

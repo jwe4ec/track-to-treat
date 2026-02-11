@@ -143,18 +143,20 @@ yi_valid_ids %>%
 # manually copied AG's "exclude" ratings into the file below (whose "EndDate" is in "America/Chicago").
 filename_checked <- "2026.01.21 Phase 2 Youth Qualtrics Valid Data - Intervention Free-Responses Checked.csv"
 
-# Load checked responses and exclude surveys that meet exclusion criteria
+# Load checked responses and create table of LSMH IDs meeting exclusion criteria
 yi_valid_ids_free_text_checked <- read_csv(dirs$clean_data_staging_intermediate %+% filename_checked) %>%
   mutate(EndDate = ymd_hms(EndDate, tz = "America/Chicago"))
 
-yi_valid_ids <- yi_valid_ids %>%
-  left_join(
-    yi_valid_ids_free_text_checked[c("lsmh_id", "EndDate", "exclude")],
-    by = c("lsmh_id", "EndDate"),
-    relationship = "one-to-one"
-  ) %>%
-  filter(exclude != 1) %>%
-  select(-exclude)
+exclude_ids <- yi_valid_ids_free_text_checked %>%
+  group_by(lsmh_id) %>%
+  filter(all(exclude == 1)) %>%
+  ungroup() %>%
+  select(lsmh_id, exclude, exclude_not_fluent, exclude_random_text, exclude_too_short)
+
+# Save LSMH IDs meeting exclusion criteria
+# - These IDs are loaded in "Merge Youth Qualtrics Data.R" and "Merge Parent Qualtrics Data.R" and used to
+# exclude LSMH IDs in those scripts after merging data across assessment points
+saveRDS(exclude_ids, dirs$clean_data_staging_intermediate %+% "Phase 2 LSMH IDs Meeting Free-Text Exclusion Criteria.rds")
 
 
 ### Identify duplicates and compute item completion rate for removing duplicates
