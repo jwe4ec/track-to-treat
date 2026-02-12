@@ -29,7 +29,7 @@ p3m_raw <- read_survey(p3m_path, time_zone = "America/Chicago")
 
 ## Load ID lookup and (using helper function) item-level codebook
 id_lookup <- read_csv(here("Phase 2", "2025.08.01 Track to Treat P2 ID Lookup.csv"))
-codebook <- load_p2_codebook(here("Phase 2", "2025.07.02 Track to Treat P2 Codebook.xlsx"))
+codebook <- load_p2_codebook(here("Phase 2", "2026.02.12 Track to Treat P2 Codebook.xlsx"))
 
 
 ## Load assessment windows
