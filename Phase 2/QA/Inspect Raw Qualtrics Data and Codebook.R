@@ -49,7 +49,7 @@ codebook <- load_p2_codebook(here("Phase 2", "2026.02.12 Track to Treat P2 Codeb
 
 
 
-#### Check that all "_n" files are indeed numeric (based on example columns) ####
+####  Check that all "_n" files are indeed numeric (based on example columns)  ####
 ex_col_classes <- lapply(names(dat_ls), function(name) {
   dat <- dat_ls[[name]]
   
@@ -66,7 +66,7 @@ stopifnot(all(ex_col_classes == "numeric"))
 
 
 
-#### Identify and inspect data columns by type at each wave ####
+####  Identify and inspect data columns by type at each wave  ####
 # Identify columns by type
 dat_ls_cols <- lapply(dat_ls, function(dat) {
   # Identify various types of non-item columns
@@ -134,7 +134,7 @@ lapply(dat_ls_cols, \(x) x$meas_item_cols)
 
 
 
-#### Check if stems of measure item column names are same across follow-up waves ####
+####  Check if stems of measure item column names are same across follow-up waves  ####
 ### TODO: Alyssa to generalize this section to check across all waves
 
 
@@ -182,7 +182,7 @@ stopifnot(all(table(unlist(p_fu_meas_item_cols_stems_no_accom_2)) == length(p_fu
 
 
 
-#### Check if labels of measure item names are same across follow-up waves ####
+####  Check if labels of measure item names are same across follow-up waves  ####
 ### TODO: Alyssa to generalize this section to check across all waves
 
 
@@ -294,7 +294,7 @@ get_lbls_diff_cols(p_fu_meas_item_col_lbls_sans_prefix, p_diff_cols)
 
 
 
-#### Check for measure items missing from codebook ####
+####  Check for measure items missing from codebook  ####
 lapply(dat_ls_cols, function(dat_cols) {
   setdiff(dat_cols$meas_item_cols, codebook$item)
 })
@@ -308,7 +308,7 @@ lapply(dat_ls_cols, function(dat_cols) {
 # In "p24m_raw", "p24m_accom_2", for "p24m_accommodations_2", is incorrectly named (renamed in clean data)
 
 
-#### Check for codebook items not in data ####
+####  Check for codebook items not in data  ####
 all_meas_item_cols <- unlist(lapply(dat_ls_cols, function(dat_cols) {
   dat_cols$meas_item_cols
 }), use.names = FALSE)
@@ -332,7 +332,7 @@ stopifnot(diff_other_cols == c("y12m_pds_7", "y18m_scsc_20"))
 
 
 
-#### Check item prefixes ####
+####  Check item prefixes  ####
 ## In data
 lapply(dat_ls_cols, function(dat_cols) {
   meas_item_col_prefixes <- str_split_fixed(dat_cols$meas_item_cols, "_", 2)[, 1]
@@ -360,7 +360,7 @@ lapply(dat_ls_cols, function(dat_cols) {
 
 
 
-#### Check other codebook columns ####
+####  Check other codebook columns  ####
 ## Check "wave"
 table(codebook$wave, useNA = "always")
 # View(codebook[codebook$wave == "", ])
@@ -417,7 +417,7 @@ table(codebook$reversed, codebook$reverse_base, useNA = "always")
 
 
 
-#### Check for items in data across waves ####
+####  Check for items in data across waves  ####
 ## Define function to check for item pattern in data across waves, with option
 ## to restrict to columns of a given type
 check_item_pattern <- function(dat_ls_cols, pattern, col_type = "all") {
