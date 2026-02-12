@@ -24,13 +24,13 @@ dirs <- get_p2_qualtrics_dirs(c("clean_data_staging", "clean_data_staging_interm
 # Load clean data by wave into list
 y_clean <- list()
 
-y_clean$yb <- readRDS(dirs$clean_data_staging %+% "Phase 2 Youth Qualtrics Clean Data - Baseline.rds")
-y_clean$yi <- readRDS(dirs$clean_data_staging %+% "Phase 2 Youth Qualtrics Clean Data - Intervention.rds")
-y_clean$y3m <- readRDS(dirs$clean_data_staging %+% "Phase 2 Youth Qualtrics Clean Data - 3m.rds")
-y_clean$y6m <- readRDS(dirs$clean_data_staging %+% "Phase 2 Youth Qualtrics Clean Data - 6m.rds")
-y_clean$y12m <- readRDS(dirs$clean_data_staging %+% "Phase 2 Youth Qualtrics Clean Data - 12m.rds")
-y_clean$y18m <- readRDS(dirs$clean_data_staging %+% "Phase 2 Youth Qualtrics Clean Data - 18m.rds")
-y_clean$y24m <- readRDS(dirs$clean_data_staging %+% "Phase 2 Youth Qualtrics Clean Data - 24m.rds")
+y_clean$yb <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data - Baseline.rds")
+y_clean$yi <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data - Intervention.rds")
+y_clean$y3m <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data - 3m.rds")
+y_clean$y6m <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data - 6m.rds")
+y_clean$y12m <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data - 12m.rds")
+y_clean$y18m <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data - 18m.rds")
+y_clean$y24m <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data - 24m.rds")
 
 # Load logs by wave into list
 y_log <- list()
@@ -82,11 +82,6 @@ y_merged_filtered <- y_merged %>%
   ) %>%
   filter(exclude != 1 | is.na(exclude)) %>%
   select(-exclude)
-
-# TODO: Move clean data at individual time points to "intermediate" directory
-# given that they include participants who need to get dropped
-
-
 
 
 

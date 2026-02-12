@@ -24,12 +24,12 @@ dirs <- get_p2_qualtrics_dirs(c("clean_data_staging", "clean_data_staging_interm
 # Load clean data by wave into list
 p_clean <- list()
 
-p_clean$pb <- readRDS(dirs$clean_data_staging %+% "Phase 2 Parent Qualtrics Clean Data - Baseline.rds")
-p_clean$p3m <- readRDS(dirs$clean_data_staging %+% "Phase 2 Parent Qualtrics Clean Data - 3m.rds")
-p_clean$p6m <- readRDS(dirs$clean_data_staging %+% "Phase 2 Parent Qualtrics Clean Data - 6m.rds")
-p_clean$p12m <- readRDS(dirs$clean_data_staging %+% "Phase 2 Parent Qualtrics Clean Data - 12m.rds")
-p_clean$p18m <- readRDS(dirs$clean_data_staging %+% "Phase 2 Parent Qualtrics Clean Data - 18m.rds")
-p_clean$p24m <- readRDS(dirs$clean_data_staging %+% "Phase 2 Parent Qualtrics Clean Data - 24m.rds")
+p_clean$pb <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Clean Data - Baseline.rds")
+p_clean$p3m <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Clean Data - 3m.rds")
+p_clean$p6m <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Clean Data - 6m.rds")
+p_clean$p12m <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Clean Data - 12m.rds")
+p_clean$p18m <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Clean Data - 18m.rds")
+p_clean$p24m <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Clean Data - 24m.rds")
 
 # Load logs by wave into list
 p_log <- list()
@@ -42,7 +42,7 @@ p_log$p18m <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Q
 p_log$p24m <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Clean Data Log - 24m.rds")
 
 # Load youth intervention data, for `condition`
-yi_clean <- readRDS(dirs$clean_data_staging %+% "Phase 2 Youth Qualtrics Clean Data - Intervention.rds")
+yi_clean <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data - Intervention.rds")
 
 # Load LSMH IDs meeting exclusion criteria per youth intervention free-text responses
 # - These were identified and exported in "Youth Intervention.R" (see script for details)
@@ -88,9 +88,6 @@ p_merged_filtered <- p_merged %>%
   ) %>%
   filter(exclude != 1 | is.na(exclude)) %>%
   select(-exclude)
-
-# TODO: Move clean data at individual time points to "intermediate" directory
-# given that they include participants who need to get dropped
 
 
 

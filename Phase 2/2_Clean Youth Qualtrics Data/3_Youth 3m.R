@@ -19,7 +19,7 @@ source(here("Version Control Helper Functions.R"))
 
 ## Load Qualtrics data
 # Get directories using helper function
-dirs <- get_p2_qualtrics_dirs(c("raw_data", "clean_data_staging", "clean_data_staging_intermediate"))
+dirs <- get_p2_qualtrics_dirs(c("raw_data", "clean_data_staging_intermediate"))
 
 # Load raw Qualtrics datasets (storing paths) in this format: [respondent][wave]_[administration]_raw
 # - Note: Use "timeZone" specified for date columns (e.g., "StartDate") in third row of raw CSV
@@ -273,7 +273,8 @@ walk(items_to_check, check_values, y3m_recoded) # check_values() helper function
 
 ####  Save Data  ####
 # Save clean Qualtrics data
-saveRDS(y3m_recoded, dirs$clean_data_staging %+% "Phase 2 Youth Qualtrics Clean Data - 3m.rds")
+# - Note: LSMH IDs meeting exclusion criteria are dropped later (in "Merge Youth Qualtrics Data.R")
+saveRDS(y3m_recoded, dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data - 3m.rds")
 
 # Save log
 saveRDS(log, dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data Log - 3m.rds")

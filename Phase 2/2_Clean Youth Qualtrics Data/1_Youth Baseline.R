@@ -316,7 +316,8 @@ walk(items_to_check, check_values, yb_recoded) # check_values() helper function
 
 ####  Save Data  ####
 # Save clean Qualtrics data
-saveRDS(yb_recoded, dirs$clean_data_staging %+% "Phase 2 Youth Qualtrics Clean Data - Baseline.rds")
+# - Note: LSMH IDs meeting exclusion criteria are dropped later (in "Merge Youth Qualtrics Data.R")
+saveRDS(yb_recoded, dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data - Baseline.rds")
 
 # Save log
 saveRDS(log, dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data Log - Baseline.rds")
