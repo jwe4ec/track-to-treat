@@ -89,7 +89,7 @@ Data cleaning notes:
     * Items used to compute item completion rates (see `log$item_completion_rate`)
     * Items used to compute means and counts (see `log$mean_items` and `log$count_items`)
       * Confirm the items are correct before analyzing the means and counts
-    * Clean youth and parent codebooks
+    * Clean youth and parent codebooks (with selected columns; see raw codebook for all columns)
   * Take care when comparing timestamps between LifePak/Qualtrics datasets (different time zones)
   * Ranges of youth SITBI-SF items need to be checked against those expected
   * Phase 1 specifics:
@@ -104,6 +104,9 @@ Data cleaning notes:
       * Script recodes values from 1-4 to 0-3 for consistency over time (surveys did not display numbers)
       * But wording differences remain:
         * "somewhat false"/"somewhat true" at intervention vs. "sort of false"/"sort of true" elsewhere
+    * Some items had minor wording differences across time points (see raw codebook for details)
+      * Youth item `scared_a_2`: "get" vs. "gets"
+      * Youth items `pcsc_1`, `pcsc_7`, and `pcsc_13`: "grades" vs. "marks"
     * Youth data collected but not cleaned:
       * TODO
     * Parent data collected but not cleaned:

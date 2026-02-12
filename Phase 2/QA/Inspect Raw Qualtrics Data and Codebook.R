@@ -149,14 +149,168 @@ dat_ls_cols <- lapply(dat_ls, function(dat) {
 })
 
 # Inspect columns by type
-lapply(dat_ls_cols, function(x) x$q_meta_cols)
-lapply(dat_ls_cols, function(x) x$click_submit_cols)
-lapply(dat_ls_cols, function(x) x$id_cols)   # Note: ID column names vary by wave
-lapply(dat_ls_cols, function(x) x$date_cols) # Note: Youth data lack "date" columns
-lapply(dat_ls_cols, function(x) x$test_cols)
-lapply(dat_ls_cols, function(x) x$other_cols)
-lapply(dat_ls_cols, function(x) x$ssi_item_cols)
-lapply(dat_ls_cols, function(x) x$meas_item_cols)
+lapply(dat_ls_cols, \(x) x$q_meta_cols)
+lapply(dat_ls_cols, \(x) x$click_submit_cols)
+lapply(dat_ls_cols, \(x) x$id_cols)   # Note: ID column names vary by wave
+lapply(dat_ls_cols, \(x) x$date_cols) # Note: Youth data lack "date" columns
+lapply(dat_ls_cols, \(x) x$test_cols)
+lapply(dat_ls_cols, \(x) x$other_cols)
+lapply(dat_ls_cols, \(x) x$ssi_item_cols)
+lapply(dat_ls_cols, \(x) x$meas_item_cols)
+
+
+
+#### Check if stems of measure item column names are same across follow-up waves ####
+### TODO: Alyssa to generalize this section to check across all waves
+
+
+### Restrict to 3- to 24-month follow-ups
+dat_ls_cols_fu <- dat_ls_cols[grepl("\\d+m_raw$", names(dat_ls_cols))]
+
+
+### Get names of measure items for youth and parent surveys
+fu_meas_item_cols_stems <- lapply(dat_ls_cols_fu, function(dat_cols) {
+  meas_item_cols <- dat_cols$meas_item_cols
+  
+  meas_item_cols_stems <- str_split_fixed(meas_item_cols, "_", 2)[, 2]
+  
+  return(meas_item_cols_stems)
+})
+
+y_fu_meas_item_cols_stems <- fu_meas_item_cols_stems[grepl("^y", names(fu_meas_item_cols_stems))]
+p_fu_meas_item_cols_stems <- fu_meas_item_cols_stems[grepl("^p", names(fu_meas_item_cols_stems))]
+
+
+### Confirm that all measure items within a given follow-up survey are unique
+all(sapply(y_fu_meas_item_cols_stems, \(stems) length(stems) == length(unique(stems))))
+all(sapply(p_fu_meas_item_cols_stems, \(stems) length(stems) == length(unique(stems))))
+
+
+### Confirm that measure item stems are same across follow-up surveys
+## True for youth surveys
+all(table(unlist(y_fu_meas_item_cols_stems)) == length(y_fu_meas_item_cols_stems))
+
+## Not for parent surveys (due to "accommodations_2" items; see sections below)
+all(table(unlist(p_fu_meas_item_cols_stems)) == length(p_fu_meas_item_cols_stems))
+
+# True for parent surveys when excluding "accommodations_2" items
+p_fu_meas_item_cols_stems_no_accom_2 <- lapply(p_fu_meas_item_cols_stems, function(stems) {
+  accom_2_items <- c("accom_2", "accommodations_", "accommodations_2")
+  
+  stems_no_accom_2 <- setdiff(stems, accom_2_items)
+  
+  return(stems_no_accom_2)
+})
+
+all(table(unlist(p_fu_meas_item_cols_stems_no_accom_2)) == length(p_fu_meas_item_cols_stems_no_accom_2))
+
+
+
+#### Check if labels of measure item names are same across follow-up waves ####
+### TODO: Alyssa to generalize this section to check across all waves
+
+
+### Restrict to 3- to 24-month follow-ups
+dat_ls_fu <- dat_ls[grepl("\\d+m_raw$", names(dat_ls))]
+
+
+### Get labels of measure items for youth and parent surveys and name by measure item stems
+fu_meas_item_col_lbls <- lapply(names(dat_ls_fu), function(dat_name) {
+  dat                 <- dat_ls_fu[[dat_name]]
+  meas_item_cols      <- dat_ls_cols[[dat_name]]$meas_item_cols
+  meas_item_col_stems <- str_split_fixed(meas_item_cols, "_", 2)[, 2]
+  
+  meas_item_col_lbls <- lapply(meas_item_cols, \(col) attr(dat[[col]], "label"))
+  names(meas_item_col_lbls) <- meas_item_col_stems
+  
+  return(meas_item_col_lbls)
+})
+names(fu_meas_item_col_lbls) <- names(dat_ls_fu)
+
+y_fu_meas_item_col_lbls <- fu_meas_item_col_lbls[grepl("^y", names(fu_meas_item_col_lbls))]
+p_fu_meas_item_col_lbls <- fu_meas_item_col_lbls[grepl("^p", names(fu_meas_item_col_lbls))]
+
+
+### Confirm that all measure item labels within a given follow-up survey are unique
+all(sapply(y_fu_meas_item_col_lbls, \(lbls) length(lbls) == length(unique(lbls))))
+all(sapply(p_fu_meas_item_col_lbls, \(lbls) length(lbls) == length(unique(lbls))))
+
+
+### Remove survey-specific prefixes from certain item labels
+# In youth data (SITBI Item 3b, SCARED items)
+y_fu_meas_item_col_lbls_sans_prefix <- lapply(y_fu_meas_item_col_lbls, function(survey_lbls) {
+  sitbi_3b_item_stems <- grep("sitbi_3b_", names(survey_lbls), value = TRUE)
+  scared_item_stems   <- grep("scared_", names(survey_lbls), value = TRUE)
+  
+  survey_lbls[sitbi_3b_item_stems] <- sub("^y\\d+m_", "", survey_lbls[sitbi_3b_item_stems])
+  survey_lbls[scared_item_stems]   <- sub("^y\\d+m_", "", survey_lbls[scared_item_stems])
+  
+  return(survey_lbls)
+})
+
+# In parent data (SCARED items)
+p_fu_meas_item_col_lbls_sans_prefix <- lapply(p_fu_meas_item_col_lbls, function(survey_lbls) {
+  scared_item_stems <- grep("scared_", names(survey_lbls), value = TRUE)
+  
+  survey_lbls[scared_item_stems] <- sub("^p\\d+m_", "", survey_lbls[scared_item_stems])
+  
+  return(survey_lbls)
+})
+
+
+### Check whether measure item labels are same across follow-up surveys
+## Define function to check labels 
+check_fu_meas_item_lbls <- function(fu_meas_item_col_lbs) {
+  # Get all unique measure item columns (i.e., their stems) across follow-up surveys
+  all_cols <- unique(unlist(lapply(fu_meas_item_col_lbs, names)))
+  
+  # Find measure item stems that have different labels across follow-up surveys
+  diff_cols <- character()
+  
+  for (col in all_cols) {
+    # Get labels for column across all follow-up surveys
+    lbls <- sapply(fu_meas_item_col_lbs, \(x) x[[col]])
+    
+    # Check if more than one unique label
+    if (length(unique(lbls)) > 1) diff_cols <- c(diff_cols, col)
+  }
+  
+  return(diff_cols)
+}
+
+
+## Run function to check labels for youth and parent data
+y_diff_cols <- check_fu_meas_item_lbls(y_fu_meas_item_col_lbls_sans_prefix)
+p_diff_cols <- check_fu_meas_item_lbls(p_fu_meas_item_col_lbls_sans_prefix)
+
+stopifnot(y_diff_cols == c("scared_a_2", "scared_c_9", "pcsc_1", "pcsc_7", "pcsc_13"),
+          p_diff_cols == c("accom_2", "accommodations_2", "accommodations_"))
+
+
+## Inspect items with different labels across follow-up surveys
+# Define function
+get_lbls_diff_cols <- function(col_lbls, diff_cols) {
+  diff_lbls <- lapply(diff_cols, \(diff_col) lapply(col_lbls, \(x) x[[diff_col]]))
+  names(diff_lbls) <- diff_cols
+  
+  return(diff_lbls)
+}
+
+# Differences for youth items are due to minor typos (SCARED items) or referring to
+# "grades" versus "marks" at some time points (PCSC items)
+# - Noted this in README and documented details in raw codebook
+y_diff_cols_typos           <- c("scared_a_2", "scared_c_9")
+y_diff_cols_grades_vs_marks <- c("pcsc_1", "pcsc_7", "pcsc_13")
+
+get_lbls_diff_cols(y_fu_meas_item_col_lbls_sans_prefix, y_diff_cols_typos)
+lapply(dat_ls$yb_raw[paste0("yb_", y_diff_cols_typos)], attr, which = "label")
+
+get_lbls_diff_cols(y_fu_meas_item_col_lbls_sans_prefix, y_diff_cols_grades_vs_marks)
+lapply(dat_ls$yb_raw[paste0("yb_", y_diff_cols_grades_vs_marks)], attr, which = "label")
+
+# Differences for parent items are due only to different names for "accommodations_2" item
+
+get_lbls_diff_cols(p_fu_meas_item_col_lbls_sans_prefix, p_diff_cols)
 
 
 
