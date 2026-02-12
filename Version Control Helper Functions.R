@@ -1,5 +1,5 @@
 #### Helper function to check raw data versions ####
-check_raw_data_ver <- function(raw_metadata, path_ls, data_ls, data_type,
+check_raw_data_ver <- function(raw_metadata, path_ls, data_ls, data_types,
                                write_loaded_raw_metadata = FALSE) {
   
   # Get metadata of loaded raw data files
@@ -20,7 +20,7 @@ check_raw_data_ver <- function(raw_metadata, path_ls, data_ls, data_type,
   }
   
   # Compare metadata of loaded raw data files to metadata expected
-  expected_raw_metadata <- raw_metadata[raw_metadata$data_type == data_type, ]
+  expected_raw_metadata <- raw_metadata[raw_metadata$data_type %in% data_types, ]
   expected_raw_metadata[, c("data_type", "survey_name")] <- NULL
   row.names(expected_raw_metadata) <- 1:nrow(expected_raw_metadata)
 
