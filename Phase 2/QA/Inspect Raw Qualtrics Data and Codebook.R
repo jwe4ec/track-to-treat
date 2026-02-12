@@ -16,66 +16,40 @@ source(here("Qualtrics Data Cleaning Helper Functions.R"))
 source(here("Version Control Helper Functions.R"))
 
 
-## Load Qualtrics data at all waves
+## Load data into list
+# Get directories using helper function
 dirs <- get_p2_qualtrics_dirs("raw_data")
 raw_data_dir <- dirs$raw_data
 
-yb_path <- raw_data_dir %+% "DP5+Phase+2+-+Youth+-+Baseline_January+21,+2026_11.24_n.csv"
-yi_path <- raw_data_dir %+% "DP5+Phase+2+-+Youth+-+Interventions_January+21,+2026_11.25_n.csv"
-y3m_path <- raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+1+-+3M_January+21,+2026_11.24_n.csv"
-y6m_path <- raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+2+-+6M_January+21,+2026_11.24_n.csv"
-y12m_path <- raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+3+-+12M_January+21,+2026_11.24_n.csv"
-y18m_path <- raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+4+-+18M_January+21,+2026_11.25_n.csv"
-y24m_path <- raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+5+-+24M_January+29,+2026_10.59_n.csv"
+# Load raw Qualtrics datasets (storing paths) in this format: [respondent][wave]_[administration]_raw
+# - Note: Use "timeZone" specified for date columns (e.g., "StartDate") in third row of raw CSVs
+raw_data_paths <- lst(
+  yb_raw = raw_data_dir %+% "DP5+Phase+2+-+Youth+-+Baseline_January+21,+2026_11.24_n.csv",
+  yi_raw = raw_data_dir %+% "DP5+Phase+2+-+Youth+-+Interventions_January+21,+2026_11.25_n.csv",
+  y3m_raw = raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+1+-+3M_January+21,+2026_11.24_n.csv",
+  y6m_raw = raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+2+-+6M_January+21,+2026_11.24_n.csv",
+  y12m_raw = raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+3+-+12M_January+21,+2026_11.24_n.csv",
+  y18m_raw = raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+4+-+18M_January+21,+2026_11.25_n.csv",
+  y24m_raw = raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+5+-+24M_January+29,+2026_10.59_n.csv",
+  
+  pb_raw = raw_data_dir %+% "DP5+Phase+2+-+Parent+-+Baseline_January+21,+2026_11.17_n.csv",
+  p3m_raw = raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+1+-+3M_January+21,+2026_11.18_n.csv",
+  p6m_raw = raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+2+-+6M_January+21,+2026_11.18_n.csv",
+  p12m_raw = raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+3+-+12M_January+21,+2026_11.18_n.csv",
+  p18m_raw = raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+4+-+18M_January+21,+2026_11.18_n.csv",
+  p24m_raw = raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+5+-+24M_January+21,+2026_11.19_n.csv"
+)
 
-pb_path <- raw_data_dir %+% "DP5+Phase+2+-+Parent+-+Baseline_January+21,+2026_11.17_n.csv"
-p3m_path <- raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+1+-+3M_January+21,+2026_11.18_n.csv"
-p6m_path <- raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+2+-+6M_January+21,+2026_11.18_n.csv"
-p12m_path <- raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+3+-+12M_January+21,+2026_11.18_n.csv"
-p18m_path <- raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+4+-+18M_January+21,+2026_11.18_n.csv"
-p24m_path <- raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+5+-+24M_January+21,+2026_11.19_n.csv"
-
-yb_raw <- read_survey(yb_path, time_zone = "America/Chicago")
-yi_raw <- read_survey(yi_path, time_zone = "America/Chicago")
-y3m_raw <- read_survey(y3m_path, time_zone = "America/Chicago")
-y6m_raw <- read_survey(y6m_path, time_zone = "America/Chicago")
-y12m_raw <- read_survey(y12m_path, time_zone = "America/Chicago")
-y18m_raw <- read_survey(y18m_path, time_zone = "America/Chicago")
-y24m_raw <- read_survey(y24m_path, time_zone = "America/Chicago")
-
-pb_raw <- read_survey(pb_path, time_zone = "America/Chicago")
-p3m_raw <- read_survey(p3m_path, time_zone = "America/Chicago")
-p6m_raw <- read_survey(p6m_path, time_zone = "America/Chicago")
-p12m_raw <- read_survey(p12m_path, time_zone = "America/Chicago")
-p18m_raw <- read_survey(p18m_path, time_zone = "America/Chicago")
-p24m_raw <- read_survey(p24m_path, time_zone = "America/Chicago")
-
-# Collect waves in list
-dat_ls <- list(yb_raw = yb_raw,
-               yi_raw = yi_raw,
-               y3m_raw = y3m_raw,
-               y6m_raw = y6m_raw,
-               y12m_raw = y12m_raw,
-               y18m_raw = y18m_raw,
-               y24m_raw = y24m_raw,
-               pb_raw = pb_raw,
-               p3m_raw = p3m_raw,
-               p6m_raw = p6m_raw,
-               p12m_raw = p12m_raw,
-               p18m_raw = p18m_raw,
-               p24m_raw = p24m_raw)
+dat_ls <- lapply(raw_data_paths, read_survey, time_zone = "America/Chicago")
 
 
-## Load ID lookup
+## Load ID lookup and (using helper function) item-level codebook
 id_lookup <- read_csv(here("Phase 2", "2025.08.01 Track to Treat P2 ID Lookup.csv"))
-
-
-## Load item-level codebook file using helper function
 codebook <- load_p2_codebook(here("Phase 2", "2026.02.12 Track to Treat P2 Codebook.xlsx"))
 
 
 
-#### Check that all "_n" files are indeed numeric (based on example columns)
+#### Check that all "_n" files are indeed numeric (based on example columns) ####
 ex_col_classes <- lapply(names(dat_ls), function(name) {
   dat <- dat_ls[[name]]
   
@@ -88,7 +62,7 @@ ex_col_classes <- lapply(names(dat_ls), function(name) {
   return(class(dat[[ex_col]]))
 })
 
-all(ex_col_classes == "numeric")
+stopifnot(all(ex_col_classes == "numeric"))
 
 
 
@@ -182,13 +156,15 @@ p_fu_meas_item_cols_stems <- fu_meas_item_cols_stems[grepl("^p", names(fu_meas_i
 
 
 ### Confirm that all measure items within a given follow-up survey are unique
-all(sapply(y_fu_meas_item_cols_stems, \(stems) length(stems) == length(unique(stems))))
-all(sapply(p_fu_meas_item_cols_stems, \(stems) length(stems) == length(unique(stems))))
+stopifnot(
+  all(sapply(y_fu_meas_item_cols_stems, \(stems) length(stems) == length(unique(stems)))),
+  all(sapply(p_fu_meas_item_cols_stems, \(stems) length(stems) == length(unique(stems))))
+)
 
 
 ### Confirm that measure item stems are same across follow-up surveys
 ## True for youth surveys
-all(table(unlist(y_fu_meas_item_cols_stems)) == length(y_fu_meas_item_cols_stems))
+stopifnot(all(table(unlist(y_fu_meas_item_cols_stems)) == length(y_fu_meas_item_cols_stems)))
 
 ## Not for parent surveys (due to "accommodations_2" items; see sections below)
 all(table(unlist(p_fu_meas_item_cols_stems)) == length(p_fu_meas_item_cols_stems))
@@ -202,7 +178,7 @@ p_fu_meas_item_cols_stems_no_accom_2 <- lapply(p_fu_meas_item_cols_stems, functi
   return(stems_no_accom_2)
 })
 
-all(table(unlist(p_fu_meas_item_cols_stems_no_accom_2)) == length(p_fu_meas_item_cols_stems_no_accom_2))
+stopifnot(all(table(unlist(p_fu_meas_item_cols_stems_no_accom_2)) == length(p_fu_meas_item_cols_stems_no_accom_2)))
 
 
 
@@ -232,8 +208,10 @@ p_fu_meas_item_col_lbls <- fu_meas_item_col_lbls[grepl("^p", names(fu_meas_item_
 
 
 ### Confirm that all measure item labels within a given follow-up survey are unique
-all(sapply(y_fu_meas_item_col_lbls, \(lbls) length(lbls) == length(unique(lbls))))
-all(sapply(p_fu_meas_item_col_lbls, \(lbls) length(lbls) == length(unique(lbls))))
+stopifnot(
+  all(sapply(y_fu_meas_item_col_lbls, \(lbls) length(lbls) == length(unique(lbls)))),
+  all(sapply(p_fu_meas_item_col_lbls, \(lbls) length(lbls) == length(unique(lbls))))
+)
 
 
 ### Remove survey-specific prefixes from certain item labels
@@ -283,8 +261,10 @@ check_fu_meas_item_lbls <- function(fu_meas_item_col_lbs) {
 y_diff_cols <- check_fu_meas_item_lbls(y_fu_meas_item_col_lbls_sans_prefix)
 p_diff_cols <- check_fu_meas_item_lbls(p_fu_meas_item_col_lbls_sans_prefix)
 
-stopifnot(y_diff_cols == c("scared_a_2", "scared_c_9", "pcsc_1", "pcsc_7", "pcsc_13"),
-          p_diff_cols == c("accom_2", "accommodations_2", "accommodations_"))
+stopifnot(
+  y_diff_cols == c("scared_a_2", "scared_c_9", "pcsc_1", "pcsc_7", "pcsc_13"),
+  p_diff_cols == c("accom_2", "accommodations_2", "accommodations_")
+)
 
 
 ## Inspect items with different labels across follow-up surveys
@@ -303,10 +283,10 @@ y_diff_cols_typos           <- c("scared_a_2", "scared_c_9")
 y_diff_cols_grades_vs_marks <- c("pcsc_1", "pcsc_7", "pcsc_13")
 
 get_lbls_diff_cols(y_fu_meas_item_col_lbls_sans_prefix, y_diff_cols_typos)
-lapply(dat_ls$yb_raw[paste0("yb_", y_diff_cols_typos)], attr, which = "label")
+lapply(dat_ls$yb_raw[paste0("yb_", y_diff_cols_typos)], attr, which = "label")  # At baseline
 
 get_lbls_diff_cols(y_fu_meas_item_col_lbls_sans_prefix, y_diff_cols_grades_vs_marks)
-lapply(dat_ls$yb_raw[paste0("yb_", y_diff_cols_grades_vs_marks)], attr, which = "label")
+lapply(dat_ls$yb_raw[paste0("yb_", y_diff_cols_grades_vs_marks)], attr, which = "label")  # At baseline
 
 # Differences for parent items are due only to different names for "accommodations_2" item
 
@@ -338,17 +318,17 @@ diff_accommodations_cols <- sort(setdiff(codebook$item[codebook$measure == "demo
                                            grepl("accommodations", codebook$item)], all_meas_item_cols))
 
 # MPVS columns resolved above
-diff_mpvs_cols        <- sort(setdiff(codebook$item[codebook$measure == "mpvs"], all_meas_item_cols))
+diff_mpvs_cols <- sort(setdiff(codebook$item[codebook$measure == "mpvs"], all_meas_item_cols))
 
 # In "p6m_raw", "scared_b" and "scared_c" items have incorrect prefix "p3m" (renamed in clean data)
-diff_scared_cols      <- sort(setdiff(codebook$item[codebook$measure == "scared"], all_meas_item_cols))
+diff_scared_cols <- sort(setdiff(codebook$item[codebook$measure == "scared"], all_meas_item_cols))
 names(dat_ls$p6m_raw)[grepl("scared_b|scared_c", names(dat_ls$p6m_raw))]
 
 # 2 other PDS and SCSC columns resolved above
 ignore_measures <- c("demographic", "ace_p", "ace_y", "mpvs", "scared", "other")
-diff_other_cols       <- sort(setdiff(codebook$item[!(codebook$measure %in% ignore_measures) &
-                                                        codebook$item != "condition"], all_meas_item_cols))
-diff_other_cols == c("y12m_pds_7", "y18m_scsc_20")
+diff_other_cols <- sort(setdiff(codebook$item[!(codebook$measure %in% ignore_measures) &
+                                                codebook$item != "condition"], all_meas_item_cols))
+stopifnot(diff_other_cols == c("y12m_pds_7", "y18m_scsc_20"))
 
 
 
@@ -408,7 +388,7 @@ ignore_cols <- c(free_response_cols, select_multiple_cols, numeric_cols,
 
 rows_missing_min_max <- codebook[!(codebook$item %in% ignore_cols) &
                                    (is.na(codebook$maximum) | is.na(codebook$minimum)), ]
-nrow(rows_missing_min_max) == 0
+stopifnot(nrow(rows_missing_min_max) == 0)
 
 # Check that "minimum" and "maximum" are same across time for each measure
 # - BHS was on 0-3 scale at all time points except "yi", where it was on 1-4 scale
