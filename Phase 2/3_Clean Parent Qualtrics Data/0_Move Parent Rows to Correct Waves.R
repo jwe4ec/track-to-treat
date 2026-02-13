@@ -25,15 +25,15 @@ raw_data_dir <- dirs$raw_data
 # Load raw Qualtrics datasets (storing paths) in this format: [respondent][wave]_[administration]_raw
 # - Note: Use "timeZone" specified for date columns (e.g., "StartDate") in third row of raw CSV
 raw_data_paths <- lst(
-  pb_raw = raw_data_dir %+% "DP5+Phase+2+-+Parent+-+Baseline_January+21,+2026_11.17_n.csv",
-  p3m_raw = raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+1+-+3M_January+21,+2026_11.18_n.csv",
-  p6m_raw = raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+2+-+6M_January+21,+2026_11.18_n.csv",
-  p12m_raw = raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+3+-+12M_January+21,+2026_11.18_n.csv",
-  p18m_raw = raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+4+-+18M_January+21,+2026_11.18_n.csv",
-  p24m_raw = raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+5+-+24M_January+21,+2026_11.19_n.csv"
+  pb = raw_data_dir %+% "DP5+Phase+2+-+Parent+-+Baseline_January+21,+2026_11.17_n.csv",
+  p3m = raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+1+-+3M_January+21,+2026_11.18_n.csv",
+  p6m = raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+2+-+6M_January+21,+2026_11.18_n.csv",
+  p12m = raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+3+-+12M_January+21,+2026_11.18_n.csv",
+  p18m = raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+4+-+18M_January+21,+2026_11.18_n.csv",
+  p24m = raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+5+-+24M_January+21,+2026_11.19_n.csv"
 )
 
-dat_ls <- lapply(raw_data_paths, read_survey, time_zone = "America/Chicago")
+dat_ls_raw <- lapply(raw_data_paths, read_survey, time_zone = "America/Chicago")
 
 
 ## Load ID lookup and (using helper function) item-level codebook
@@ -44,16 +44,25 @@ codebook <- load_p2_codebook(here("Phase 2", "2026.02.12 Track to Treat P2 Codeb
 ## Check raw Qualtrics data versions using helper function
 raw_metadata <- read.csv(here("Phase 2", "Raw P2 Metadata.csv"))
 p_data_types <- "p" %+% c("b", "i", c(3, 6, 12, 18, 24) %+% "m") %+% "_qualtrics"
-check_raw_data_ver(raw_metadata, raw_data_paths, dat_ls, p_data_types)
+check_raw_data_ver(raw_metadata, raw_data_paths, dat_ls_raw, p_data_types)
 
 
 
-####  Correct Item Names  ####
-# TODOs
-# - In p3m, “`p3m\020_accom_2`” is changed to “p3m_accommodations_2”
-# - In p6m, prefix of several SCARED items is corrected
-# -	In p12m, “p12m_accommodations_” is changed to “p12m_accommodations_2”
-# -	In p18m, “p18m_accommodations_” is changed to “p18m_accommodations_2”
+####  Fix Column Names  ####
+dat_ls_renamed <- dat_ls_raw %>%
+  # Fix names of "accommodations_2" items
+  modify_in("p3m", ~ rename(.x, p3m_accommodations_2 = `p3m\020_accom_2`)) %>%
+  modify_in("p12m", ~ rename(.x, p12m_accommodations_2 = p12m_accommodations_)) %>%
+  modify_in("p18m", ~ rename(.x, p18m_accommodations_2 = p18m_accommodations_)) %>%
+  
+  # Fix prefix of "scared_b" and "scared_c" items
+  modify_in("p6m", ~ rename_with(
+    .x,
+    .cols = contains(c("scared_b", "scared_c")),
+    .fn = ~ sub("^p3m_", "p6m_", .x)
+  ))
+
+# TODO: Remove above renaming from individual scripts
 
 
 
