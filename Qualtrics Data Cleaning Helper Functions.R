@@ -322,7 +322,8 @@ compute_item_completion_rate <- function(data, survey_prefix, phase = 1) {
   data_for_calculation <- data %>%
     select(
       -matches("_TEXT"), # Columns with specified responses for response options of "Other" (or similar)
-      -any_of(metadata)
+      -any_of(metadata),
+      -matches("^[yp].*_original_dataset$") # Phase 2 columns created to label each row's original dataset
     )
   
   # Calculate item completion rate

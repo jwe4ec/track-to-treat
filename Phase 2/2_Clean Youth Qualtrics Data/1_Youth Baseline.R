@@ -19,25 +19,19 @@ source(here("Version Control Helper Functions.R"))
 
 ## Load data
 # Get directories using helper function
-dirs <- get_p2_qualtrics_dirs(c("raw_data", "clean_data_staging", "clean_data_staging_intermediate"))
+dirs <- get_p2_qualtrics_dirs(c("clean_data_staging", "clean_data_staging_intermediate"))
 
-# Load raw Qualtrics datasets (storing paths) in this format: [respondent][wave]_[administration]_raw
-# - Note: Use "timeZone" specified for date columns (e.g., "StartDate") in third row of raw CSV
-yb_path <- dirs$raw_data %+% "DP5+Phase+2+-+Youth+-+Baseline_January+21,+2026_11.24_n.csv"
-yb_raw <- read_survey(yb_path, time_zone = "America/Chicago")
+# Load corrected Qualtrics data
+yb_corrected <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Corrected Data - List by Wave.rds") %>%
+  pluck("yb")
 
 # Load clean LifePak data without free-response items (until these are deidentified)
 nis_clean_wout_free <- readRDS(dirs$clean_data_staging %+% "Phase 2 LifePak Clean Data Without Free Responses.rds")
 
 
-## Load ID lookup and (using helper function) item-level codebook
+## Load ID lookup and corrected item-level codebook
 id_lookup <- read_csv(here("Phase 2", "2025.08.01 Track to Treat P2 ID Lookup.csv"))
-codebook <- load_p2_codebook(here("Phase 2", "2026.02.12 Track to Treat P2 Codebook.xlsx"))
-
-
-## Check raw Qualtrics data versions using helper function
-raw_metadata <- read.csv(here("Phase 2", "Raw P2 Metadata.csv"))
-check_raw_data_ver(raw_metadata, list(yb_path), list(yb_raw), "yb_qualtrics")
+codebook <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Qualtrics Corrected Codebook.rds")
 
 
 
@@ -51,27 +45,8 @@ log <- list(
 )
 
 
-### Fix item prefixes in data and codebook
-# Add prefix to SRET items
-
-yb_sret_items_raw <- c("SRET", "SRET.keys", "SRET.time", "SRET.words", "tlcond")
-
-yb_renamed <- yb_raw %>%
-  rename_with(
-    .cols = all_of(yb_sret_items_raw),
-    .fn   = ~ paste0("yb_", .x)
-  )
-
-codebook$item[codebook$item %in% yb_sret_items_raw] <-
-  paste0("yb_", codebook$item[codebook$item %in% yb_sret_items_raw])
-
-
-### Add codebook with clean youth baseline items to log
-log$yb_codebook_clean <- codebook
-
-
-### Correct LSMH IDs (manually as necessary)
-yb_corrected_ids <- yb_renamed %>%
+### Fix LSMH IDs (manually as necessary)
+yb_fixed_ids <- yb_corrected %>%
   rowwise() %>%
   mutate(
     lsmh_id = case_when(
@@ -92,12 +67,12 @@ yb_corrected_ids <- yb_renamed %>%
   ungroup()
 
 # Check LSMH ID format
-warn_invalid_id_format(yb_corrected_ids$lsmh_id)
+warn_invalid_id_format(yb_fixed_ids$lsmh_id)
 
 
 ### Remove invalid responses
 # Filter to known valid LSMH IDs (marked "keep" in id_lookup) using helper function
-yb_valid_ids <- remove_invalid_p2_qualtrics_responses(yb_corrected_ids, id_lookup)
+yb_valid_ids <- remove_invalid_p2_qualtrics_responses(yb_fixed_ids, id_lookup)
 
 
 ### Identify duplicates and compute item completion rate for removing duplicates
@@ -164,12 +139,6 @@ yb_ema_dates <- yb_deduplicated %>%
 ### Clean columns
 yb_recoded <- yb_deduplicated %>%
 
-  # Remove click, page time variables with helper function
-  rm_click_page_time_vars() %>%
-  
-  # Rename "mvps" to "mpvs" throughout with helper function
-  rename_mvps_to_mpvs() %>%
-  
   # Un-reverse code items with helper function
   unreverse_code_items(codebook) %>%
   
@@ -243,7 +212,8 @@ yb_recoded <- yb_deduplicated %>%
 
     
     ## SITBI-SF (Self-Injurious Thoughts and Behaviors Interview - Short Form)
-    # Many items but no recoding or combining (but ranges need to be checked)
+    # Many items but no combining
+    # Some recoding in "Correct Codebook and Raw Youth Data.R", but ranges still need to be checked
     
     
     ## SRET (Self-Referential Encoding Task)

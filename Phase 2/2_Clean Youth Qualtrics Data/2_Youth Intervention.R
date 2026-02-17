@@ -19,25 +19,19 @@ source(here("Version Control Helper Functions.R"))
 
 ## Load Qualtrics data
 # Get directories using helper function
-dirs <- get_p2_qualtrics_dirs(c("raw_data", "clean_data_staging_intermediate"))
+dirs <- get_p2_qualtrics_dirs("clean_data_staging_intermediate")
 
-# Load raw Qualtrics datasets (storing paths) in this format: [respondent][wave]_[administration]_raw
-# - Note: Use "timeZone" specified for date columns (e.g., "StartDate") in third row of raw CSV
-yi_path <- dirs$raw_data %+% "DP5+Phase+2+-+Youth+-+Interventions_January+21,+2026_11.25_n.csv"
-yi_raw <- read_survey(yi_path, time_zone = "America/Chicago")
+# Load corrected Qualtrics data
+yi_corrected <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Corrected Data - List by Wave.rds") %>%
+  pluck("yi")
 
 # Load dates for baseline Qualtrics survey and EMA computed when cleaning baseline survey
 yb_ema_dates <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Baseline and EMA Dates.rds")
 
 
-## Load ID lookup and (using helper function) item-level codebook
+## Load ID lookup and corrected item-level codebook
 id_lookup <- read_csv(here("Phase 2", "2025.08.01 Track to Treat P2 ID Lookup.csv"))
-codebook <- load_p2_codebook(here("Phase 2", "2026.02.12 Track to Treat P2 Codebook.xlsx"))
-
-
-## Check raw Qualtrics data versions using helper function
-raw_metadata <- read.csv(here("Phase 2", "Raw P2 Metadata.csv"))
-check_raw_data_ver(raw_metadata, list(yi_path), list(yi_raw), "yi_qualtrics")
+codebook <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Qualtrics Corrected Codebook.rds")
 
 
 
@@ -50,31 +44,6 @@ log <- list(
   item_completion_rate = list(),
   mean_items = list()
 )
-
-
-### Use unique "ImportId" to rename columns both named "lsmh_id" in Qualtrics
-# - "read_survey()" contingently named these by their column indices upon import to R
-col_map <- attr(yi_raw, "column_map")
-
-lsmh_id_col1_qname <- col_map$qname[col_map$ImportId == "QID186_TEXT"]
-lsmh_id_col2_qname <- col_map$qname[col_map$ImportId == "lsmh_id"]
-
-yi_renamed <- yi_raw
-
-names(yi_renamed)[names(yi_renamed) == lsmh_id_col1_qname] <- "lsmh_id_col1"
-names(yi_renamed)[names(yi_renamed) == lsmh_id_col2_qname] <- "lsmh_id_col2"
-
-
-### Fix item prefixes in data and codebook
-# For BADS-SF items with prefixes "b_" instead of "yi_"
-
-yi_bads_items_raw <- paste0("b_bads_", 1:9)
-
-names(yi_renamed)[names(yi_renamed) %in% yi_bads_items_raw] <-
-  sub("b_", "yi_", names(yi_renamed)[names(yi_renamed) %in% yi_bads_items_raw])
-
-codebook$item[codebook$item %in% yi_bads_items_raw] <-
-  sub("b_", "yi_", codebook$item[codebook$item %in% yi_bads_items_raw])
 
 
 ### Change "minimum"-"maximum" values in codebook for BHS-4 from 1-4 to 0-3 for consistency 
@@ -91,8 +60,8 @@ codebook$maximum[codebook$item %in% yi_bhs_items] <- 3
 log$yi_codebook_clean <- codebook
 
 
-### Correct LSMH IDs (manually as necessary)
-yi_corrected_ids <- yi_renamed %>%
+### Fix LSMH IDs (manually as necessary)
+yi_fixed_ids <- yi_corrected %>%
   rowwise() %>%
   mutate(
     lsmh_id = case_when(
@@ -110,12 +79,12 @@ yi_corrected_ids <- yi_renamed %>%
   ungroup()
 
 # Check LSMH ID format
-warn_invalid_id_format(yi_corrected_ids$lsmh_id)
+warn_invalid_id_format(yi_fixed_ids$lsmh_id)
 
 
 ### Remove invalid responses
 # Filter to known valid LSMH IDs (marked "keep" in id_lookup) using helper function
-yi_valid_ids <- remove_invalid_p2_qualtrics_responses(yi_corrected_ids, id_lookup)
+yi_valid_ids <- remove_invalid_p2_qualtrics_responses(yi_fixed_ids, id_lookup)
 
 
 ### Manually check selected free-text columns for the following exclusion criteria
@@ -293,9 +262,6 @@ ax_windows <- yi_deduplicated %>%
 
 ### Clean columns
 yi_recoded <- yi_deduplicated %>%
-  
-  # Remove click, page time variables with helper function
-  rm_click_page_time_vars() %>%
   
   # Un-reverse code items with helper function
   unreverse_code_items(codebook) %>%

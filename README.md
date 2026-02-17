@@ -24,26 +24,30 @@ File organization:
   * Raw P2 Metadata.csv (used to track expected raw data versions for checks against loaded files)
   * 2026.02.12 Track to Treat P2 Codebook.xlsx (an item-level codebook used to clean the Qualtrics data)
     * "load_p2_codebook()" helper expands repeated-measure items with "[x]" prefix to "b" and "[3-24]m"
-  * 2025.05.26 Track to Treat P2 ID Lookup.csv (a lookup table of LSMH IDs and LifePak IDs)
+  * 2025.08.01 Track to Treat P2 ID Lookup.csv (a lookup table of LSMH IDs and LifePak IDs)
   * 1_Clean LifePak Data.R
   * 2_Clean Youth Qualtrics Data/
+    * 0_Correct Codebook and Raw Youth Data.R
     * 1_Youth Baseline.R
     * 2_Youth Intervention.R
     * 3_Youth 3m.R
-    * 4_Youth 6m.R [WIP]
-    * 5_Youth 12m.R [WIP]
-    * 6_Youth 18m.R [WIP]
-    * 7_Youth 24m.R [WIP]
+    * 4_Youth 6m.R
+    * 5_Youth 12m.R
+    * 6_Youth 18m.R
+    * 7_Youth 24m.R
     * 8_Merge Youth Qualtrics Data.R
   * 3_Clean Parent Qualtrics Data/
+    * 0_Correct Raw Parent Data.R
     * 1_Parent Baseline.R
     * 2_Parent 3m.R
-    * 3_Parent 6m.R [WIP]
-    * 4_Parent 12m.R [WIP]
-    * 5_Parent 18m.R [WIP]
-    * 6_Parent 24m.R [WIP]
+    * 3_Parent 6m.R
+    * 4_Parent 12m.R
+    * 5_Parent 18m.R
+    * 6_Parent 24m.R
     * 7_Merge Parent Qualtrics Data.R
   * 4_Create Clean Data Release.R [WIP]
+  * QA/
+    * Inspect Raw Qualtrics Data and Codebook.R (checking raw data and codebook for issues to clean)
 
 Data cleaning notes:
 
@@ -99,6 +103,12 @@ Data cleaning notes:
     * Clean Columns section lists raw data available that have not yet been cleaned
     * Raw timestamps are in "America/Denver" time zone
   * Phase 2 specifics:
+    * To move certain rows to correct waves, the tasks below are done across waves in "Correct Codebook and Raw Youth Data.R" and "Correct Raw Parent Data.R" before cleaning each wave individually
+      * Fix item prefixes in codebook and column names in data
+      * Remove extraneous columns (including click, page time variables)
+      * Create "_original_dataset" column labeling each row's original survey dataset
+      * Recode certain items that interfere with binding rows across waves
+      * Manually move certain rows to correct waves
     * Self-reported `_date` columns in parent data are overwritten with date from `EndDate` timestamp
     * Beck Hopelessness Scale-4 items had different scale in youth intervention survey vs. other surveys
       * Script recodes values from 1-4 to 0-3 for consistency over time (surveys did not display numbers)
@@ -107,6 +117,7 @@ Data cleaning notes:
     * Some items had minor wording differences across time points (see raw codebook for details)
       * Youth item `scared_a_2`: "get" vs. "gets"
       * Youth items `pcsc_1`, `pcsc_7`, and `pcsc_13`: "grades" vs. "marks"
+    * After cleaning each wave individually, LSMH IDs meeting exclusion criteria per youth intervention free-text responses are dropped in "Merge Youth Qualtrics Data.R" and "Merge Parent Qualtrics Data.R"
     * Youth data collected but not cleaned:
       * TODO
     * Parent data collected but not cleaned:

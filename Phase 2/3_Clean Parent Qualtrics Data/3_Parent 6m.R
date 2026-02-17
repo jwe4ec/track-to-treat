@@ -19,26 +19,20 @@ source(here("Version Control Helper Functions.R"))
 
 ## Load Qualtrics data
 # Get directories using helper function
-dirs <- get_p2_qualtrics_dirs(c("raw_data", "clean_data_staging_intermediate"))
+dirs <- get_p2_qualtrics_dirs("clean_data_staging_intermediate")
 
-# Load raw Qualtrics datasets (storing paths) in this format: [respondent][wave]_[administration]_raw
-# - Note: Use "timeZone" specified for date columns (e.g., "StartDate") in third row of raw CSV
-p6m_path <- dirs$raw_data %+% "DP5+Phase+2+-+Parent+-+FU+2+-+6M_January+21,+2026_11.18_n.csv"
-p6m_raw <- read_survey(p6m_path, time_zone = "America/Chicago")
+# Load corrected Qualtrics data
+p6m_corrected <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Corrected Data - List by Wave.rds") %>%
+  pluck("p6m")
 
 
-## Load ID lookup and (using helper function) item-level codebook
+## Load ID lookup and corrected item-level codebook
 id_lookup <- read_csv(here("Phase 2", "2025.08.01 Track to Treat P2 ID Lookup.csv"))
-codebook <- load_p2_codebook(here("Phase 2", "2026.02.12 Track to Treat P2 Codebook.xlsx"))
+codebook <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Qualtrics Corrected Codebook.rds")
 
 
 ## Load assessment windows
 ax_windows <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Assessment Windows.rds")
-
-
-## Check raw Qualtrics data versions using helper function
-raw_metadata <- read.csv(here("Phase 2", "Raw P2 Metadata.csv"))
-check_raw_data_ver(raw_metadata, list(p6m_path), list(p6m_raw), "p6m_qualtrics")
 
 
 
@@ -52,18 +46,14 @@ log <- list(
 )
 
 
-### Correct LSMH IDs (manually as necessary)
-p6m_corrected_ids <- p6m_raw %>%
+### Fix LSMH IDs (manually as necessary)
+p6m_fixed_ids <- p6m_corrected %>%
   rowwise() %>%
   mutate(
     lsmh_id = case_when(
       
-      # TODO (any others?): Cases to be manually recoded
+      # Cases to be manually recoded
       lsmh_id == "LMSH00886" & p6m_lsmh_id == "LSMH00886" ~ "LSMH00886",
-      
-      
-      
-
       
       # All others (helper function for cases in which IDs are same or one/both IDs are missing)
       TRUE ~ resolve_id_pair(lsmh_id, p6m_lsmh_id)
@@ -73,12 +63,12 @@ p6m_corrected_ids <- p6m_raw %>%
   ungroup()
 
 # Check LSMH ID format
-warn_invalid_id_format(p6m_corrected_ids$lsmh_id)
+warn_invalid_id_format(p6m_fixed_ids$lsmh_id)
 
 
 ### Remove invalid responses
 # Filter to known valid LSMH IDs (marked "keep" in id_lookup) using helper function
-p6m_valid_ids <- remove_invalid_p2_qualtrics_responses(p6m_corrected_ids, id_lookup)
+p6m_valid_ids <- remove_invalid_p2_qualtrics_responses(p6m_fixed_ids, id_lookup)
 
 
 ### Identify duplicates and compute item completion rate for removing duplicates
@@ -110,15 +100,6 @@ identify_duplicates(p6m_deduplicated, lsmh_id, phase = 2)
 
 ### Clean columns
 p6m_recoded <- p6m_deduplicated %>%
-  
-  # Remove click, page time variables with helper function
-  rm_click_page_time_vars() %>%
-  
-  # Fix prefix of "scared_b" and "scared_c" items
-  rename_with(
-    .cols = contains(c("scared_b", "scared_c")),
-    .fn = ~ sub("^p3m_", "p6m_", .x)
-  ) %>%
   
   # Un-reverse code items with helper function
   unreverse_code_items(codebook) %>%

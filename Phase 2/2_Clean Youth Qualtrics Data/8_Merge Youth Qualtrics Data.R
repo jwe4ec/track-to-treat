@@ -48,8 +48,8 @@ y_log$y24m <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qu
 exclude_ids <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 LSMH IDs Meeting Free-Text Exclusion Criteria.rds")
 
 
-## Load item-level codebook using helper function
-codebook <- load_p2_codebook(here("Phase 2", "2026.02.12 Track to Treat P2 Codebook.xlsx"))
+## Load corrected item-level codebook
+codebook <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Qualtrics Corrected Codebook.rds")
 
 
 
@@ -109,8 +109,10 @@ names(item_completion_rate) <- names(y_log)
 # Items used to compute means
 mean_items <- lapply(y_log, \(log) log$mean_items)
 
-# Clean codebooks (edited only at "yb" and yi" to date)
-y_codebooks_clean <- list(yb = y_log$yb$yb_codebook_clean,
+# Clean codebooks
+# - Corrected in "Correct Codebook and Raw Youth Data.R", with further youth edits
+# only in "2_Youth Intervention.R" to date
+y_codebooks_clean <- list(yb = codebook,
                           yi = y_log$yi$yi_codebook_clean,
                           y3m = codebook,
                           y6m = codebook,
