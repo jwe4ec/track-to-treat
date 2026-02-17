@@ -134,11 +134,27 @@ names(dat_ls_labeled) <- names(dat_ls_selected)
 
 ### Recode items that interfere with binding rows across waves
 dat_ls_recoded <- dat_ls_labeled %>%
-  # Item "sitbi_3b_2" should be numeric
+  ## Recode the following SITBI items, which should be numeric
+  # "sitbi_3b_2"
   modify_in("y3m", ~ mutate(.x, y3m_sitbi_3b_2 = as.numeric(na_if(y3m_sitbi_3b_2, "p")))) %>%
   modify_in("y6m", ~ mutate(.x, y6m_sitbi_3b_2 = as.numeric(na_if(y6m_sitbi_3b_2, "P")))) %>%
   
-  # Item "sitbi_4b_4" should be numeric
+  # "sitbi_3b_3"
+  modify_in("yb", ~ mutate(.x, yb_sitbi_3b_3 = as.numeric(na_if(yb_sitbi_3b_3, "0not sure")))) %>%
+  
+  # "sitbi_3b_4"
+  modify_in("yb", ~ mutate(.x, yb_sitbi_3b_4 = as.numeric(recode(
+      yb_sitbi_3b_4,
+      "0 not sure" = NA_character_,
+      "idk" = NA_character_,
+      "1,708" = "1708"
+    ))
+  ))%>%
+  
+  # "sitbi_4b_3"
+  modify_in("yb", ~ mutate(.x, yb_sitbi_4b_3 = as.numeric(na_if(yb_sitbi_4b_3, "i lost count")))) %>%
+  
+  # "sitbi_4b_4"
   modify_in("yb", ~ mutate(.x, yb_sitbi_4b_4 = as.numeric(recode(
       yb_sitbi_4b_4,
       "a lot" = NA_character_,
