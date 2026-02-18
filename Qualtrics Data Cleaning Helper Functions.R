@@ -4,12 +4,27 @@
 `%+%` <- paste0
 
 # Function to get directories for Phase 2 Qualtrics data
+# Operating system flexible version
 get_p2_qualtrics_dirs <- function(type = c("raw_data", "clean_data_staging", "clean_data_staging_intermediate")) {
   
-  raw_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT P2\\Data\\Qualtrics\\Raw\\2026.01.21_final\\"
-  clean_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT P2\\Data\\Clean Data (Isaac)\\"
-  clean_data_staging_dir <- clean_data_dir %+% "staging\\"
-  clean_data_staging_intermediate_dir <- clean_data_staging_dir %+% "intermediate\\"
+  
+  # Define resfiles path once- this helps it be operating systems agnostic
+  jslab_path <- if (.Platform$OS.type == "windows") {
+    "R:/MSS/Schleider_Lab/jslab"
+  } else if (.Platform$OS.type == "unix") {
+    "/Volumes/fsmresfiles/MSS/Schleider_Lab/jslab"
+  } else {stop("Specify path to 'jslab/' for your operating system in 'get_p2_qualtrics_dirs()'")
+    
+  }
+  
+  # Build all paths using file.path() which avoids operating system issues/hard coding
+  raw_data_dir <- file.path(jslab_path, "TRACK to TREAT P2", "Data", "Qualtrics", "Raw", "2026.01.21_final")
+  
+  clean_data_dir <- file.path(jslab_path, "TRACK to TREAT P2", "Data", "Clean Data (Isaac)")
+  
+  clean_data_staging_dir <- file.path(clean_data_dir, "staging")
+  
+  clean_data_staging_intermediate_dir <- file.path(clean_data_staging_dir, "intermediate")
   
   all_dirs <- list(
     raw_data = raw_data_dir,
@@ -18,7 +33,7 @@ get_p2_qualtrics_dirs <- function(type = c("raw_data", "clean_data_staging", "cl
   )
   
   dirs <- all_dirs[type]
-
+  
   message("Using these directories:")
   str(dirs)
   

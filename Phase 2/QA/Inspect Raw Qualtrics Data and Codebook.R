@@ -17,27 +17,31 @@ source(here("Version Control Helper Functions.R"))
 
 
 ## Load data into list
-# Get directories using helper function
-dirs <- get_p2_qualtrics_dirs("raw_data")
-raw_data_dir <- dirs$raw_data
+# Get directories using helper function 
+dirs <- get_p2_qualtrics_dirs("raw_data") # If using the WD_testing method, the existing code for this (prior to starting, is the same) 
+
+raw_data_dir <-  dirs$raw_data
+
+# TO DO: See if this runs on Windows and potentially update helper file?
 
 # Load raw Qualtrics datasets (storing paths) in this format: [respondent][wave]_[administration]_raw
 # - Note: Use "timeZone" specified for date columns (e.g., "StartDate") in third row of raw CSVs
+# This now uses file.path() rather than the paste opperator to be flexible across operating systems.
 raw_data_paths <- lst(
-  yb_raw = raw_data_dir %+% "DP5+Phase+2+-+Youth+-+Baseline_January+21,+2026_11.24_n.csv",
-  yi_raw = raw_data_dir %+% "DP5+Phase+2+-+Youth+-+Interventions_January+21,+2026_11.25_n.csv",
-  y3m_raw = raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+1+-+3M_January+21,+2026_11.24_n.csv",
-  y6m_raw = raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+2+-+6M_January+21,+2026_11.24_n.csv",
-  y12m_raw = raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+3+-+12M_January+21,+2026_11.24_n.csv",
-  y18m_raw = raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+4+-+18M_January+21,+2026_11.25_n.csv",
-  y24m_raw = raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+5+-+24M_January+29,+2026_10.59_n.csv",
+  yb_raw = file.path(raw_data_dir, "DP5+Phase+2+-+Youth+-+Baseline_January+21,+2026_11.24_n.csv"),
+  yi_raw = file.path(raw_data_dir, "DP5+Phase+2+-+Youth+-+Interventions_January+21,+2026_11.25_n.csv"),
+  y3m_raw = file.path(raw_data_dir, "DP5+Phase+2+-+Youth+-+FU+1+-+3M_January+21,+2026_11.24_n.csv"),
+  y6m_raw = file.path(raw_data_dir, "DP5+Phase+2+-+Youth+-+FU+2+-+6M_January+21,+2026_11.24_n.csv"),
+  y12m_raw = file.path(raw_data_dir, "DP5+Phase+2+-+Youth+-+FU+3+-+12M_January+21,+2026_11.24_n.csv"),
+  y18m_raw = file.path(raw_data_dir, "DP5+Phase+2+-+Youth+-+FU+4+-+18M_January+21,+2026_11.25_n.csv"),
+  y24m_raw = file.path(raw_data_dir, "DP5+Phase+2+-+Youth+-+FU+5+-+24M_January+29,+2026_10.59_n.csv"),
   
-  pb_raw = raw_data_dir %+% "DP5+Phase+2+-+Parent+-+Baseline_January+21,+2026_11.17_n.csv",
-  p3m_raw = raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+1+-+3M_January+21,+2026_11.18_n.csv",
-  p6m_raw = raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+2+-+6M_January+21,+2026_11.18_n.csv",
-  p12m_raw = raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+3+-+12M_January+21,+2026_11.18_n.csv",
-  p18m_raw = raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+4+-+18M_January+21,+2026_11.18_n.csv",
-  p24m_raw = raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+5+-+24M_January+21,+2026_11.19_n.csv"
+  pb_raw = file.path(raw_data_dir, "DP5+Phase+2+-+Parent+-+Baseline_January+21,+2026_11.17_n.csv"),
+  p3m_raw = file.path(raw_data_dir, "DP5+Phase+2+-+Parent+-+FU+1+-+3M_January+21,+2026_11.18_n.csv"),
+  p6m_raw = file.path(raw_data_dir, "DP5+Phase+2+-+Parent+-+FU+2+-+6M_January+21,+2026_11.18_n.csv"),
+  p12m_raw = file.path(raw_data_dir, "DP5+Phase+2+-+Parent+-+FU+3+-+12M_January+21,+2026_11.18_n.csv"),
+  p18m_raw = file.path (raw_data_dir, "DP5+Phase+2+-+Parent+-+FU+4+-+18M_January+21,+2026_11.18_n.csv"),
+  p24m_raw = file.path(raw_data_dir, "DP5+Phase+2+-+Parent+-+FU+5+-+24M_January+21,+2026_11.19_n.csv")
 )
 
 dat_ls <- lapply(raw_data_paths, read_survey, time_zone = "America/Chicago")
