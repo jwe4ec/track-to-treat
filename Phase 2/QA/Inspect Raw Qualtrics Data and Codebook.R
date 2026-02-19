@@ -149,10 +149,8 @@ dat_ls_cols_b_fu <- dat_ls_cols #ANG testing if this can be extrapolated for BL.
 b_fu_meas_item_cols_stems <- lapply(dat_ls_cols_b_fu, function(dat_cols) {
   meas_item_cols <- dat_cols$meas_item_cols
   
-  meas_item_cols_stems <- sub("^[A-Za-z]+_", "", meas_item_cols)
+  meas_item_cols_stems <- sub("^[^_]+_", "", meas_item_cols) #this replaces anything before an underscore, works across waves
 
-
-  
   return(meas_item_cols_stems)
 })
 
@@ -160,16 +158,44 @@ y_b_fu_meas_item_cols_stems <- b_fu_meas_item_cols_stems[grepl("^y", names(b_fu_
 p_b_fu_meas_item_cols_stems <- b_fu_meas_item_cols_stems[grepl("^p", names(b_fu_meas_item_cols_stems))]
 
 
-### Confirm that all measure items within a given follow-up survey are unique
+### Confirm that all measure items within a given follow-up survey are unique- both pass-ANG
 stopifnot(
   all(sapply(y_b_fu_meas_item_cols_stems, \(stems) length(stems) == length(unique(stems)))),
   all(sapply(p_b_fu_meas_item_cols_stems, \(stems) length(stems) == length(unique(stems))))
 )
 
 
-### Confirm that measure item stems are same across follow-up surveys
-## - True for youth surveys when BL is not included, when BL included not true- we expect this w/ SRET
-stopifnot(all(table(unlist(y_b_fu_meas_item_cols_stems)) == length(y_b_fu_meas_item_cols_stems)))
+### Confirm that measure item stems are same across follow-up surveys- JE note
+
+## - True for youth surveys when BL and intervention is not included, when BL/ intervention included not true- we expect this 
+#stopifnot(all(table(unlist(y_b_fu_meas_item_cols_stems)) == length(y_b_fu_meas_item_cols_stems)))
+
+## TODO Testing a way to identify which stems appear across which waves- ANG
+y_waves <- names(y_b_fu_meas_item_cols_stems) # uses the name of each wave in the list to identify waves
+
+total_y_waves <- length(y_b_fu_meas_item_cols_stems) # total number of waves based on list (max number of occurances for a given stem)
+
+all_y_stems <- sort(unique(unlist(y_b_fu_meas_item_cols_stems))) # All unique stems across all waves
+
+# Creating a data frame that organizes the info we want about each stem
+y_stem_wave_counts <- do.call(rbind,lapply(all_y_stems, function(stem) { # do.call is used to apply rbind across the list (of stems) lapply creates
+    present_y_waves <- y_waves[vapply(y_b_fu_meas_item_cols_stems, function(x) stem %in% x, logical(1))] # grabs which waves a stem if present in
+    missing_waves <- setdiff(y_waves, present_y_waves) # compares all waves to waves where stem is present
+    
+    data.frame(
+      stem = stem,
+      n_present = length(present_y_waves),
+      total_y_waves = total_y_waves,
+      present_y_waves = paste(present_y_waves, collapse = ", "),
+      missing_waves = paste(missing_waves, collapse = ", "),
+      is_complete = length(present_y_waves) == total_y_waves,
+      stringsAsFactors = FALSE
+    )
+  })
+)
+
+y_stem_wave_counts # this looks as I had hoped-ANG
+
 
 ## Not for parent surveys (due to "accommodations_2" items; see sections below)
 all(table(unlist(p_fu_meas_item_cols_stems)) == length(p_fu_meas_item_cols_stems))
