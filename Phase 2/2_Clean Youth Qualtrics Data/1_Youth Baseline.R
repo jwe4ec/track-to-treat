@@ -97,10 +97,14 @@ ema_notif_dates <- nis_clean_wout_free %>%
     .groups = "drop"
   )
 
-# Compute indicator of baseline survey completion in window using helper function
-yb_valid_ids <- mark_b_done_in_ax_window(yb_valid_ids, "lsmh_id", ema_notif_dates)
+# TODO (use different approach): Compute indicator of baseline survey completion in window using helper function
+yb_valid_ids <- mark_b_done_in_ax_window(yb_valid_ids, "lsmh_id", ema_notif_dates, phase = 2)
 
-# Print and remove any baseline surveys outside window
+
+
+
+
+# TODO (use different approach): Print and remove any baseline surveys outside window
 # - LSMH01677's "EndDate" is "2022-02-18 14:56:15" (in "America/Chicago"), after
 # "first_ema_notif_date" of "2022-02-17" ("notification_datetime" is "2022-02-17 
 # 08:52:31"; likely in "America/Los_Angeles" per parent-reported address in baseline
@@ -108,16 +112,19 @@ yb_valid_ids <- mark_b_done_in_ax_window(yb_valid_ids, "lsmh_id", ema_notif_date
 # GPS data). Still, youth likely completed most of survey before EMA, as "StartDate"
 # is "2022-02-16 13:45:47" and "Progress" is 97; the RA likely confirmed near-100% 
 # progress before administering EMA (and parent completed baseline on 2022-02-16).
-#   - Thus, manually deem the survey to be within the window
-yb_valid_ids$in_window_b[yb_valid_ids$lsmh_id == "LSMH01677" & yb_valid_ids$EndDate == "2022-02-18 14:56:15"] <- TRUE
+#   - Thus, manually deem the survey to be within extended window
+yb_valid_ids$in_window_b_ext[yb_valid_ids$lsmh_id == "LSMH01677" & yb_valid_ids$EndDate == "2022-02-18 14:56:15"] <- TRUE
 
 yb_valid_ids %>%
-  filter(!in_window_b | is.na(in_window_b)) %>%
-  select(lsmh_id, "StartDate", "EndDate", "first_ema_notif_date", "in_window_b", "item_completion_rate") %>%
+  filter(!in_window_b_ext | is.na(in_window_b_ext)) %>%
+  select(lsmh_id, StartDate, EndDate, first_ema_notif_date,
+         ax_window_b_start_org, ax_window_b_end_org, in_window_b_org, 
+         days_before_start_window_b_org, days_after_end_window_b_org, 
+         ax_window_b_start_ext, ax_window_b_end_ext, in_window_b_ext, item_completion_rate) %>%
   arrange(lsmh_id, EndDate)
 
 yb_valid_ids <- yb_valid_ids %>%
-  filter(in_window_b)
+  filter(in_window_b_ext)
 
 # Remove duplicates using helper function
 yb_deduplicated <- remove_duplicates(yb_valid_ids, lsmh_id)
@@ -130,7 +137,9 @@ yb_ema_dates <- yb_deduplicated %>%
   select(
     lsmh_id = lsmh_id,
     StartDate_yb = StartDate, 
-    EndDate_yb = EndDate, 
+    EndDate_yb = EndDate,
+    ax_window_b_start_org, ax_window_b_end_org,
+    ax_window_b_start_ext, ax_window_b_end_ext,
     first_ema_notif_date, last_ema_notif_date, end_ema_period
   ) %>%
   ungroup()
@@ -157,7 +166,14 @@ yb_recoded <- yb_deduplicated %>%
     yb_date = date(yb_datetime),
     yb_duration = EndDate - StartDate,
     
+    # Baseline survey completion in original and extended assessment 
+    # windows and days survey was completed before/after original window
+    yb_in_window_org = in_window_b_org,
+    yb_in_window_ext = in_window_b_ext,
+    yb_days_before_start_window_b_org = days_before_start_window_b_org,
+    yb_days_after_end_window_b_org = days_after_end_window_b_org,
     
+
     ## BADS (Behavioral Activation for Depression Scale) subscales
     !!!bads_means("yb"),
     
@@ -237,6 +253,14 @@ yb_recoded <- yb_deduplicated %>%
     yb_date,
     yb_datetime,
     yb_duration,
+    ax_window_b_start_org,
+    ax_window_b_end_org,
+    ax_window_b_start_ext,
+    ax_window_b_end_ext,
+    yb_in_window_org,
+    yb_in_window_ext,
+    yb_days_before_start_window_b_org,
+    yb_days_after_end_window_b_org,
 
     # Measures
     matches("_bads_"),

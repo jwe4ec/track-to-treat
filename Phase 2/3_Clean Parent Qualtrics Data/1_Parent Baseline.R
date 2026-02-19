@@ -87,24 +87,31 @@ pb_valid_ids <- compute_item_completion_rate(pb_valid_ids, "pb", phase = 2)
 
 ### Remove any surveys (a) outside assessment window (or for parents of youth who 
 ### didn't start EMA) or (b) duplicated in window
-# Obtain EMA notification dates from assessment windows computed when cleaning youth Qualtrics data
+# TODO (add baseline window to ax_windows instead): Obtain EMA notification dates from assessment windows computed when cleaning youth Qualtrics data
 ema_notif_dates <- ax_windows[, c("lsmh_id", "first_ema_notif_date", "last_ema_notif_date", "end_ema_period")]
 
-# Compute indicator of baseline survey completion in window using helper function
+
+
+
+
+# TODO (use different approach): Compute indicator of baseline survey completion in window using helper function
 # - LSMH00920 has two responses, one with the most data before "first_ema_notif_date" 
 # and one with no data months later 
-pb_valid_ids <- mark_b_done_in_ax_window(pb_valid_ids, "lsmh_id", ema_notif_dates)
+pb_valid_ids <- mark_b_done_in_ax_window(pb_valid_ids, "lsmh_id", ema_notif_dates, phase = 2)
 
-# Print and remove any baseline surveys outside window
+# TODO (use different approach): Print and remove any baseline surveys outside window
 pb_valid_ids %>%
-  filter(!in_window_b | is.na(in_window_b)) %>%
-  select(lsmh_id, "StartDate", "EndDate", "first_ema_notif_date", "in_window_b", "item_completion_rate") %>%
+  filter(!in_window_b_ext | is.na(in_window_b_ext)) %>%
+  select(lsmh_id, StartDate, EndDate, first_ema_notif_date,
+         ax_window_b_start_org, ax_window_b_end_org, in_window_b_org, 
+         days_before_start_window_b_org, days_after_end_window_b_org, 
+         ax_window_b_start_ext, ax_window_b_end_ext, in_window_b_ext, item_completion_rate) %>%
   arrange(lsmh_id, EndDate)
 
 pb_valid_ids <- pb_valid_ids %>%
-  filter(in_window_b)
+  filter(in_window_b_ext)
 
-# For LSMH02077, manually keep the latter survey, as this was done on the same day
+# TODO (not needed once above is done): For LSMH02077, manually keep the latter survey, as this was done on the same day
 # as the child, per README_ttt_p2_data_collection
 pb_manual_filter_02077 <- pb_valid_ids %>%
   filter(
@@ -138,6 +145,13 @@ pb_recoded <- pb_deduplicated %>%
     pb_datetime = EndDate,
     pb_date = date(pb_datetime),
     pb_duration = EndDate - StartDate,
+    
+    # Baseline survey completion in original and extended assessment 
+    # windows and days survey was completed before/after original window
+    pb_in_window_org = in_window_b_org,
+    pb_in_window_ext = in_window_b_ext,
+    pb_days_before_start_window_b_org = days_before_start_window_b_org,
+    pb_days_after_end_window_b_org = days_after_end_window_b_org,
     
     
     ## Demographics at baseline
@@ -389,6 +403,14 @@ pb_recoded <- pb_deduplicated %>%
     pb_date,
     pb_datetime,
     pb_duration,
+    ax_window_b_start_org,
+    ax_window_b_end_org,
+    ax_window_b_start_ext,
+    ax_window_b_end_ext,
+    pb_in_window_org,
+    pb_in_window_ext,
+    pb_days_before_start_window_b_org,
+    pb_days_after_end_window_b_org,
     
     # Parent characteristics
     pb_parent_age,
