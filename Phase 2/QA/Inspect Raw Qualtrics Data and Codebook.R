@@ -18,15 +18,13 @@ source(here("Version Control Helper Functions.R"))
 
 ## Load data into list
 # Get directories using helper function 
-dirs <- get_p2_qualtrics_dirs("raw_data") # If using the WD_testing method, the existing code for this (prior to starting, is the same) 
-
+dirs <- get_p2_qualtrics_dirs("raw_data") 
 raw_data_dir <-  dirs$raw_data
-
-# TO DO: See if this runs on Windows and potentially update helper file?
+# TODO: See if this runs on Windows
 
 # Load raw Qualtrics datasets (storing paths) in this format: [respondent][wave]_[administration]_raw
 # - Note: Use "timeZone" specified for date columns (e.g., "StartDate") in third row of raw CSVs
-# This now uses file.path() rather than the paste opperator to be flexible across operating systems.
+# - Use file.path() to build paths independent of the operating system
 raw_data_paths <- lst(
   yb_raw = file.path(raw_data_dir, "DP5+Phase+2+-+Youth+-+Baseline_January+21,+2026_11.24_n.csv"),
   yi_raw = file.path(raw_data_dir, "DP5+Phase+2+-+Youth+-+Interventions_January+21,+2026_11.25_n.csv"),
@@ -265,6 +263,9 @@ check_fu_meas_item_lbls <- function(fu_meas_item_col_lbs_clss) {
   diff_cols <- character()
   
   for (col in all_cols) {
+    
+    #TODO: Alyssa to add a check for vars repeated across surveys, rather than just unique
+    
     # Get labels for column across all follow-up surveys
     lbls <- sapply(fu_meas_item_col_lbs_clss, \(wave) wave$lbls[[col]])
     
