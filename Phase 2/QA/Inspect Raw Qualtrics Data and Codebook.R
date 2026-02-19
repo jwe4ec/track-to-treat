@@ -141,32 +141,35 @@ lapply(dat_ls_cols, \(x) x$meas_item_cols)
 
 
 ### Restrict to 3- to 24-month follow-ups
-dat_ls_cols_fu <- dat_ls_cols[grepl("\\d+m_raw$", names(dat_ls_cols))]
+dat_ls_cols_b_fu <- dat_ls_cols #ANG testing if this can be extrapolated for BL.
 
 
-### Get names of measure items for youth and parent surveys
-fu_meas_item_cols_stems <- lapply(dat_ls_cols_fu, function(dat_cols) {
+### Get names of measure items for youth and parent surveys 
+# - ANG change 'fu_meas_item_col_stems' to 'b_fu_meas_item_cols_stems' for BL inclusion testing
+b_fu_meas_item_cols_stems <- lapply(dat_ls_cols_b_fu, function(dat_cols) {
   meas_item_cols <- dat_cols$meas_item_cols
   
-  meas_item_cols_stems <- str_split_fixed(meas_item_cols, "_", 2)[, 2]
+  meas_item_cols_stems <- sub("^[A-Za-z]+_", "", meas_item_cols)
+
+
   
   return(meas_item_cols_stems)
 })
 
-y_fu_meas_item_cols_stems <- fu_meas_item_cols_stems[grepl("^y", names(fu_meas_item_cols_stems))]
-p_fu_meas_item_cols_stems <- fu_meas_item_cols_stems[grepl("^p", names(fu_meas_item_cols_stems))]
+y_b_fu_meas_item_cols_stems <- b_fu_meas_item_cols_stems[grepl("^y", names(b_fu_meas_item_cols_stems))]
+p_b_fu_meas_item_cols_stems <- b_fu_meas_item_cols_stems[grepl("^p", names(b_fu_meas_item_cols_stems))]
 
 
 ### Confirm that all measure items within a given follow-up survey are unique
 stopifnot(
-  all(sapply(y_fu_meas_item_cols_stems, \(stems) length(stems) == length(unique(stems)))),
-  all(sapply(p_fu_meas_item_cols_stems, \(stems) length(stems) == length(unique(stems))))
+  all(sapply(y_b_fu_meas_item_cols_stems, \(stems) length(stems) == length(unique(stems)))),
+  all(sapply(p_b_fu_meas_item_cols_stems, \(stems) length(stems) == length(unique(stems))))
 )
 
 
 ### Confirm that measure item stems are same across follow-up surveys
-## True for youth surveys
-stopifnot(all(table(unlist(y_fu_meas_item_cols_stems)) == length(y_fu_meas_item_cols_stems)))
+## - True for youth surveys when BL is not included, when BL included not true- we expect this w/ SRET
+stopifnot(all(table(unlist(y_b_fu_meas_item_cols_stems)) == length(y_b_fu_meas_item_cols_stems)))
 
 ## Not for parent surveys (due to "accommodations_2" items; see sections below)
 all(table(unlist(p_fu_meas_item_cols_stems)) == length(p_fu_meas_item_cols_stems))
