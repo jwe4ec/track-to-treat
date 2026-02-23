@@ -4,7 +4,6 @@
 `%+%` <- paste0
 
 # Function to get directories for Phase 2 Qualtrics data
-# Operating system flexible version
 get_p2_qualtrics_dirs <- function(type = c("raw_data", "clean_data_staging", "clean_data_staging_intermediate")) {
   
   # Define path to "jslab/" on "resfiles" server depending on the operating system
@@ -14,7 +13,6 @@ get_p2_qualtrics_dirs <- function(type = c("raw_data", "clean_data_staging", "cl
     "/Volumes/fsmresfiles/MSS/Schleider_Lab/jslab"
   } else {
     stop("Specify path to 'jslab/' for your operating system in 'get_p2_qualtrics_dirs()'")
-    
   }
   
   # Build all paths using file.path() which avoids operating system issues/hard coding
