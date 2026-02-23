@@ -178,8 +178,10 @@ total_y_waves <- length(y_b_fu_meas_item_cols_stems) # total number of waves bas
 all_y_stems <- sort(unique(unlist(y_b_fu_meas_item_cols_stems))) # All unique stems across all waves
 
 # Creating a data frame that organizes the info we want about each stem
-y_stem_wave_counts <- do.call(rbind,lapply(all_y_stems, function(stem) { # do.call is used to apply rbind across the list (of stems) lapply creates
-    present_y_waves <- y_waves[vapply(y_b_fu_meas_item_cols_stems, function(x) stem %in% x, logical(1))] # grabs which waves a stem if present in
+y_stem_wave_counts <- bind_rows(lapply(all_y_stems, function(stem) { 
+  present_y_waves <- y_waves[vapply(y_b_fu_meas_item_cols_stems, function(x) stem %in% x, logical(1))]# Checks each wave to see if the stem appears in it.
+  # then saves which waves it appears in, sapply encounters issues because we need individual stems within each wave
+  
     missing_waves <- setdiff(y_waves, present_y_waves) # compares all waves to waves where stem is present
     
     data.frame(
@@ -188,7 +190,6 @@ y_stem_wave_counts <- do.call(rbind,lapply(all_y_stems, function(stem) { # do.ca
       total_y_waves = total_y_waves,
       present_y_waves = paste(present_y_waves, collapse = ", "),
       missing_waves = paste(missing_waves, collapse = ", "),
-      is_complete = length(present_y_waves) == total_y_waves,
       stringsAsFactors = FALSE
     )
   })
