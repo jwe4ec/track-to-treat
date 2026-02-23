@@ -20,7 +20,6 @@ source(here("Version Control Helper Functions.R"))
 # Get directories using helper function 
 dirs <- get_p2_qualtrics_dirs("raw_data") 
 raw_data_dir <-  dirs$raw_data
-# TODO: See if this runs on Windows
 
 # Load raw Qualtrics datasets (storing paths) in this format: [respondent][wave]_[administration]_raw
 # - Note: Use "timeZone" specified for date columns (e.g., "StartDate") in third row of raw CSVs
@@ -136,65 +135,53 @@ lapply(dat_ls_cols, \(x) x$meas_item_cols)
 
 
 
-####  Check if stems of measure item column names are same across follow-up waves  ####
-### TODO: Alyssa to generalize this section to check across all waves
-
-
-### Restrict to 3- to 24-month follow-ups
-dat_ls_cols_b_fu <- dat_ls_cols #ANG testing if this can be extrapolated for BL.
-
-
-### Get names of measure items for youth and parent surveys 
-# - ANG change 'fu_meas_item_col_stems' to 'b_fu_meas_item_cols_stems' for BL inclusion testing
-b_fu_meas_item_cols_stems <- lapply(dat_ls_cols_b_fu, function(dat_cols) {
+####  Check if prefixes and stems of measure item column names are same across all waves  ####
+## Get prefixes and stems of measure items for youth and parent surveys 
+meas_item_cols_prefixes_stems <- lapply(dat_ls_cols, function(dat_cols) {
   meas_item_cols <- dat_cols$meas_item_cols
   
-  meas_item_prefixes <- sub("_.*$", "", meas_item_cols) 
-  meas_item_cols_stems <- sub("^[^_]+_", "", meas_item_cols) #this replaces anything before an underscore, works across waves
+  meas_item_prefixes <- sub("_.*", "", meas_item_cols[grepl("_", meas_item_cols)])
+  meas_item_cols_stems <- sub("^[^_]+_", "", meas_item_cols) 
 
   return(list(
-    meas_item_prefixes = meas_item_prefixes,
-    meas_item_cols_stems = meas_item_cols_stems)
+    prefixes = meas_item_prefixes,
+    stems = meas_item_cols_stems)
   )
 })
 
-y_b_fu_meas_item_cols_stems <- b_fu_meas_item_cols_stems[grepl("^y", names(b_fu_meas_item_cols_stems))]
-p_b_fu_meas_item_cols_stems <- b_fu_meas_item_cols_stems[grepl("^p", names(b_fu_meas_item_cols_stems))]
+y_meas_item_cols_prefixes_stems <- meas_item_cols_prefixes_stems[grepl("^y", names(meas_item_cols_prefixes_stems))]
+p_meas_item_cols_prefixes_stems <- meas_item_cols_prefixes_stems[grepl("^p", names(meas_item_cols_prefixes_stems))]
 
 ### Confirm that all of the prefixes removed within each wave are what we would expect 
-all_y_prefixes_df <- stack(lapply(y_b_fu_meas_item_cols_stems, \(x) unique(x$meas_item_prefixes))) #this allows us to see all the unique prefixes across waves
+## TODO: Alyssa will replicate this check for parents, currently only checks youth prefixes
 
-allowed_y_prefixes <- c("yb", "yi", paste0("y", c(3, 6, 12, 18, 24), "m"), "SRET", "SRET.words", "SRET.time", "tlcond")
+y_prefixes_by_wave <- lapply(y_meas_item_cols_prefixes_stems, \(x) unique(x$prefixes))
+y_prefixes <- unname(unlist(y_prefixes_by_wave))
 
-stopifnot(!length(setdiff(unique(all_y_prefixes_df$values), allowed_y_prefixes)))
+expected_y_prefixes <- c("yb", "yi", paste0("y", c(3, 6, 12, 18, 24), "m"))
+unexpected_y_prefixes <- setdiff(y_prefixes, expected_y_prefixes)
 
-### Confirm that all measure items within a given follow-up survey are unique- both pass-ANG
+stopifnot(setequal(unexpected_y_prefixes, c("b", "y312", "y18n")))
+
+### Confirm that all measure items within a given wave are unique- both youth and parents pass
 stopifnot(
-  all(sapply(y_b_fu_meas_item_cols_stems, \(stems) length(stems) == length(unique(stems)))),
-  all(sapply(p_b_fu_meas_item_cols_stems, \(stems) length(stems) == length(unique(stems))))
+  all(sapply(y_meas_item_cols_prefixes_stems, \(stems) length(stems) == length(unique(stems)))),
+  all(sapply(p_meas_item_cols_prefixes_stems, \(stems) length(stems) == length(unique(stems))))
 )
 
+### Confirm that measure item stems are same across waves
 
-### Confirm that measure item stems are same across follow-up surveys- JE note
+y_waves <- names(y_meas_item_cols_prefixes_stems)
+total_y_waves <- length(y_meas_item_cols_prefixes_stems)
+y_stems_by_wave <- lapply(y_meas_item_cols_prefixes_stems, \(x) unique(x$stems))
+y_stems <- unname(unlist(y_stems_by_wave))
 
-## - True for youth surveys when BL and intervention is not included, when BL/ intervention included not true- we expect this 
-#stopifnot(all(table(unlist(y_b_fu_meas_item_cols_stems)) == length(y_b_fu_meas_item_cols_stems)))
-
-## TODO Testing a way to identify which stems appear across which waves- ANG
-y_waves <- names(y_b_fu_meas_item_cols_stems) # uses the name of each wave in the list to identify waves
-
-total_y_waves <- length(y_b_fu_meas_item_cols_stems) # total number of waves based on list (max number of occurances for a given stem)
-
-all_y_stems <- sort(unique(unlist(y_b_fu_meas_item_cols_stems))) # All unique stems across all waves
-
-# Creating a data frame that organizes the info we want about each stem
-y_stem_wave_counts <- bind_rows(lapply(all_y_stems, function(stem) { 
-  present_y_waves <- y_waves[vapply(y_b_fu_meas_item_cols_stems, function(x) stem %in% x, logical(1))]# Checks each wave to see if the stem appears in it.
-  # then saves which waves it appears in, sapply encounters issues because we need individual stems within each wave
-  
-    missing_waves <- setdiff(y_waves, present_y_waves) # compares all waves to waves where stem is present
+# Creating a data frame that organizes the info we want about each stem based on the waves it is or is not present in
+y_stem_wave_counts <- bind_rows(lapply(y_stems, function(stem) {
+  present_y_waves <- y_waves[vapply(y_stems_by_wave, \(stems) stem %in% stems, logical(1))]
+  missing_waves <- setdiff(y_waves, present_y_waves)
     
-    data.frame(
+  data.frame(
       stem = stem,
       n_present = length(present_y_waves),
       total_y_waves = total_y_waves,
@@ -205,22 +192,12 @@ y_stem_wave_counts <- bind_rows(lapply(all_y_stems, function(stem) {
   })
 )
 
-y_stem_wave_counts # this looks as I had hoped-ANG
+#Now we have a dataframe that includes information about which stems are present in which youth waves
+y_stem_wave_counts 
 
-
-## Not for parent surveys (due to "accommodations_2" items; see sections below)
-all(table(unlist(p_fu_meas_item_cols_stems)) == length(p_fu_meas_item_cols_stems))
-
-# True for parent surveys when excluding "accommodations_2" items
-p_fu_meas_item_cols_stems_no_accom_2 <- lapply(p_fu_meas_item_cols_stems, function(stems) {
-  accom_2_items <- c("accom_2", "accommodations_", "accommodations_2")
-  
-  stems_no_accom_2 <- setdiff(stems, accom_2_items)
-  
-  return(stems_no_accom_2)
-})
-
-stopifnot(all(table(unlist(p_fu_meas_item_cols_stems_no_accom_2)) == length(p_fu_meas_item_cols_stems_no_accom_2)))
+# TODO: Alyssa to confirm that measure item stems are same across waves for parents
+# - Deleted the code that was here that pulled out "accommodations_2" because now that baseline is included, we will want to
+# replicate the process taken for youth waves that assumes there are differences rather than manually specifying.
 
 
 
