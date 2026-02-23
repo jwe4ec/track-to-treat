@@ -149,14 +149,24 @@ dat_ls_cols_b_fu <- dat_ls_cols #ANG testing if this can be extrapolated for BL.
 b_fu_meas_item_cols_stems <- lapply(dat_ls_cols_b_fu, function(dat_cols) {
   meas_item_cols <- dat_cols$meas_item_cols
   
+  meas_item_prefixes <- sub("_.*$", "", meas_item_cols) 
   meas_item_cols_stems <- sub("^[^_]+_", "", meas_item_cols) #this replaces anything before an underscore, works across waves
 
-  return(meas_item_cols_stems)
+  return(list(
+    meas_item_prefixes = meas_item_prefixes,
+    meas_item_cols_stems = meas_item_cols_stems)
+  )
 })
 
 y_b_fu_meas_item_cols_stems <- b_fu_meas_item_cols_stems[grepl("^y", names(b_fu_meas_item_cols_stems))]
 p_b_fu_meas_item_cols_stems <- b_fu_meas_item_cols_stems[grepl("^p", names(b_fu_meas_item_cols_stems))]
 
+### Confirm that all of the prefixes removed within each wave are what we would expect 
+all_y_prefixes_df <- stack(lapply(y_b_fu_meas_item_cols_stems, \(x) unique(x$meas_item_prefixes))) #this allows us to see all the unique prefixes across waves
+
+allowed_y_prefixes <- c("yb", "yi", paste0("y", c(3, 6, 12, 18, 24), "m"), "SRET", "SRET.words", "SRET.time", "tlcond")
+
+stopifnot(!length(setdiff(unique(all_y_prefixes_df$values), allowed_y_prefixes)))
 
 ### Confirm that all measure items within a given follow-up survey are unique- both pass-ANG
 stopifnot(
