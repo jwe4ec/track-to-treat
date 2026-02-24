@@ -14,7 +14,7 @@ groundhog.library(
 `%+%` <- paste0
 
 
-## Load helper function
+## Load helper functions
 source(here("Version Control Helper Functions.R"))
 
 
@@ -57,13 +57,8 @@ create_data_release(
   clean_data_final_dir,
   phase = 2,
   staged_filenames = c(
-    "Phase 2 Youth Qualtrics Clean Data - Baseline.rds",
-    "Phase 2 Youth Qualtrics Clean Data - Intervention.rds",
-    "Phase 2 Youth Qualtrics Clean Data - 3m.rds",
     "Phase 2 Youth Qualtrics Clean Data - All Waves.rds",
     "Phase 2 Youth Qualtrics Clean Data Log - All Waves.rds",
-    "Phase 2 Parent Qualtrics Clean Data - Baseline.rds",
-    "Phase 2 Parent Qualtrics Clean Data - 3m.rds",
     "Phase 2 Parent Qualtrics Clean Data - All Waves.rds",
     "Phase 2 Parent Qualtrics Clean Data Log - All Waves.rds",
     "Phase 2 LifePak Clean Data.rds",
