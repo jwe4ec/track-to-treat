@@ -97,14 +97,24 @@ ema_notif_dates <- nis_clean_wout_free %>%
     .groups = "drop"
   )
 
-# TODO (use different approach): Compute indicator of baseline survey completion in window using helper function
-yb_valid_ids <- mark_b_done_in_ax_window(yb_valid_ids, "lsmh_id", ema_notif_dates, phase = 2)
+# Compute baseline survey window
+# - Baseline surveys were intended to be completed the day before the first EMA
+# notification. However, some were completed early (i.e., EMA started late). Thus, 
+# also compute an extended window starting a reasonable 21 days before first EMA 
+# notification and ending the day before first EMA notification.
+ax_windows_b <- ema_notif_dates %>%
+  mutate(
+    ax_window_b_start_org = first_ema_notif_date - days(1),
+    ax_window_b_end_org = ax_window_b_start_org,
+    
+    ax_window_b_start_ext = ax_window_b_start_org - days(21),
+    ax_window_b_end_ext = ax_window_b_end_org,
+  )
 
+# Compute indicator of baseline completion in window using helper function
+yb_valid_ids <- mark_done_in_ax_window(yb_valid_ids, "b", ax_windows_b)
 
-
-
-
-# TODO (use different approach): Print and remove any baseline surveys outside window
+# Print and remove any baseline surveys outside window
 # - LSMH01677's "EndDate" is "2022-02-18 14:56:15" (in "America/Chicago"), after
 # "first_ema_notif_date" of "2022-02-17" ("notification_datetime" is "2022-02-17 
 # 08:52:31"; likely in "America/Los_Angeles" per parent-reported address in baseline

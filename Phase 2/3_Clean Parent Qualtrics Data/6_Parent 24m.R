@@ -82,7 +82,7 @@ p24m_valid_ids <- compute_item_completion_rate(p24m_valid_ids, "p24m", phase = 2
 ### Remove any surveys (a) outside assessment window (or for parents of youth who 
 ### did not complete intervention survey in window) or (b) duplicated in window
 # Compute indicators of survey completion in window using helper function
-p24m_valid_ids <- mark_fu_done_in_ax_window(p24m_valid_ids, "24m", ax_windows)
+p24m_valid_ids <- mark_done_in_ax_window(p24m_valid_ids, "24m", ax_windows)
 
 # Print (using helper function) and remove any surveys outside window
 p24m_valid_ids_out_window <- get_surveys_outside_window_3m_onward(p24m_valid_ids, "24m") %>% print()

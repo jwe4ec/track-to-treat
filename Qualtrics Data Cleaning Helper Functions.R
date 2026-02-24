@@ -342,76 +342,26 @@ compute_item_completion_rate <- function(data, survey_prefix, phase = 1) {
   
 }
 
-# Function to compute indicator of baseline survey completion in assessment window for Phases 1-2
-mark_b_done_in_ax_window <- function(data, id_as_char, ema_notif_dates, phase = 1) {
+# Function to compute indicator of baseline survey completion in assessment window for Phase 1
+mark_b_done_in_ax_window <- function(data, id_as_char, ema_notif_dates) {
   
   # Add EMA notification dates to data
   names(ema_notif_dates)[names(ema_notif_dates) == "lsmh_id"] <- id_as_char
   
   data <- data %>%
-    left_join(ema_notif_dates, by = id_as_char, relationship = "many-to-one")
+    left_join(ema_notif_dates, by = id_as_char, relationship = "many-to-one") %>%
   
-  if (phase == 1) {
-    
     # Compute indicator of survey completion before first EMA notification
     # Note: Given that "EndDate" and "first_ema_notif_date" are in different time
-    # zones ("America/Denver" for Phase 1 and "America/Chicago" for Phase 2 vs. 
-    # participants' local times stored as UTC, respectively), this comparison is 
-    # approximate. To rule out the role of time zone differences, derive actual
-    # time zones for "first_ema_notif_date" from LifePak GPS data (although GPS 
-    # data are missing for some observations)
-    data <- data %>% 
-      mutate(in_window_b = as_date(EndDate) < first_ema_notif_date)
+    # zones ("America/Denver" for Phase 1 vs. participants' local times stored as 
+    # UTC, respectively), this comparison is approximate. To rule out the role of 
+    # time zone differences, derive actual time zones for "first_ema_notif_date" 
+    # from LifePak GPS data (although GPS data are missing for some observations)
+    mutate(in_window_b = as_date(EndDate) < first_ema_notif_date)
     
-    any_not_in_window <- any(data$in_window_b == FALSE)
-    
-  } else if (phase == 2) {
-    
-    data <- data %>% 
-      mutate(
-        
-        # TODO (use approach more similar to "ax_windows_yi" for Phase 2, update
-        # "yb", "yi", "y3m", and "pb" scripts accordingly, and rerun all scripts): 
-        # Compute baseline assessment window as starting a reasonable 21 days before first EMA 
-        # notification and ending the day before first EMA notification
-        
-        ax_window_b_start_org = first_ema_notif_date - days(1),
-        ax_window_b_end_org = ax_window_b_start_org,
-        
-        ax_window_b_start_ext = ax_window_b_start_org - days(21),
-        ax_window_b_end_ext = ax_window_b_end_org,
-        
-        
-        
-
-        
-        # Compute indicators of survey completion in original and extended windows
-        in_window_b_org = as_date(EndDate) >= ax_window_b_start_org & as_date(EndDate) <= ax_window_b_end_org,
-        in_window_b_ext = as_date(EndDate) >= ax_window_b_start_ext & as_date(EndDate) <= ax_window_b_end_ext,
-        
-        # If done early, compute days before start of original window
-        days_before_start_window_b_org = ifelse(
-          as_date(EndDate) < ax_window_b_start_org,
-          as_date(EndDate) - ax_window_b_start_org,
-          NA
-        ),
-        
-        # If done late, compute days after end of original window
-        days_after_end_window_b_org = ifelse(
-          as_date(EndDate) > ax_window_b_end_org,
-          as_date(EndDate) - ax_window_b_end_org,
-          NA
-        )
-        
-      )
-    
-    any_not_in_window <- any(data$in_window_b_org == FALSE)
-
-  }
-  
   # Throw warning if any surveys were not completed in this window (in which case 
   # further analysis to rule out role of differing time zones is warranted)
-  if (any_not_in_window) {
+  if (any(data$in_window_b == FALSE)) {
     
     warning("Not all baseline surveys are in window. Rule out role of differing time zones.")
     
@@ -463,8 +413,8 @@ mark_3m_done_in_ax_window <- function(data, id_as_char, ax_windows) {
   
 }
 
-# Function to compute indicators of follow-up survey completion in assessment window for Phase 2
-mark_fu_done_in_ax_window <- function(data, survey_prefix, ax_windows) {
+# Function to compute indicators of survey completion in assessment window for Phase 2
+mark_done_in_ax_window <- function(data, survey_prefix, ax_windows) {
   
   # Define input columns based on "survey_prefix"
   ax_window_start_org <- sym(paste0("ax_window_", survey_prefix, "_start_org"))
@@ -502,6 +452,18 @@ mark_fu_done_in_ax_window <- function(data, survey_prefix, ax_windows) {
       )
       
     )
+  
+  # For baseline surveys, throw warning if any surveys were not completed in original window 
+  # (in which case further analysis to rule out role of differing time zones is warranted)
+  # - Given that "EndDate" and "first_ema_notif_date" are in different time zones ("America/Chicago" 
+  # for Phase 2 vs. participants' local times stored as UTC, respectively), this comparison is approximate. 
+  # To rule out the role of time zone differences, derive actual time zones for "first_ema_notif_date" 
+  # from LifePak GPS data (although GPS data are missing for some observations).
+  if (survey_prefix == "b" & any(data[[in_window_org]] == FALSE)) {
+    
+    warning("Not all baseline surveys are in original window. Rule out role of differing time zones.")
+    
+  }
   
   return(data)
   

@@ -87,19 +87,12 @@ pb_valid_ids <- compute_item_completion_rate(pb_valid_ids, "pb", phase = 2)
 
 ### Remove any surveys (a) outside assessment window (or for parents of youth who 
 ### didn't start EMA) or (b) duplicated in window
-# TODO (add baseline window to ax_windows instead): Obtain EMA notification dates from assessment windows computed when cleaning youth Qualtrics data
-ema_notif_dates <- ax_windows[, c("lsmh_id", "first_ema_notif_date", "last_ema_notif_date", "end_ema_period")]
+# Compute indicator of baseline completion in window using helper function
+pb_valid_ids <- mark_done_in_ax_window(pb_valid_ids, "b", ax_windows)
 
-
-
-
-
-# TODO (use different approach): Compute indicator of baseline survey completion in window using helper function
-# - LSMH00920 has two responses, one with the most data before "first_ema_notif_date" 
-# and one with no data months later 
-pb_valid_ids <- mark_b_done_in_ax_window(pb_valid_ids, "lsmh_id", ema_notif_dates, phase = 2)
-
-# TODO (use different approach): Print and remove any baseline surveys outside window
+# Print and remove any baseline surveys outside window
+# - Note: Filtering on baseline window already keeps latter survey for LSMH02077, which 
+# README_ttt_p2_data_collection says to keep as it was done on the same day as the child
 pb_valid_ids %>%
   filter(!in_window_b_ext | is.na(in_window_b_ext)) %>%
   select(lsmh_id, StartDate, EndDate, first_ema_notif_date,
@@ -111,15 +104,8 @@ pb_valid_ids %>%
 pb_valid_ids <- pb_valid_ids %>%
   filter(in_window_b_ext)
 
-# TODO (not needed once above is done): For LSMH02077, manually keep the latter survey, as this was done on the same day
-# as the child, per README_ttt_p2_data_collection
-pb_manual_filter_02077 <- pb_valid_ids %>%
-  filter(
-    !(lsmh_id == "LSMH02077" & as_date(EndDate) == mdy("8/27/2022"))
-  )
-
 # Remove duplicates using helper function
-pb_deduplicated <- remove_duplicates(pb_manual_filter_02077, lsmh_id)
+pb_deduplicated <- remove_duplicates(pb_valid_ids, lsmh_id)
 
 # Double-check deduplication
 identify_duplicates(pb_deduplicated, lsmh_id, phase = 2)

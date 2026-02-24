@@ -156,12 +156,12 @@ ax_windows_yi <- yb_ema_dates %>%
     ax_window_yi_end_org = ax_window_yi_start_org + weeks(3),
     
     ax_window_yi_start_ext = end_ema_period + days(1),
-    ax_window_yi_end_ext = ax_window_yi_start_ext + weeks(6),
+    ax_window_yi_end_ext = ax_window_yi_start_ext + weeks(6)
   ) %>%
   ungroup()
 
 # Compute indicator of intervention completion in window using helper function
-yi_valid_ids <- mark_fu_done_in_ax_window(yi_valid_ids, "yi", ax_windows_yi)
+yi_valid_ids <- mark_done_in_ax_window(yi_valid_ids, "yi", ax_windows_yi)
 
 # Print and remove any intervention surveys outside window
 yi_valid_ids %>%
