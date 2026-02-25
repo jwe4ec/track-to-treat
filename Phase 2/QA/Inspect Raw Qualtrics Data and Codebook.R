@@ -156,7 +156,7 @@ p_meas_item_cols_prefixes_stems <- meas_item_cols_prefixes_stems[grepl("^p", nam
 ## TODO: Alyssa will replicate this check for parents, currently only checks youth prefixes
 
 y_prefixes_by_wave <- lapply(y_meas_item_cols_prefixes_stems, \(x) unique(x$prefixes))
-y_prefixes <- unname(unlist(y_prefixes_by_wave))
+y_prefixes <- unique(unlist(y_prefixes_by_wave))
 
 expected_y_prefixes <- c("yb", "yi", paste0("y", c(3, 6, 12, 18, 24), "m"))
 unexpected_y_prefixes <- setdiff(y_prefixes, expected_y_prefixes)
@@ -165,35 +165,39 @@ stopifnot(setequal(unexpected_y_prefixes, c("b", "y312", "y18n")))
 
 ### Confirm that all measure items within a given wave are unique- both youth and parents pass
 stopifnot(
-  all(sapply(y_meas_item_cols_prefixes_stems, \(stems) length(stems) == length(unique(stems)))),
-  all(sapply(p_meas_item_cols_prefixes_stems, \(stems) length(stems) == length(unique(stems))))
+  all(sapply(y_meas_item_cols_prefixes_stems, \(x) length(x$stems) == length(unique(x$stems)))),
+  all(sapply(p_meas_item_cols_prefixes_stems, \(x) length(x$stems) == length(unique(x$stems))))
 )
 
 ### Confirm that measure item stems are same across waves
 
 y_waves <- names(y_meas_item_cols_prefixes_stems)
 total_y_waves <- length(y_meas_item_cols_prefixes_stems)
-y_stems_by_wave <- lapply(y_meas_item_cols_prefixes_stems, \(x) unique(x$stems))
-y_stems <- unname(unlist(y_stems_by_wave))
 
-# Creating a data frame that organizes the info we want about each stem based on the waves it is or is not present in
-y_stem_wave_counts <- bind_rows(lapply(y_stems, function(stem) {
-  present_y_waves <- y_waves[vapply(y_stems_by_wave, \(stems) stem %in% stems, logical(1))]
+y_stems_by_wave <- lapply(y_meas_item_cols_prefixes_stems, \(x) unique(x$stems))
+y_stems <- unique(unlist(y_stems_by_wave))
+
+# Creating a data frame that organizes the info we want about each stem based on the waves it is or is not present
+y_stem_wave_count_dfs <- lapply(y_stems, function(stem) {
+  present_y_waves <- y_waves[sapply(y_stems_by_wave, \(stems) stem %in% stems)]
   missing_waves <- setdiff(y_waves, present_y_waves)
-    
-  data.frame(
-      stem = stem,
-      n_present = length(present_y_waves),
-      total_y_waves = total_y_waves,
-      present_y_waves = paste(present_y_waves, collapse = ", "),
-      missing_waves = paste(missing_waves, collapse = ", "),
-      stringsAsFactors = FALSE
-    )
-  })
-)
+  
+  stem_df <- data.frame(
+    stem = stem,
+    n_present = length(present_y_waves),
+    total_y_waves = total_y_waves,
+    present_y_waves = paste(present_y_waves, collapse = ", "),
+    missing_waves = paste(missing_waves, collapse = ", ")
+  )
+  
+  return(stem_df)
+})
+names(y_stem_wave_count_dfs) <- y_stems
+
+y_stem_wave_counts_df <- bind_rows(y_stem_wave_count_dfs)
 
 #Now we have a dataframe that includes information about which stems are present in which youth waves
-y_stem_wave_counts 
+y_stem_wave_counts_df 
 
 # TODO: Alyssa to confirm that measure item stems are same across waves for parents
 # - Deleted the code that was here that pulled out "accommodations_2" because now that baseline is included, we will want to
