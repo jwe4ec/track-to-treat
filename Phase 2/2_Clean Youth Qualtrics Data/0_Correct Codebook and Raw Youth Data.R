@@ -49,7 +49,7 @@ check_raw_data_ver(raw_metadata, raw_data_paths, dat_ls_raw, y_data_types)
 
 
 
-####  Fix Item Prefixes in Codebook and Data  ####
+####  Fix Item Names in Codebook and Data  ####
 # For "yb", add prefix to SRET items
 yb_sret_items_raw <- c("SRET", "SRET.keys", "SRET.time", "SRET.words", "tlcond")
 
@@ -64,17 +64,17 @@ dat_ls_renamed <- dat_ls_raw %>%
     )
   )
 
-# For "yi", fix BADS-SF items' prefixes from "b_" to "yi_"
-yi_bads_items_raw <- paste0("b_bads_", 1:9)
+# For "yi", fix BADS-SF items' prefixes from "b_" to "yi_" and change stems to "bads_sf"
+yi_bads_sf_items_raw <- paste0("b_bads_", 1:9)
 
-codebook$item[codebook$item %in% yi_bads_items_raw] <-
-  sub("^b_", "yi_", codebook$item[codebook$item %in% yi_bads_items_raw])
+codebook$item[codebook$item %in% yi_bads_sf_items_raw] <-
+  sub("^b_bads_", "yi_bads_sf_", codebook$item[codebook$item %in% yi_bads_sf_items_raw])
 
 dat_ls_renamed <- dat_ls_renamed %>%
   modify_in("yi", ~ rename_with(
       .x,
-      .cols = all_of(yi_bads_items_raw),
-      .fn = ~ sub("^b_", "yi_", .x)
+      .cols = all_of(yi_bads_sf_items_raw),
+      .fn = ~ sub("^b_bads_", "yi_bads_sf_", .x)
     )
   )
 

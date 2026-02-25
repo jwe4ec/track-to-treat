@@ -360,7 +360,7 @@ yi_recoded <- yi_deduplicated %>%
     yi_days_after_end_window_yi_org,
     
     # Measures
-    matches("_bads_"),
+    matches("_bads_sf_"),
     matches("_bhs_"),
     matches("_iptq_"),
     yi_perc_change_hope,
@@ -376,7 +376,7 @@ yi_recoded <- yi_deduplicated %>%
 ### Check that values are in expected range
 items_to_check <- yi_recoded %>%
   select(
-    matches("_bads_"),
+    matches("_bads_sf_"),
     matches("_bhs_"),
     matches("_iptq_"),
     yi_perc_change_hope,
