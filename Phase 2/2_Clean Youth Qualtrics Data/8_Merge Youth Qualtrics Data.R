@@ -109,19 +109,13 @@ names(item_completion_rate) <- names(y_log)
 # Items used to compute means
 mean_items <- lapply(y_log, \(log) log$mean_items)
 
-# Clean codebooks
+# Clean codebook
 # - Corrected in "Correct Codebook and Raw Youth Data.R", with further youth edits
 # only in "2_Youth Intervention.R" to date
-y_codebooks_clean <- list(yb = codebook,
-                          yi = y_log$yi$yi_codebook_clean,
-                          y3m = codebook,
-                          y6m = codebook,
-                          y12m = codebook,
-                          y18m = codebook,
-                          y24m = codebook)
+y_codebook_clean <- y_log$yi$yi_codebook_clean
 
 # Restructured log
-y_log_restructured <- mget(c("item_completion_rate", "mean_items", "y_codebooks_clean"))
+y_log_restructured <- mget(c("item_completion_rate", "mean_items", "y_codebook_clean"))
 
 
 
