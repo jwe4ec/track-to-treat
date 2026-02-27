@@ -1,4 +1,4 @@
-#### Helper function to check raw data versions ####
+#### Helper function to check raw data versions for Phases 1-2 ####
 check_raw_data_ver <- function(raw_metadata, path_ls, data_ls, data_types,
                                write_loaded_raw_metadata = FALSE) {
   
@@ -7,7 +7,7 @@ check_raw_data_ver <- function(raw_metadata, path_ls, data_ls, data_types,
                                     size = sapply(path_ls, function(x) file.info(x)$size),
                                     nrow = sapply(data_ls, nrow),
                                     ncol = sapply(data_ls, ncol),
-                                    hash = sapply(path_ls, digest, algo = "sha256"),
+                                    hash = sapply(path_ls, digest, algo = "sha256", file = TRUE),
                                     row.names = NULL)
   
   # Optionally export loaded metadata (for help building "Raw <P1/P2> Metadata.csv"
@@ -42,7 +42,7 @@ check_raw_data_ver <- function(raw_metadata, path_ls, data_ls, data_types,
 
 }
 
-#### Helper function to create versioned clean data release ####
+#### Helper function to create versioned clean data release for Phases 1-2 ####
 create_data_release <- function(clean_data_staging_dir, clean_data_final_dir, phase, staged_filenames) {
   
   ### Load staged files into named list
