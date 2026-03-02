@@ -153,7 +153,7 @@ y_meas_item_cols_prefixes_stems <- meas_item_cols_prefixes_stems[grepl("^y", nam
 p_meas_item_cols_prefixes_stems <- meas_item_cols_prefixes_stems[grepl("^p", names(meas_item_cols_prefixes_stems))]
 
 ### Confirm that all of the prefixes removed within each wave are what we would expect 
-## TODO: Alyssa will replicate this check for parents, currently only checks youth prefixes
+## TODO: Alyssa to review if this can be generalized for parents and youth rather than replicated.
 
 y_prefixes_by_wave <- lapply(y_meas_item_cols_prefixes_stems, \(x) unique(x$prefixes))
 y_prefixes <- unique(unlist(y_prefixes_by_wave))
