@@ -16,7 +16,7 @@ get_p2_qualtrics_dirs <- function(type = c("raw_data", "clean_data_staging", "cl
   }
   
   # Build all paths using file.path() which avoids operating system issues/hard coding
-  raw_data_dir <- file.path(jslab_dir, "TRACK to TREAT P2", "Data", "Qualtrics", "Raw", "2026.01.21_final")
+  raw_data_dir <- file.path(jslab_dir, "TRACK to TREAT P2", "Data", "Qualtrics", "Raw", "2026.02.26_final")
   clean_data_dir <- file.path(jslab_dir, "TRACK to TREAT P2", "Data", "Clean Data (Isaac)")
   clean_data_staging_dir <- file.path(clean_data_dir, "staging")
   clean_data_staging_intermediate_dir <- file.path(clean_data_staging_dir, "intermediate")
