@@ -153,8 +153,6 @@ y_meas_item_cols_prefixes_stems <- meas_item_cols_prefixes_stems[grepl("^y", nam
 p_meas_item_cols_prefixes_stems <- meas_item_cols_prefixes_stems[grepl("^p", names(meas_item_cols_prefixes_stems))]
 
 ### Confirm that all of the prefixes removed within each wave are what we would expect 
-## TODO: Alyssa to review if this can be generalized for parents and youth rather than replicated.
-
 y_prefixes_by_wave <- lapply(y_meas_item_cols_prefixes_stems, \(x) unique(x$prefixes))
 y_prefixes <- unique(unlist(y_prefixes_by_wave))
 
@@ -177,59 +175,35 @@ stopifnot(
   all(sapply(p_meas_item_cols_prefixes_stems, \(x) length(x$stems) == length(unique(x$stems))))
 )
 
-### Confirm that measure item stems are same across waves
 
-y_waves <- names(y_meas_item_cols_prefixes_stems)
-total_y_waves <- length(y_meas_item_cols_prefixes_stems)
+### Confirm that measure item stems are same across waves and create a df-- now generalized b/w parents and youth
 
-p_waves <- names(p_meas_item_cols_prefixes_stems)
-total_p_waves <- length(p_meas_item_cols_prefixes_stems)
-
-y_stems_by_wave <- lapply(y_meas_item_cols_prefixes_stems, \(x) unique(x$stems))
-y_stems <- unique(unlist(y_stems_by_wave))
-
-p_stems_by_wave <-  lapply(p_meas_item_cols_prefixes_stems, \(x) unique(x$stems))
-p_stems <- unique(unlist(p_stems_by_wave)) 
-# Creating a data frame that organizes the info we want about each stem based on the waves it is or is not present
-y_stem_wave_count_dfs <- lapply(y_stems, function(stem) {
-  present_y_waves <- y_waves[sapply(y_stems_by_wave, \(stems) stem %in% stems)]
-  missing_y_waves <- setdiff(y_waves, present_y_waves)
+get_stem_wave_counts <- function(meas_item_cols_prefixes_stems) {
+  waves <- names(meas_item_cols_prefixes_stems)
+  total_waves <- length(meas_item_cols_prefixes_stems)
+  stems_by_wave <- lapply(meas_item_cols_prefixes_stems, \(x) unique(x$stems))
+  stems <- unique(unlist(stems_by_wave))
   
-  y_stem_df <- data.frame(
-    stem = stem,
-    n_present = length(present_y_waves),
-    total_y_waves = total_y_waves,
-    present_y_waves = paste(present_y_waves, collapse = ", "),
-    missing_y_waves = paste(missing_y_waves, collapse = ", ")
-  )
+  stem_wave_count_dfs <- lapply(stems, function(stem) {
+    present_waves <- waves[sapply(stems_by_wave, \(s) stem %in% s)]
+    missing_waves <- setdiff(waves, present_waves)
+    
+    data.frame(
+      stem = stem,
+      n_present = length(present_waves),
+      total_waves = total_waves,
+      present_waves = paste(present_waves, collapse = ", "),
+      missing_waves = paste(missing_waves, collapse = ", ")
+    )
+  })
   
-  return(y_stem_df)
-})
-names(y_stem_wave_count_dfs) <- y_stems
+  names(stem_wave_count_dfs) <- stems
+  bind_rows(stem_wave_count_dfs)
+}
 
-y_stem_wave_counts_df <- bind_rows(y_stem_wave_count_dfs)
-
-    # Parents
-stem_wave_count_dfs <- lapply(p_stems, function(stem) {
-  present_p_waves <- p_waves[sapply(p_stems_by_wave, \(stems) stem %in% stems)]
-  missing_p_waves <- setdiff(p_waves, present_p_waves)
-  
-  p_stem_df <- data.frame(
-    stem = stem,
-    n_present = length(present_p_waves),
-    total_p_waves = total_p_waves,
-    present_p_waves = paste(present_p_waves, collapse = ", "),
-    missing_p_waves = paste(missing_p_waves, collapse = ", ")
-  )
-  
-  return(p_stem_df)
-})
-names(p_stem_wave_count_dfs) <- p_stems
-
-p_stem_wave_counts_df <- bind_rows(p_stem_wave_count_dfs)
-#Now we have a dataframe that includes information about which stems are present in which youth waves
-y_stem_wave_counts_df 
-p_stem_wave_counts_df
+# Now we can just call the function twice and assign it to its corresponding wave
+y_stem_wave_counts_df <- get_stem_wave_counts(y_meas_item_cols_prefixes_stems)
+p_stem_wave_counts_df <- get_stem_wave_counts(p_meas_item_cols_prefixes_stems)
 
 # Quick summary of item stem distribution this can be taken out when complete.
 y_stem_wave_counts_df %>% 
