@@ -220,12 +220,12 @@ p_stem_wave_counts_df %>%
 
 
 ### Restrict to 3- to 24-month follow-ups
-dat_ls_fu <- dat_ls[grepl("\\d+m_raw$", names(dat_ls))]
+#dat_ls_fu <- dat_ls[grepl("\\d+m_raw$", names(dat_ls))]
 
 
 ### Get labels and classes of measure items for youth and parent surveys and name by measure item stems
-fu_meas_item_col_lbls_clss <- lapply(names(dat_ls_fu), function(dat_name) {
-  dat                 <- dat_ls_fu[[dat_name]]
+meas_item_col_lbls_clss <- lapply(names(dat_ls), function(dat_name) {
+  dat                 <- dat_ls[[dat_name]]
   meas_item_cols      <- dat_ls_cols[[dat_name]]$meas_item_cols
   meas_item_col_stems <- str_split_fixed(meas_item_cols, "_", 2)[, 2]
   
@@ -239,16 +239,16 @@ fu_meas_item_col_lbls_clss <- lapply(names(dat_ls_fu), function(dat_name) {
   
   return(out)
 })
-names(fu_meas_item_col_lbls_clss) <- names(dat_ls_fu)
+names(meas_item_col_lbls_clss) <- names(dat_ls)
 
-y_fu_meas_item_col_lbls_clss <- fu_meas_item_col_lbls_clss[grepl("^y", names(fu_meas_item_col_lbls_clss))]
-p_fu_meas_item_col_lbls_clss <- fu_meas_item_col_lbls_clss[grepl("^p", names(fu_meas_item_col_lbls_clss))]
+y_meas_item_col_lbls_clss <- meas_item_col_lbls_clss[grepl("^y", names(meas_item_col_lbls_clss))]
+p_meas_item_col_lbls_clss <- meas_item_col_lbls_clss[grepl("^p", names(meas_item_col_lbls_clss))]
 
 
 ### Confirm that all measure item labels within a given follow-up survey are unique
 stopifnot(
-  all(sapply(y_fu_meas_item_col_lbls_clss, \(wave) length(wave$lbls) == length(unique(wave$lbls)))),
-  all(sapply(p_fu_meas_item_col_lbls_clss, \(wave) length(wave$lbls) == length(unique(wave$lbls))))
+  all(sapply(y_meas_item_col_lbls_clss, \(wave) length(wave$lbls) == length(unique(wave$lbls)))),
+  all(sapply(p_meas_item_col_lbls_clss, \(wave) length(wave$lbls) == length(unique(wave$lbls))))
 )
 
 
