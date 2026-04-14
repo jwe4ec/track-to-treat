@@ -94,7 +94,7 @@ mean_items <- lapply(y_log, \(log) log$mean_items)
 
 # Clean codebook
 # - Corrected in "Correct Codebook and Raw Youth Data.R", with further youth edits
-# only in "2_Youth Intervention.R" to date
+# only in "Youth Intervention.R" to date
 y_codebook_clean <- y_log$yi$yi_codebook_clean
 
 # Restructured log

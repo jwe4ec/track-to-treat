@@ -24,31 +24,30 @@ File organization:
   * Raw P2 Metadata.csv (used to track expected raw data versions for checks against loaded files)
   * 2026.04.03 Track to Treat P2 Codebook.xlsx (an item-level codebook used to clean the Qualtrics data)
     * "load_p2_codebook()" helper expands repeated-measure items with "[x]" prefix to "b" and "[3-24]m"
-  * TODO: Renumber scripts below
-  * 0a_Clean Tracking Log and Create ID Lookup.R
-  * 0b_Clean Phone Screen Data.R
-  * 1_Clean LifePak Data.R
-  * 2_Clean Youth Qualtrics Data/
-    * 0_Correct Codebook and Raw Youth Data.R
-    * 1_Youth Baseline.R
-    * 2_Youth Intervention.R
-    * 3_Youth 3m.R
-    * 4_Youth 6m.R
-    * 5_Youth 12m.R
-    * 6_Youth 18m.R
-    * 7_Youth 24m.R
-    * 8_Merge Youth Qualtrics Data.R
-  * 3_Clean Parent Qualtrics Data/
-    * 0_Correct Raw Parent Data.R
-    * 1_Parent Baseline.R
-    * 2_Parent 3m.R
-    * 3_Parent 6m.R
-    * 4_Parent 12m.R
-    * 5_Parent 18m.R
-    * 6_Parent 24m.R
-    * 7_Merge Parent Qualtrics Data.R
-  * 4_Create Cohort Indicators for Flow and Analysis.R
-  * 5_Create Clean Data Release.R [TODO]
+  * 1_Clean Tracking Log and Create ID Lookup.R
+  * 2_Clean Phone Screen Data.R
+  * 3_Clean LifePak Data.R
+  * 4_Clean Youth Qualtrics Data/
+    * 1_Correct Codebook and Raw Youth Data.R
+    * 2_Youth Baseline.R
+    * 3_Youth Intervention.R
+    * 4_Youth 3m.R
+    * 5_Youth 6m.R
+    * 6_Youth 12m.R
+    * 7_Youth 18m.R
+    * 8_Youth 24m.R
+    * 9_Merge Youth Qualtrics Data.R
+  * 5_Clean Parent Qualtrics Data/
+    * 1_Correct Raw Parent Data.R
+    * 2_Parent Baseline.R
+    * 3_Parent 3m.R
+    * 4_Parent 6m.R
+    * 5_Parent 12m.R
+    * 6_Parent 18m.R
+    * 7_Parent 24m.R
+    * 8_Merge Parent Qualtrics Data.R
+  * 6_Create Cohort Indicators for Flow and Analysis.R
+  * 7_Create Clean Data Release.R
   * QA/
     * Inspect Raw Qualtrics Data and Codebook.R (checking raw data and codebook for issues to clean)
 
@@ -155,7 +154,7 @@ Version control:
   * `Create Clean Data Release.R` creates versioned "releases" of data in `final_read_only/`
     * Versions < v1.0 are for development only; versions >= v1.0 are suitable for analysis
     * To view the code (and raw data versions) for a release, go to this repo's corresponding [tag](https://github.com/isaacahuvia/track-to-treat/tags)
-  * Releases:
+  * Releases: TODO (update below)
     * **v1.0 (2025-05-12)**
       * Phase I: Cleans LifePak and Qualtrics data (collection over)
         * Clean LifePak data is outputted with and without free responses below (to deidentify in v3.0):
