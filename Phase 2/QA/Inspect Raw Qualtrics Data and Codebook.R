@@ -18,10 +18,10 @@ source(here("Version Control Helper Functions.R"))
 
 ## Load data into list
 # Get directories using helper function
-dirs <- get_p2_qualtrics_dirs("raw_data")
+dirs <- get_p2_qualtrics_dirs(c("raw_data", "clean_data_staging_intermediate"))
 raw_data_dir <- dirs$raw_data
 
-# Load raw Qualtrics datasets (storing paths) in this format: [respondent][wave]_[administration]_raw
+# Load raw Qualtrics datasets (storing paths) in this format: [respondent][wave]_raw
 # - Note: Use "timeZone" specified for date columns (e.g., "StartDate") in third row of raw CSVs
 raw_data_paths <- lst(
   yb_raw = raw_data_dir %+% "DP5+Phase+2+-+Youth+-+Baseline_January+21,+2026_11.24_n.csv",
@@ -44,8 +44,8 @@ dat_ls <- lapply(raw_data_paths, read_survey, time_zone = "America/Chicago")
 
 
 ## Load ID lookup and (using helper function) item-level codebook
-id_lookup <- read_csv(here("Phase 2", "2025.08.01 Track to Treat P2 ID Lookup.csv"))
-codebook <- load_p2_codebook(here("Phase 2", "2026.02.12 Track to Treat P2 Codebook.xlsx"))
+id_lookup <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 ID Lookup.rds")
+codebook <- load_p2_codebook(here("Phase 2", "2026.04.03 Track to Treat P2 Codebook.xlsx"))
 
 
 

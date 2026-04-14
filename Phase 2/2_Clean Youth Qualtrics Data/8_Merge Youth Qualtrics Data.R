@@ -43,10 +43,6 @@ y_log$y12m <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qu
 y_log$y18m <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data Log - 18m.rds")
 y_log$y24m <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data Log - 24m.rds")
 
-# Load LSMH IDs meeting exclusion criteria per youth intervention free-text responses
-# - These were identified and exported in "Youth Intervention.R" (see script for details)
-exclude_ids <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 LSMH IDs Meeting Free-Text Exclusion Criteria.rds")
-
 
 ## Load corrected item-level codebook
 codebook <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Qualtrics Corrected Codebook.rds")
@@ -72,22 +68,9 @@ y_merged <- reduce(
 
 
 
-####  Filter Data  ####
-# Drop LSMH IDs meeting exclusion criteria per youth intervention free-text responses
-y_merged_filtered <- y_merged %>%
-  left_join(
-    exclude_ids[c("lsmh_id", "exclude")],
-    by = "lsmh_id",
-    relationship = "one-to-one"
-  ) %>%
-  filter(exclude != 1 | is.na(exclude)) %>%
-  select(-exclude)
-
-
-
 ####  Inspect Completion Rates  ####
 # Where completion means response is present but not necessarily complete
-y_merged_filtered %>%
+y_merged %>%
   count(
     yb_complete = !is.na(yb_complete),
     yi_complete = !is.na(yi_complete),
@@ -121,7 +104,9 @@ y_log_restructured <- mget(c("item_completion_rate", "mean_items", "y_codebook_c
 
 ####  Save Data  ####
 # Save data
-saveRDS(y_merged_filtered, dirs$clean_data_staging %+% "Phase 2 Youth Qualtrics Clean Data - All Waves.rds")
+# - Note: To analyze intent-to-treat sample, filter LSMH IDs per "analyze_itt_sample" in
+#   "Phase 2 Cohort Indicators for Flow and Analysis.rds"
+saveRDS(y_merged, dirs$clean_data_staging %+% "Phase 2 Youth Qualtrics Clean Data - All Waves.rds")
 
 # Save log
 saveRDS(y_log_restructured, dirs$clean_data_staging %+% "Phase 2 Youth Qualtrics Clean Data Log - All Waves.rds")

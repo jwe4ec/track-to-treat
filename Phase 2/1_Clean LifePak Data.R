@@ -36,7 +36,7 @@ raw_data <- lapply(raw_data_paths, read.csv)
 list2env(raw_data, envir = .GlobalEnv)
 
 # Load ID lookup
-id_lookup <- read_csv(here("Phase 2", "2025.08.01 Track to Treat P2 ID Lookup.csv"))
+id_lookup <- readRDS(clean_data_staging_intermediate_dir %+% "Phase 2 ID Lookup.rds")
 
 
 ## Check raw LifePak data versions using helper function
@@ -327,6 +327,9 @@ nis_deduplicated_free_text_checked <- read_csv(clean_data_staging_intermediate_d
 
 
 ####  Save Data  ####
+# - Note: To analyze intent-to-treat sample, filter LSMH IDs per "analyze_itt_sample" in
+#   "Phase 2 Cohort Indicators for Flow and Analysis.rds"
+
 # Save clean LifePak data
 saveRDS(nis_deduplicated, clean_data_staging_dir %+% "Phase 2 LifePak Clean Data.rds")
 

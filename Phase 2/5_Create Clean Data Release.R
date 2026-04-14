@@ -62,6 +62,7 @@ create_data_release(
     "Phase 2 Parent Qualtrics Clean Data - All Waves.rds",
     "Phase 2 Parent Qualtrics Clean Data Log - All Waves.rds",
     "Phase 2 LifePak Clean Data.rds",
-    "Phase 2 LifePak Clean Data Without Free Responses.rds"
+    "Phase 2 LifePak Clean Data Without Free Responses.rds",
+    "Phase 2 Cohort Indicators for Flow and Analysis.rds"
   )
 )

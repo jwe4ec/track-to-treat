@@ -27,7 +27,7 @@ y12m_corrected <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Yout
 
 
 ## Load ID lookup and corrected item-level codebook
-id_lookup <- read_csv(here("Phase 2", "2025.08.01 Track to Treat P2 ID Lookup.csv"))
+id_lookup <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 ID Lookup.rds")
 codebook <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Qualtrics Corrected Codebook.rds")
 
 
@@ -257,7 +257,6 @@ walk(items_to_check, check_values, y12m_recoded) # check_values() helper functio
 
 ####  Save Data  ####
 # Save clean Qualtrics data
-# - Note: LSMH IDs meeting exclusion criteria are dropped later (in "Merge Youth Qualtrics Data.R")
 saveRDS(y12m_recoded, dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data - 12m.rds")
 
 # Save log

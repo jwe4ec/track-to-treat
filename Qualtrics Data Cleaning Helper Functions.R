@@ -51,11 +51,16 @@ resolve_id_pair <- function(id1, id2) {
   
 }
 
-# Function to warn about LSMH IDs with invalid format for Phase 2
-warn_invalid_id_format <- function(ids) {
+# Function to warn about LSMH IDs or LifePak IDs with invalid format for Phase 2
+warn_invalid_id_format <- function(ids, type = "lsmh_id") {
   
-  # Find non-NA IDs that don't match "LSMH" followed by 5 digits
-  ids_invalid_format <- ids[!is.na(ids) & !grepl("^LSMH\\d{5}$", ids)]
+  if (type == "lsmh_id") {
+    # Find non-NA IDs that don't match "LSMH" followed by 5 digits
+    ids_invalid_format <- ids[!is.na(ids) & !grepl("^LSMH\\d{5}$", ids)]
+  } else if (type == "lifepak_id") {
+    # Find non-NA IDs that don't have 6 digits
+    ids_invalid_format <- ids[!is.na(ids) & !grepl("^\\d{6}$", ids)]
+  }
   
   if (length(ids_invalid_format) > 0) {
     warning("Invalid ID format for:\n", paste(" ", ids_invalid_format, collapse = "\n"))

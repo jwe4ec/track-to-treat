@@ -30,7 +30,7 @@ yb_ema_dates <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth 
 
 
 ## Load ID lookup and corrected item-level codebook
-id_lookup <- read_csv(here("Phase 2", "2025.08.01 Track to Treat P2 ID Lookup.csv"))
+id_lookup <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 ID Lookup.rds")
 codebook <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Qualtrics Corrected Codebook.rds")
 
 
@@ -123,8 +123,8 @@ exclude_ids <- yi_valid_ids_free_text_checked %>%
   select(lsmh_id, exclude, exclude_not_fluent, exclude_random_text, exclude_too_short)
 
 # Save LSMH IDs meeting exclusion criteria
-# - These IDs are loaded in "Merge Youth Qualtrics Data.R" and "Merge Parent Qualtrics Data.R" and used to
-# exclude LSMH IDs in those scripts after merging data across assessment points
+# - These IDs are loaded in "Create Cohort Indicators for Flow and Analysis.R" and
+# used to indicate LSMH IDs to exclude when analyzing the intent-to-treat sample
 saveRDS(exclude_ids, dirs$clean_data_staging_intermediate %+% "Phase 2 LSMH IDs Meeting Free-Text Exclusion Criteria.rds")
 
 
@@ -288,6 +288,9 @@ yi_recoded <- yi_deduplicated %>%
     yi_days_before_start_window_yi_org = days_before_start_window_yi_org,
     yi_days_after_end_window_yi_org = days_after_end_window_yi_org,
     
+    # SSI complete (i.e., any response on Program Feedback Scale immediately post-SSI)
+    yi_ssi_complete = !if_all(matches("^yi_pfs_"), is.na),
+    
     
     ## BADS-SF (Behavioral Activation for Depression Scale - Short Form)
     # Activation subscale
@@ -349,7 +352,6 @@ yi_recoded <- yi_deduplicated %>%
     yi_date,
     yi_datetime,
     yi_duration,
-    condition,
     ax_window_yi_start_org,
     ax_window_yi_end_org,
     ax_window_yi_start_ext,
@@ -358,6 +360,8 @@ yi_recoded <- yi_deduplicated %>%
     yi_in_window_ext,
     yi_days_before_start_window_yi_org,
     yi_days_after_end_window_yi_org,
+    condition,
+    yi_ssi_complete,
     
     # Measures
     matches("_bads_sf_"),
@@ -393,7 +397,6 @@ walk(items_to_check, check_values, yi_recoded) # check_values() helper function
 
 ####  Save Data  ####
 # Save clean Qualtrics data
-# - Note: LSMH IDs meeting exclusion criteria are dropped later (in "Merge Youth Qualtrics Data.R")
 saveRDS(yi_recoded, dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data - Intervention.rds")
 
 # Save assessment windows
