@@ -13,26 +13,27 @@ groundhog.library(
 
 
 ## Load helper functions
-source(here("Qualtrics Data Cleaning Helper Functions.R"))
+source(here("Directory Helper Functions.R"))
 source(here("Version Control Helper Functions.R"))
+source(here("Qualtrics Data Cleaning Helper Functions.R"))
 
 
 ## Load Qualtrics data
 # Get directories using helper function
-dirs <- get_p2_qualtrics_dirs("clean_data_staging_intermediate")
+dirs <- get_p2_dirs("clean_data_staging_intermediate")
 
 # Load corrected Qualtrics data
-p18m_corrected <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Corrected Data - List by Wave.rds") %>%
+p18m_corrected <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Parent Qualtrics Corrected Data - List by Wave.rds")) %>%
   pluck("p18m")
 
 
 ## Load ID lookup and corrected item-level codebook
-id_lookup <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 ID Lookup.rds")
-codebook <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Qualtrics Corrected Codebook.rds")
+id_lookup <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 ID Lookup.rds"))
+codebook <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Qualtrics Corrected Codebook.rds"))
 
 
 ## Load assessment windows
-ax_windows <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Assessment Windows.rds")
+ax_windows <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Assessment Windows.rds"))
 
 
 
@@ -214,7 +215,7 @@ walk(items_to_check, check_values, p18m_recoded) # check_values() helper functio
 
 ####  Save Data  ####
 # Save clean Qualtrics data
-saveRDS(p18m_recoded, dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Clean Data - 18m.rds")
+saveRDS(p18m_recoded, file.path(dirs$clean_data_staging_intermediate, "Phase 2 Parent Qualtrics Clean Data - 18m.rds"))
 
 # Save log
-saveRDS(log, dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Clean Data Log - 18m.rds")
+saveRDS(log, file.path(dirs$clean_data_staging_intermediate, "Phase 2 Parent Qualtrics Clean Data Log - 18m.rds"))

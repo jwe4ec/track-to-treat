@@ -1,4 +1,4 @@
-#### Helper function to check raw data versions for Phases 1-2 ####
+####  Helper function to check raw data versions for Phases 1-2  ####
 check_raw_data_ver <- function(raw_metadata, path_ls, data_ls, data_types,
                                write_loaded_raw_metadata = FALSE) {
   
@@ -42,11 +42,11 @@ check_raw_data_ver <- function(raw_metadata, path_ls, data_ls, data_types,
 
 }
 
-#### Helper function to create versioned clean data release for Phases 1-2 ####
+####  Helper function to create versioned clean data release for Phases 1-2  ####
 create_data_release <- function(clean_data_staging_dir, clean_data_final_dir, phase, staged_filenames) {
   
   ### Load staged files into named list
-  staged_files <- lapply(paste0(clean_data_staging_dir, "\\", staged_filenames), readRDS)
+  staged_files <- lapply(file.path(clean_data_staging_dir, staged_filenames), readRDS)
   names(staged_files) <- staged_filenames
   
   ### Obtain version info from user via console (preventing storage of info in script, 
@@ -123,17 +123,17 @@ create_data_release <- function(clean_data_staging_dir, clean_data_final_dir, ph
   }
   
   ## Create folder
-  clean_data_final_folder_dir <- paste0(clean_data_final_dir, folder_name, "\\")
+  clean_data_final_folder_dir <- file.path(clean_data_final_dir, folder_name)
   dir.create(clean_data_final_folder_dir)
   
   ## Save clean data files to folder
   lapply(names(staged_files), function(staged_filename) {
     saveRDS(staged_files[[staged_filename]],
-            file = paste0(clean_data_final_folder_dir, staged_filename))
+            file = file.path(clean_data_final_folder_dir, staged_filename))
   })
   
   ## Save README file to folder
-  sink(file = paste0(clean_data_final_folder_dir, readme_name))
+  sink(file = file.path(clean_data_final_folder_dir, readme_name))
   
   cat("Clean Data for Phase ", phase, " of Project Track-to-Treat\n",
       "Contributors: Isaac Ahuvia, Jeremy Eberle, Alyssa Gorkin\n\n",

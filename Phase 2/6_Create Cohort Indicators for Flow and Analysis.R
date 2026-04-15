@@ -13,36 +13,37 @@ groundhog.library(
 
 
 ## Load helper functions
-source(here("Qualtrics Data Cleaning Helper Functions.R"))
+source(here("Directory Helper Functions.R"))
 source(here("Version Control Helper Functions.R"))
+source(here("Qualtrics Data Cleaning Helper Functions.R"))
 
 
 ## Load Qualtrics data
 # Get directories using helper function
-dirs <- get_p2_qualtrics_dirs(c("clean_data_staging", "clean_data_staging_intermediate"))
+dirs <- get_p2_dirs(c("clean_data_staging", "clean_data_staging_intermediate"))
 
 # Load cleaned Qualtrics phone screening data
-ps_clean <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Clean Phone Screen Data.rds")
+ps_clean <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Clean Phone Screen Data.rds"))
 
 # Load cleaned and merged Qualtrics data at other waves
-y_merged <- readRDS(dirs$clean_data_staging %+% "Phase 2 Youth Qualtrics Clean Data - All Waves.rds")
-p_merged <- readRDS(dirs$clean_data_staging %+% "Phase 2 Parent Qualtrics Clean Data - All Waves.rds")
+y_merged <- readRDS(file.path(dirs$clean_data_staging, "Phase 2 Youth Qualtrics Clean Data - All Waves.rds"))
+p_merged <- readRDS(file.path(dirs$clean_data_staging, "Phase 2 Parent Qualtrics Clean Data - All Waves.rds"))
 
 
 ## Load LSMH IDs meeting free-text exclusion criteria identified in "Youth Intervention.R" Qualtrics script
-exclude_ids <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 LSMH IDs Meeting Free-Text Exclusion Criteria.rds")
+exclude_ids <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 LSMH IDs Meeting Free-Text Exclusion Criteria.rds"))
 
 
 ## Load clean LifePak data without free-response items (until these are deidentified)
-lifepak_clean <- readRDS(dirs$clean_data_staging %+% "Phase 2 LifePak Clean Data Without Free Responses.rds")
+lifepak_clean <- readRDS(file.path(dirs$clean_data_staging, "Phase 2 LifePak Clean Data Without Free Responses.rds"))
 
 
 ## Load clean tracking log
-tl_clean <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Clean Tracking Log.rds")
+tl_clean <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Clean Tracking Log.rds"))
 
 
 ## Load ID lookup
-id_lookup <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 ID Lookup.rds")
+id_lookup <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 ID Lookup.rds"))
 
 
 
@@ -253,4 +254,4 @@ with(flow_inquired, stopifnot(
 
 ####  Save Data  ####
 # Save cohort indicators and condition for participant flow and data analysis
-saveRDS(flow_inquired, dirs$clean_data_staging %+% "Phase 2 Cohort Indicators for Flow and Analysis.rds")
+saveRDS(flow_inquired, file.path(dirs$clean_data_staging, "Phase 2 Cohort Indicators for Flow and Analysis.rds"))

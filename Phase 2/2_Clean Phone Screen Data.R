@@ -13,22 +13,23 @@ groundhog.library(
 
 
 ## Load helper functions
-source(here("Qualtrics Data Cleaning Helper Functions.R"))
+source(here("Directory Helper Functions.R"))
 source(here("Version Control Helper Functions.R"))
+source(here("Qualtrics Data Cleaning Helper Functions.R"))
 
 
 ## Load Qualtrics phone screen data (completed by RA with parent on phone)
 # Get directories using helper function
-dirs <- get_p2_qualtrics_dirs(c("raw_data", "clean_data_staging_intermediate"))
+dirs <- get_p2_dirs(c("raw_qualtrics_data", "clean_data_staging_intermediate"))
 
 # Load raw Qualtrics dataset (storing path) in this format: [respondent][wave]_raw
 # - Note: Use "timeZone" specified for date columns (e.g., "StartDate") in third row of raw CSV
-ps_raw_data_path <- dirs$raw_data %+% "DP5+Phase+2+-+Screener_February+26,+2026_14.30_n.csv"
+ps_raw_data_path <- file.path(dirs$raw_qualtrics_data, "DP5+Phase+2+-+Screener_February+26,+2026_14.30_n.csv")
 ps_raw <- read_survey(ps_raw_data_path, time_zone = "America/Chicago")
 
 
 ## Load ID lookup
-id_lookup <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 ID Lookup.rds")
+id_lookup <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 ID Lookup.rds"))
 
 
 ## Check raw Qualtrics data version using helper function
@@ -201,4 +202,4 @@ ps_recoded <- ps_deduplicated %>%
 
 ####  Save Data  ####
 # Save clean Qualtrics data
-saveRDS(ps_recoded, dirs$clean_data_staging_intermediate %+% "Phase 2 Clean Phone Screen Data.rds")
+saveRDS(ps_recoded, file.path(dirs$clean_data_staging_intermediate, "Phase 2 Clean Phone Screen Data.rds"))

@@ -13,39 +13,40 @@ groundhog.library(
 
 
 ## Load helper functions
-source(here("Qualtrics Data Cleaning Helper Functions.R"))
+source(here("Directory Helper Functions.R"))
 source(here("Version Control Helper Functions.R"))
+source(here("Qualtrics Data Cleaning Helper Functions.R"))
 
 
 ## Load Qualtrics data
 # Get directories using helper function
-dirs <- get_p2_qualtrics_dirs(c("clean_data_staging", "clean_data_staging_intermediate"))
+dirs <- get_p2_dirs(c("clean_data_staging", "clean_data_staging_intermediate"))
 
 # Load clean data by wave into list
 y_clean <- list()
 
-y_clean$yb <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data - Baseline.rds")
-y_clean$yi <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data - Intervention.rds")
-y_clean$y3m <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data - 3m.rds")
-y_clean$y6m <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data - 6m.rds")
-y_clean$y12m <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data - 12m.rds")
-y_clean$y18m <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data - 18m.rds")
-y_clean$y24m <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data - 24m.rds")
+y_clean$yb   <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Youth Qualtrics Clean Data - Baseline.rds"))
+y_clean$yi   <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Youth Qualtrics Clean Data - Intervention.rds"))
+y_clean$y3m  <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Youth Qualtrics Clean Data - 3m.rds"))
+y_clean$y6m  <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Youth Qualtrics Clean Data - 6m.rds"))
+y_clean$y12m <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Youth Qualtrics Clean Data - 12m.rds"))
+y_clean$y18m <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Youth Qualtrics Clean Data - 18m.rds"))
+y_clean$y24m <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Youth Qualtrics Clean Data - 24m.rds"))
 
 # Load logs by wave into list
 y_log <- list()
 
-y_log$yb <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data Log - Baseline.rds")
-y_log$yi <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data Log - Intervention.rds")
-y_log$y3m <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data Log - 3m.rds")
-y_log$y6m <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data Log - 6m.rds")
-y_log$y12m <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data Log - 12m.rds")
-y_log$y18m <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data Log - 18m.rds")
-y_log$y24m <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data Log - 24m.rds")
+y_log$yb   <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Youth Qualtrics Clean Data Log - Baseline.rds"))
+y_log$yi   <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Youth Qualtrics Clean Data Log - Intervention.rds"))
+y_log$y3m  <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Youth Qualtrics Clean Data Log - 3m.rds"))
+y_log$y6m  <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Youth Qualtrics Clean Data Log - 6m.rds"))
+y_log$y12m <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Youth Qualtrics Clean Data Log - 12m.rds"))
+y_log$y18m <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Youth Qualtrics Clean Data Log - 18m.rds"))
+y_log$y24m <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Youth Qualtrics Clean Data Log - 24m.rds"))
 
 
 ## Load corrected item-level codebook
-codebook <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Qualtrics Corrected Codebook.rds")
+codebook <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Qualtrics Corrected Codebook.rds"))
 
 
 
@@ -106,7 +107,7 @@ y_log_restructured <- mget(c("item_completion_rate", "mean_items", "y_codebook_c
 # Save data
 # - Note: To analyze intent-to-treat sample, filter LSMH IDs per "analyze_itt_sample" in
 #   "Phase 2 Cohort Indicators for Flow and Analysis.rds"
-saveRDS(y_merged, dirs$clean_data_staging %+% "Phase 2 Youth Qualtrics Clean Data - All Waves.rds")
+saveRDS(y_merged, file.path(dirs$clean_data_staging, "Phase 2 Youth Qualtrics Clean Data - All Waves.rds"))
 
 # Save log
-saveRDS(y_log_restructured, dirs$clean_data_staging %+% "Phase 2 Youth Qualtrics Clean Data Log - All Waves.rds")
+saveRDS(y_log_restructured, file.path(dirs$clean_data_staging, "Phase 2 Youth Qualtrics Clean Data Log - All Waves.rds"))

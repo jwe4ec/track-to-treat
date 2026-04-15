@@ -13,25 +13,26 @@ groundhog.library(
 
 
 ## Load helper functions
-source(here("Qualtrics Data Cleaning Helper Functions.R"))
+source(here("Directory Helper Functions.R"))
 source(here("Version Control Helper Functions.R"))
+source(here("Qualtrics Data Cleaning Helper Functions.R"))
 
 
 ## Load Qualtrics data
 # Get directories using helper function
-dirs <- get_p2_qualtrics_dirs("clean_data_staging_intermediate")
+dirs <- get_p2_dirs("clean_data_staging_intermediate")
 
 # Load corrected Qualtrics data
-yi_corrected <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Corrected Data - List by Wave.rds") %>%
+yi_corrected <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Youth Qualtrics Corrected Data - List by Wave.rds")) %>%
   pluck("yi")
 
 # Load dates for baseline Qualtrics survey and EMA computed when cleaning baseline survey
-yb_ema_dates <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Baseline and EMA Dates.rds")
+yb_ema_dates <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Youth Qualtrics Baseline and EMA Dates.rds"))
 
 
 ## Load ID lookup and corrected item-level codebook
-id_lookup <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 ID Lookup.rds")
-codebook <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Qualtrics Corrected Codebook.rds")
+id_lookup <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 ID Lookup.rds"))
+codebook <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Qualtrics Corrected Codebook.rds"))
 
 
 
@@ -103,7 +104,7 @@ yi_valid_ids %>%
          exclude_random_text = NA, 
          exclude_too_short = NA,
          note = NA) %>% # Make note if needed
-  write.csv(dirs$clean_data_staging_intermediate %+% filename_to_check, row.names = FALSE)
+  write.csv(file.path(dirs$clean_data_staging_intermediate, filename_to_check), row.names = FALSE)
 
 # Manually copy exported file and rename as follows for Alyssa Gorkin (AG) to complete "exclude" columns.
 # AG initially did so using the 5/22/2025 interim youth intervention data on 8/2/2025, creating the file 
@@ -113,7 +114,7 @@ yi_valid_ids %>%
 filename_checked <- "2026.01.21 Phase 2 Youth Qualtrics Valid Data - Intervention Free-Responses Checked.csv"
 
 # Load checked responses and create table of LSMH IDs meeting exclusion criteria
-yi_valid_ids_free_text_checked <- read_csv(dirs$clean_data_staging_intermediate %+% filename_checked) %>%
+yi_valid_ids_free_text_checked <- read_csv(file.path(dirs$clean_data_staging_intermediate, filename_checked)) %>%
   mutate(EndDate = ymd_hms(EndDate, tz = "America/Chicago"))
 
 exclude_ids <- yi_valid_ids_free_text_checked %>%
@@ -125,7 +126,7 @@ exclude_ids <- yi_valid_ids_free_text_checked %>%
 # Save LSMH IDs meeting exclusion criteria
 # - These IDs are loaded in "Create Cohort Indicators for Flow and Analysis.R" and
 # used to indicate LSMH IDs to exclude when analyzing the intent-to-treat sample
-saveRDS(exclude_ids, dirs$clean_data_staging_intermediate %+% "Phase 2 LSMH IDs Meeting Free-Text Exclusion Criteria.rds")
+saveRDS(exclude_ids, file.path(dirs$clean_data_staging_intermediate, "Phase 2 LSMH IDs Meeting Free-Text Exclusion Criteria.rds"))
 
 
 ### Identify duplicates and compute item completion rate for removing duplicates
@@ -397,10 +398,10 @@ walk(items_to_check, check_values, yi_recoded) # check_values() helper function
 
 ####  Save Data  ####
 # Save clean Qualtrics data
-saveRDS(yi_recoded, dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data - Intervention.rds")
+saveRDS(yi_recoded, file.path(dirs$clean_data_staging_intermediate, "Phase 2 Youth Qualtrics Clean Data - Intervention.rds"))
 
 # Save assessment windows
-saveRDS(ax_windows, dirs$clean_data_staging_intermediate %+% "Phase 2 Assessment Windows.rds")
+saveRDS(ax_windows, file.path(dirs$clean_data_staging_intermediate, "Phase 2 Assessment Windows.rds"))
 
 # Save log
-saveRDS(log, dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data Log - Intervention.rds")
+saveRDS(log, file.path(dirs$clean_data_staging_intermediate, "Phase 2 Youth Qualtrics Clean Data Log - Intervention.rds"))

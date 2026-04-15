@@ -13,25 +13,26 @@ groundhog.library(
 
 
 ## Load helper functions
-source(here("Qualtrics Data Cleaning Helper Functions.R"))
+source(here("Directory Helper Functions.R"))
 source(here("Version Control Helper Functions.R"))
+source(here("Qualtrics Data Cleaning Helper Functions.R"))
 
 
 ## Load data into list
 # Get directories using helper function
-dirs <- get_p2_qualtrics_dirs(c("raw_data", "clean_data_staging_intermediate"))
-raw_data_dir <- dirs$raw_data
+dirs <- get_p2_dirs(c("raw_qualtrics_data", "clean_data_staging_intermediate"))
+raw_data_dir <- dirs$raw_qualtrics_data
 
 # Load raw Qualtrics datasets (storing paths) in this format: [respondent][wave]
 # - Note: Use "timeZone" specified for date columns (e.g., "StartDate") in third row of raw CSV
 raw_data_paths <- lst(
-  yb = raw_data_dir %+% "DP5+Phase+2+-+Youth+-+Baseline_January+21,+2026_11.24_n.csv",
-  yi = raw_data_dir %+% "DP5+Phase+2+-+Youth+-+Interventions_January+21,+2026_11.25_n.csv",
-  y3m = raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+1+-+3M_January+21,+2026_11.24_n.csv",
-  y6m = raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+2+-+6M_January+21,+2026_11.24_n.csv",
-  y12m = raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+3+-+12M_January+21,+2026_11.24_n.csv",
-  y18m = raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+4+-+18M_January+21,+2026_11.25_n.csv",
-  y24m = raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+5+-+24M_January+29,+2026_10.59_n.csv"
+  yb   = file.path(raw_data_dir, "DP5+Phase+2+-+Youth+-+Baseline_January+21,+2026_11.24_n.csv"),
+  yi   = file.path(raw_data_dir, "DP5+Phase+2+-+Youth+-+Interventions_January+21,+2026_11.25_n.csv"),
+  y3m  = file.path(raw_data_dir, "DP5+Phase+2+-+Youth+-+FU+1+-+3M_January+21,+2026_11.24_n.csv"),
+  y6m  = file.path(raw_data_dir, "DP5+Phase+2+-+Youth+-+FU+2+-+6M_January+21,+2026_11.24_n.csv"),
+  y12m = file.path(raw_data_dir, "DP5+Phase+2+-+Youth+-+FU+3+-+12M_January+21,+2026_11.24_n.csv"),
+  y18m = file.path(raw_data_dir, "DP5+Phase+2+-+Youth+-+FU+4+-+18M_January+21,+2026_11.25_n.csv"),
+  y24m = file.path(raw_data_dir, "DP5+Phase+2+-+Youth+-+FU+5+-+24M_January+29,+2026_10.59_n.csv")
 )
 
 dat_ls_raw <- lapply(raw_data_paths, read_survey, time_zone = "America/Chicago")
@@ -198,7 +199,7 @@ dat_ls_corrected <- dat_ls_recoded %>%
 
 ####  Save Data  ####
 # Corrected data (named list by wave)
-saveRDS(dat_ls_corrected, dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Corrected Data - List by Wave.rds")
+saveRDS(dat_ls_corrected, file.path(dirs$clean_data_staging_intermediate, "Phase 2 Youth Qualtrics Corrected Data - List by Wave.rds"))
 
 # Corrected codebook
-saveRDS(codebook, dirs$clean_data_staging_intermediate %+% "Phase 2 Qualtrics Corrected Codebook.rds")
+saveRDS(codebook, file.path(dirs$clean_data_staging_intermediate, "Phase 2 Qualtrics Corrected Codebook.rds"))

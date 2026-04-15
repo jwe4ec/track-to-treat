@@ -3,29 +3,6 @@
 # New syntax to paste strings together for Phases 1-2
 `%+%` <- paste0
 
-# Function to get directories for Phase 2 Qualtrics data
-get_p2_qualtrics_dirs <- function(type = c("raw_data", "clean_data_staging", "clean_data_staging_intermediate")) {
-  
-  raw_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT P2\\Data\\Qualtrics\\Raw\\2026.02.26_final\\"
-  clean_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT P2\\Data\\Clean Data (Isaac)\\"
-  clean_data_staging_dir <- clean_data_dir %+% "staging\\"
-  clean_data_staging_intermediate_dir <- clean_data_staging_dir %+% "intermediate\\"
-  
-  all_dirs <- list(
-    raw_data = raw_data_dir,
-    clean_data_staging = clean_data_staging_dir,
-    clean_data_staging_intermediate = clean_data_staging_intermediate_dir
-  )
-  
-  dirs <- all_dirs[type]
-
-  message("Using these directories:")
-  str(dirs)
-  
-  return(dirs)
-  
-}
-
 # Function to resolve pairs of IDs in generic ways (for use in case_when() ) for Phase 2
 resolve_id_pair <- function(id1, id2) {
   id1_name <- deparse(substitute(id1))
@@ -1101,7 +1078,7 @@ load_p2_codebook <- function(codebook_path) {
   
 }
 
-# Function to load and clean Phase 2 participant tracker, as this is done in each script
+# Function to load and clean Phase 2 participant tracker (helper no longer used)
 load_p2_tracker <- function(tracker_path) {
   
   tracker <- read_csv(tracker_path, col_types = "c") %>%

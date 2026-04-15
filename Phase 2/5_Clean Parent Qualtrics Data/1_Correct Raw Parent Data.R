@@ -13,31 +13,32 @@ groundhog.library(
 
 
 ## Load helper functions
-source(here("Qualtrics Data Cleaning Helper Functions.R"))
+source(here("Directory Helper Functions.R"))
 source(here("Version Control Helper Functions.R"))
+source(here("Qualtrics Data Cleaning Helper Functions.R"))
 
 
 ## Load data into list
 # Get directories using helper function
-dirs <- get_p2_qualtrics_dirs(c("raw_data", "clean_data_staging_intermediate"))
-raw_data_dir <- dirs$raw_data
+dirs <- get_p2_dirs(c("raw_qualtrics_data", "clean_data_staging_intermediate"))
+raw_data_dir <- dirs$raw_qualtrics_data
 
 # Load raw Qualtrics datasets (storing paths) in this format: [respondent][wave]
 # - Note: Use "timeZone" specified for date columns (e.g., "StartDate") in third row of raw CSV
 raw_data_paths <- lst(
-  pb = raw_data_dir %+% "DP5+Phase+2+-+Parent+-+Baseline_January+21,+2026_11.17_n.csv",
-  p3m = raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+1+-+3M_January+21,+2026_11.18_n.csv",
-  p6m = raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+2+-+6M_January+21,+2026_11.18_n.csv",
-  p12m = raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+3+-+12M_January+21,+2026_11.18_n.csv",
-  p18m = raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+4+-+18M_January+21,+2026_11.18_n.csv",
-  p24m = raw_data_dir %+% "DP5+Phase+2+-+Parent+-+FU+5+-+24M_January+21,+2026_11.19_n.csv"
+  pb   = file.path(raw_data_dir, "DP5+Phase+2+-+Parent+-+Baseline_January+21,+2026_11.17_n.csv"),
+  p3m  = file.path(raw_data_dir, "DP5+Phase+2+-+Parent+-+FU+1+-+3M_January+21,+2026_11.18_n.csv"),
+  p6m  = file.path(raw_data_dir, "DP5+Phase+2+-+Parent+-+FU+2+-+6M_January+21,+2026_11.18_n.csv"),
+  p12m = file.path(raw_data_dir, "DP5+Phase+2+-+Parent+-+FU+3+-+12M_January+21,+2026_11.18_n.csv"),
+  p18m = file.path(raw_data_dir, "DP5+Phase+2+-+Parent+-+FU+4+-+18M_January+21,+2026_11.18_n.csv"),
+  p24m = file.path(raw_data_dir, "DP5+Phase+2+-+Parent+-+FU+5+-+24M_January+21,+2026_11.19_n.csv")
 )
 
 dat_ls_raw <- lapply(raw_data_paths, read_survey, time_zone = "America/Chicago")
 
 
 ## Load corrected item-level codebook
-codebook <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Qualtrics Corrected Codebook.rds")
+codebook <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Qualtrics Corrected Codebook.rds"))
 
 
 ## Check raw Qualtrics data versions using helper function
@@ -150,4 +151,4 @@ dat_ls_corrected <- dat_ls_recoded %>%
 
 ####  Save Data  ####
 # Corrected data (named list by wave)
-saveRDS(dat_ls_corrected, dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Corrected Data - List by Wave.rds")
+saveRDS(dat_ls_corrected, file.path(dirs$clean_data_staging_intermediate, "Phase 2 Parent Qualtrics Corrected Data - List by Wave.rds"))

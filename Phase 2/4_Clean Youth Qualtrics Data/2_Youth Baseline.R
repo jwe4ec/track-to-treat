@@ -13,25 +13,26 @@ groundhog.library(
 
 
 ## Load helper functions
-source(here("Qualtrics Data Cleaning Helper Functions.R"))
+source(here("Directory Helper Functions.R"))
 source(here("Version Control Helper Functions.R"))
+source(here("Qualtrics Data Cleaning Helper Functions.R"))
 
 
 ## Load data
 # Get directories using helper function
-dirs <- get_p2_qualtrics_dirs(c("clean_data_staging", "clean_data_staging_intermediate"))
+dirs <- get_p2_dirs(c("clean_data_staging", "clean_data_staging_intermediate"))
 
 # Load corrected Qualtrics data
-yb_corrected <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Corrected Data - List by Wave.rds") %>%
+yb_corrected <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Youth Qualtrics Corrected Data - List by Wave.rds")) %>%
   pluck("yb")
 
 # Load clean LifePak data without free-response items (until these are deidentified)
-nis_clean_wout_free <- readRDS(dirs$clean_data_staging %+% "Phase 2 LifePak Clean Data Without Free Responses.rds")
+nis_clean_wout_free <- readRDS(file.path(dirs$clean_data_staging, "Phase 2 LifePak Clean Data Without Free Responses.rds"))
 
 
 ## Load ID lookup and corrected item-level codebook
-id_lookup <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 ID Lookup.rds")
-codebook <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Qualtrics Corrected Codebook.rds")
+id_lookup <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 ID Lookup.rds"))
+codebook <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Qualtrics Corrected Codebook.rds"))
 
 
 
@@ -320,10 +321,10 @@ walk(items_to_check, check_values, yb_recoded) # check_values() helper function
 
 ####  Save Data  ####
 # Save clean Qualtrics data
-saveRDS(yb_recoded, dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data - Baseline.rds")
+saveRDS(yb_recoded, file.path(dirs$clean_data_staging_intermediate, "Phase 2 Youth Qualtrics Clean Data - Baseline.rds"))
 
 # Save log
-saveRDS(log, dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data Log - Baseline.rds")
+saveRDS(log, file.path(dirs$clean_data_staging_intermediate, "Phase 2 Youth Qualtrics Clean Data Log - Baseline.rds"))
 
 # Save dates for baseline survey and EMA for use in later scripts
-saveRDS(yb_ema_dates, dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Baseline and EMA Dates.rds")
+saveRDS(yb_ema_dates, file.path(dirs$clean_data_staging_intermediate, "Phase 2 Youth Qualtrics Baseline and EMA Dates.rds"))

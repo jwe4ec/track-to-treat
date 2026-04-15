@@ -13,19 +13,17 @@ groundhog.library(
 
 
 ## Load helper functions
-source(here("Qualtrics Data Cleaning Helper Functions.R"))
+source(here("Directory Helper Functions.R"))
 source(here("Version Control Helper Functions.R"))
+source(here("Qualtrics Data Cleaning Helper Functions.R"))
 
 
 ## Load tracking log (completed by RA for parents who inquired about study)
-# Save directories
-raw_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT P2\\Data\\Tracking Log\\"
-clean_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT P2\\Data\\Clean Data (Isaac)\\"
-clean_data_staging_dir <- clean_data_dir %+% "staging\\"
-clean_data_staging_intermediate_dir <- clean_data_staging_dir %+% "intermediate\\"
+# Get directories using helper function
+dirs <- get_p2_dirs(c("raw_tracking_log_data", "clean_data_staging", "clean_data_staging_intermediate"))
 
 # Load raw Phase Sheet of tracking log (storing path)
-raw_data_path <- raw_data_dir %+% "2026.04.09 Track to Treat P2 Tracking Log 2.0 - Phase Sheet.csv"
+raw_data_path <- file.path(dirs$raw_tracking_log_data, "2026.04.09 Track to Treat P2 Tracking Log 2.0 - Phase Sheet.csv")
 tl <- read.csv(raw_data_path, skip = 1)  # Skip first row describing sheet
 
 
@@ -286,7 +284,7 @@ tl_clean <- tl_selected %>% select(-lifepak_id)
 
 ####  Save Data  ####
 # Save clean tracking log
-saveRDS(tl_clean, clean_data_staging_intermediate_dir %+% "Phase 2 Clean Tracking Log.rds")
+saveRDS(tl_clean, file.path(dirs$clean_data_staging_intermediate, "Phase 2 Clean Tracking Log.rds"))
 
 # Save ID lookup
-saveRDS(id_lookup, clean_data_staging_intermediate_dir %+% "Phase 2 ID Lookup.rds")
+saveRDS(id_lookup, file.path(dirs$clean_data_staging_intermediate, "Phase 2 ID Lookup.rds"))
