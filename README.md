@@ -154,17 +154,13 @@ Version control:
   * `Create Clean Data Release.R` creates versioned "releases" of data in `final_read_only/`
     * Versions < v1.0 are for development only; versions >= v1.0 are suitable for analysis
     * To view the code (and raw data versions) for a release, go to this repo's corresponding [tag](https://github.com/isaacahuvia/track-to-treat/tags)
-  * Releases: TODO (update below)
+  * Releases:
     * **v1.0 (2025-05-12)**
-      * Phase I: Cleans LifePak and Qualtrics data (collection over)
-        * Clean LifePak data is outputted with and without free responses below (to deidentify in v3.0):
+      * Phase 1: Cleans LifePak and Qualtrics data (collection over)
+        * Clean LifePak data is outputted with and without free responses below (to deidentify in future)
           * `most_pleasant`, `most_unpleasant`, `other_night`
-      * Phase II: Not cleaned for this release
-    * v2.0 **(planned)**
-      * Phase I: Same output as v1.0
-      * Phase II: Cleans LifePak data (collection over) and _interim_ Qualtrics data (collection ongoing)
-        * Clean LifePak data is outputted with and without free responses above (to deidentify in v3.0)
-        * Qualtrics collection through 18 months over; collection through 24 months expected over 11/2025
-    * v3.0 **(planned)**
-      * Phase I: Cleans LifePak (with deidentified free responses) and Qualtrics data (collection over)
-      * Phase II: Cleans LifePak (with deidentified free responses) and Qualtrics data (collection over)
+      * Phase 2: Not cleaned for this release
+    * **v2.0 (TODO: planned)**
+      * Phase 1: Same output as v1.0
+      * Phase 2: Cleans LifePak data and Qualtrics data (collection over)
+        * Clean LifePak data is outputted with and without free responses above (to deidentify in future)

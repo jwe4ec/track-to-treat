@@ -318,7 +318,7 @@ nis_deduplicated %>%
 # Manually copy exported file and rename as follows
 filename_checked <- "2025.08.11 Phase 2 LifePak Clean Data - Free-Responses Checked.csv"
 
-# TODO: Alyssa Gorkin to review responses in copied exported file and complete "deidentify" columns
+# TODO: Jeremy Eberle to review Alyssa Gorkin's completion of "deidentify" columns in copied exported file
 
 # TODO: Load checked responses and deidentify data accordingly
 nis_deduplicated_free_text_checked <- read_csv(file.path(dirs$clean_data_staging_intermediate, filename_checked))
