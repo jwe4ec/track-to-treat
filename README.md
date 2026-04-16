@@ -22,30 +22,32 @@ File organization:
     * Compare Clean LifePak Datasets.R (checking clean LifePak data to previous versions)
 * Phase 2/
   * Raw P2 Metadata.csv (used to track expected raw data versions for checks against loaded files)
-  * 2026.02.12 Track to Treat P2 Codebook.xlsx (an item-level codebook used to clean the Qualtrics data)
+  * 2026.04.03 Track to Treat P2 Codebook.xlsx (an item-level codebook used to clean the Qualtrics data)
     * "load_p2_codebook()" helper expands repeated-measure items with "[x]" prefix to "b" and "[3-24]m"
-  * 2025.08.01 Track to Treat P2 ID Lookup.csv (a lookup table of LSMH IDs and LifePak IDs)
-  * 1_Clean LifePak Data.R
-  * 2_Clean Youth Qualtrics Data/
-    * 0_Correct Codebook and Raw Youth Data.R
-    * 1_Youth Baseline.R
-    * 2_Youth Intervention.R
-    * 3_Youth 3m.R
-    * 4_Youth 6m.R
-    * 5_Youth 12m.R
-    * 6_Youth 18m.R
-    * 7_Youth 24m.R
-    * 8_Merge Youth Qualtrics Data.R
-  * 3_Clean Parent Qualtrics Data/
-    * 0_Correct Raw Parent Data.R
-    * 1_Parent Baseline.R
-    * 2_Parent 3m.R
-    * 3_Parent 6m.R
-    * 4_Parent 12m.R
-    * 5_Parent 18m.R
-    * 6_Parent 24m.R
-    * 7_Merge Parent Qualtrics Data.R
-  * 4_Create Clean Data Release.R [WIP]
+  * 1_Clean Tracking Log and Create ID Lookup.R
+  * 2_Clean Phone Screen Data.R
+  * 3_Clean LifePak Data.R
+  * 4_Clean Youth Qualtrics Data/
+    * 1_Correct Codebook and Raw Youth Data.R
+    * 2_Youth Baseline.R
+    * 3_Youth Intervention.R
+    * 4_Youth 3m.R
+    * 5_Youth 6m.R
+    * 6_Youth 12m.R
+    * 7_Youth 18m.R
+    * 8_Youth 24m.R
+    * 9_Merge Youth Qualtrics Data.R
+  * 5_Clean Parent Qualtrics Data/
+    * 1_Correct Raw Parent Data.R
+    * 2_Parent Baseline.R
+    * 3_Parent 3m.R
+    * 4_Parent 6m.R
+    * 5_Parent 12m.R
+    * 6_Parent 18m.R
+    * 7_Parent 24m.R
+    * 8_Merge Parent Qualtrics Data.R
+  * 6_Create Cohort Indicators for Flow and Analysis.R
+  * 7_Create Clean Data Release.R
   * QA/
     * Inspect Raw Qualtrics Data and Codebook.R (checking raw data and codebook for issues to clean)
 
@@ -58,7 +60,27 @@ Data cleaning notes:
   * Merge datasets (across waves, etc.)
   * Clean selected columns
   * Manually correct IDs as necessary
+* Phase 1 outputs
+  * Clean LifePak and Qualtrics data (at baseline and 3 months) for valid participants
+    * No further filtering is needed
+* Phase 2 outputs
+  * Clean LifePak and Qualtrics data (at baseline, intervention, and 3-24 months) for valid participants
+    * But further filtering is needed if intent-to-treat (ITT) sample is desired (see below)
+  * Cohort indicators for all people who inquired about study
+    * See "Phase 2 Cohort Indicators for Flow and Analysis.rds". Use this to:
+      * Create participant flowchart
+        * See sample sizes in "4_Create Cohort Indicators for Flow and Analysis.R"
+      * Filter LSMH IDs to those for whom `analyze_itt_sample` is `TRUE` to get ITT sample
+        * Defined as those randomized but not meeting free-text exclusion criteria
   
+* Tracking Log
+  * Phase 1 specifics:
+    * Not included in cleaning pipeline
+  * Phase 2 specifics:
+    * Phase Sheet of tracking log is cleaned and used to create the following
+      * ID lookup of LSMH and LifePak IDs (used to drop vs. keep certain IDs during cleaning)
+      * Cohort indicators for participant flowchart and data analysis (see above)
+
 * LifePak data
   * LifePak IDs here are 6 digits (5-digit IDs elsewhere have leading 0 here; take care when comparing IDs)
   * Clean data includes EMA surveys only (excludes "feedback surveys", which were given after EMA surveys)
@@ -97,12 +119,14 @@ Data cleaning notes:
   * Take care when comparing timestamps between LifePak/Qualtrics datasets (different time zones)
   * Ranges of youth SITBI-SF items need to be checked against those expected
   * Phase 1 specifics:
+    * Phone screen data are not included in cleaning pipeline
     * Additional items excluded from composite variables
       * Parent item `scared_c_1`, which was entered into survey incorrectly
       * Child item `scared_c_11`, which was absent from in-person baseline survey
     * Clean Columns section lists raw data available that have not yet been cleaned
     * Raw timestamps are in "America/Denver" time zone
   * Phase 2 specifics:
+    * Phone screen data (entered by RA with parent on phone) are cleaned before youth/parent data at study waves
     * To move certain rows to correct waves, the tasks below are done across waves in "Correct Codebook and Raw Youth Data.R" and "Correct Raw Parent Data.R" before cleaning each wave individually
       * Fix item prefixes in codebook and column names in data
       * Remove extraneous columns (including click, page time variables)
@@ -118,6 +142,7 @@ Data cleaning notes:
       * Youth item `scared_a_2`: "get" vs. "gets"
       * Youth items `pcsc_1`, `pcsc_7`, and `pcsc_13`: "grades" vs. "marks"
     * After cleaning each wave individually, LSMH IDs meeting exclusion criteria per youth intervention free-text responses are dropped in "Merge Youth Qualtrics Data.R" and "Merge Parent Qualtrics Data.R"
+    * TODO: Note which participants are retained at each wave (e.g., "yb" removed if not started EMA)
     * Youth data collected but not cleaned:
       * TODO
     * Parent data collected but not cleaned:
@@ -131,15 +156,11 @@ Version control:
     * To view the code (and raw data versions) for a release, go to this repo's corresponding [tag](https://github.com/isaacahuvia/track-to-treat/tags)
   * Releases:
     * **v1.0 (2025-05-12)**
-      * Phase I: Cleans LifePak and Qualtrics data (collection over)
-        * Clean LifePak data is outputted with and without free responses below (to deidentify in v3.0):
+      * Phase 1: Cleans LifePak and Qualtrics data (collection over)
+        * Clean LifePak data is outputted with and without free responses below (to deidentify in future)
           * `most_pleasant`, `most_unpleasant`, `other_night`
-      * Phase II: Not cleaned for this release
-    * v2.0 **(planned)**
-      * Phase I: Same output as v1.0
-      * Phase II: Cleans LifePak data (collection over) and _interim_ Qualtrics data (collection ongoing)
-        * Clean LifePak data is outputted with and without free responses above (to deidentify in v3.0)
-        * Qualtrics collection through 18 months over; collection through 24 months expected over 11/2025
-    * v3.0 **(planned)**
-      * Phase I: Cleans LifePak (with deidentified free responses) and Qualtrics data (collection over)
-      * Phase II: Cleans LifePak (with deidentified free responses) and Qualtrics data (collection over)
+      * Phase 2: Not cleaned for this release
+    * **v2.0 (TODO: planned)**
+      * Phase 1: Same output as v1.0
+      * Phase 2: Cleans LifePak data and Qualtrics data (collection over)
+        * Clean LifePak data is outputted with and without free responses above (to deidentify in future)

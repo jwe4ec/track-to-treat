@@ -14,29 +14,28 @@ groundhog.library(
 
 
 ## Load helper functions
+source(here("Directory Helper Functions.R"))
 source(here("Version Control Helper Functions.R"))
 
 
 ## Load data
-# Save directories
-raw_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT P2\\Data\\LifePak\\2025.05.21\\"
-clean_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT P2\\Data\\Clean Data (Isaac)\\"
-clean_data_staging_dir <- clean_data_dir %+% "staging\\"
-clean_data_staging_intermediate_dir <- clean_data_staging_dir %+% "intermediate\\"
+# Get directories using helper function
+dirs <- get_p2_dirs(c("raw_lifepak_data", "clean_data_staging", "clean_data_staging_intermediate"))
+raw_data_dir <- dirs$raw_lifepak_data
 
 # Load NIS ("notification-initiated survey") datasets
 raw_data_paths <- lst(
-  nis_1 = raw_data_dir %+% "TRACK to TREAT P2\\NIS_Wide20250521_17_42_45.csv",
-  nis_2 = raw_data_dir %+% "TRACK to TREAT P2 - LSMH01019\\NIS_Wide20250521_17_33_11.csv",
-  nis_3 = raw_data_dir %+% "TRACK to TREAT P2 - LSMH01155\\NIS_Wide20250521_17_27_29.csv",
-  nis_4 = raw_data_dir %+% "TRACK to TREAT P2 - Pilot 2\\NIS_Wide20250521_19_44_38.csv",
+  nis_1 = file.path(raw_data_dir, "TRACK to TREAT P2\\NIS_Wide20250521_17_42_45.csv"),
+  nis_2 = file.path(raw_data_dir, "TRACK to TREAT P2 - LSMH01019\\NIS_Wide20250521_17_33_11.csv"),
+  nis_3 = file.path(raw_data_dir, "TRACK to TREAT P2 - LSMH01155\\NIS_Wide20250521_17_27_29.csv"),
+  nis_4 = file.path(raw_data_dir, "TRACK to TREAT P2 - Pilot 2\\NIS_Wide20250521_19_44_38.csv"),
 )
 
 raw_data <- lapply(raw_data_paths, read.csv)
 list2env(raw_data, envir = .GlobalEnv)
 
 # Load ID lookup
-id_lookup <- read_csv(here("Phase 2", "2025.08.01 Track to Treat P2 ID Lookup.csv"))
+id_lookup <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 ID Lookup.rds"))
 
 
 ## Check raw LifePak data versions using helper function
@@ -314,23 +313,26 @@ nis_deduplicated %>%
          deidentify_most_unpleasant = NA,
          deidentify_other = NA,
          note = NA) %>% # Make note if needed
-  write.csv(clean_data_staging_intermediate_dir %+% filename_to_check, row.names = FALSE)
+  write.csv(file.path(dirs$clean_data_staging_intermediate, filename_to_check), row.names = FALSE)
 
 # Manually copy exported file and rename as follows
 filename_checked <- "2025.08.11 Phase 2 LifePak Clean Data - Free-Responses Checked.csv"
 
-# TODO: Alyssa Gorkin to review responses in copied exported file and complete "deidentify" columns
+# TODO: Jeremy Eberle to review Alyssa Gorkin's completion of "deidentify" columns in copied exported file
 
 # TODO: Load checked responses and deidentify data accordingly
-nis_deduplicated_free_text_checked <- read_csv(clean_data_staging_intermediate_dir %+% filename_checked)
+nis_deduplicated_free_text_checked <- read_csv(file.path(dirs$clean_data_staging_intermediate, filename_checked))
 
 
 
 ####  Save Data  ####
+# - Note: To analyze intent-to-treat sample, filter LSMH IDs per "analyze_itt_sample" in
+#   "Phase 2 Cohort Indicators for Flow and Analysis.rds"
+
 # Save clean LifePak data
-saveRDS(nis_deduplicated, clean_data_staging_dir %+% "Phase 2 LifePak Clean Data.rds")
+saveRDS(nis_deduplicated, file.path(dirs$clean_data_staging, "Phase 2 LifePak Clean Data.rds"))
 
 # Save clean LifePak data without free-response items (until these are deidentified)
 nis_deduplicated %>%
   select(-c("most_pleasant", "most_unpleasant", "other")) %>%
-  saveRDS(clean_data_staging_dir %+% "Phase 2 LifePak Clean Data Without Free Responses.rds")
+  saveRDS(file.path(dirs$clean_data_staging, "Phase 2 LifePak Clean Data Without Free Responses.rds"))

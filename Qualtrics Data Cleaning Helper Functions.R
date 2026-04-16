@@ -3,39 +3,6 @@
 # New syntax to paste strings together for Phases 1-2
 `%+%` <- paste0
 
-# Function to get directories for Phase 2 Qualtrics data
-get_p2_qualtrics_dirs <- function(type = c("raw_data", "clean_data_staging", "clean_data_staging_intermediate")) {
-  
-  # Define path to "jslab/" on "resfiles" server depending on the operating system
-  jslab_dir <- if (.Platform$OS.type == "windows") {
-    "R:/MSS/Schleider_Lab/jslab"
-  } else if (.Platform$OS.type == "unix") {
-    "/Volumes/fsmresfiles/MSS/Schleider_Lab/jslab"
-  } else {
-    stop("Specify path to 'jslab/' for your operating system in 'get_p2_qualtrics_dirs()'")
-  }
-  
-  # Build all paths using file.path() which avoids operating system issues/hard coding
-  raw_data_dir <- file.path(jslab_dir, "TRACK to TREAT P2", "Data", "Qualtrics", "Raw", "2026.02.26_final")
-  clean_data_dir <- file.path(jslab_dir, "TRACK to TREAT P2", "Data", "Clean Data (Isaac)")
-  clean_data_staging_dir <- file.path(clean_data_dir, "staging")
-  clean_data_staging_intermediate_dir <- file.path(clean_data_staging_dir, "intermediate")
-  
-  all_dirs <- list(
-    raw_data = raw_data_dir,
-    clean_data_staging = clean_data_staging_dir,
-    clean_data_staging_intermediate = clean_data_staging_intermediate_dir
-  )
-  
-  dirs <- all_dirs[type]
-  
-  message("Using these directories:")
-  str(dirs)
-  
-  return(dirs)
-  
-}
-
 # Function to resolve pairs of IDs in generic ways (for use in case_when() ) for Phase 2
 resolve_id_pair <- function(id1, id2) {
   id1_name <- deparse(substitute(id1))
@@ -61,11 +28,16 @@ resolve_id_pair <- function(id1, id2) {
   
 }
 
-# Function to warn about LSMH IDs with invalid format for Phase 2
-warn_invalid_id_format <- function(ids) {
+# Function to warn about LSMH IDs or LifePak IDs with invalid format for Phase 2
+warn_invalid_id_format <- function(ids, type = "lsmh_id") {
   
-  # Find non-NA IDs that don't match "LSMH" followed by 5 digits
-  ids_invalid_format <- ids[!is.na(ids) & !grepl("^LSMH\\d{5}$", ids)]
+  if (type == "lsmh_id") {
+    # Find non-NA IDs that don't match "LSMH" followed by 5 digits
+    ids_invalid_format <- ids[!is.na(ids) & !grepl("^LSMH\\d{5}$", ids)]
+  } else if (type == "lifepak_id") {
+    # Find non-NA IDs that don't have 6 digits
+    ids_invalid_format <- ids[!is.na(ids) & !grepl("^\\d{6}$", ids)]
+  }
   
   if (length(ids_invalid_format) > 0) {
     warning("Invalid ID format for:\n", paste(" ", ids_invalid_format, collapse = "\n"))
@@ -352,7 +324,7 @@ compute_item_completion_rate <- function(data, survey_prefix, phase = 1) {
   
 }
 
-# Function to compute indicator of baseline survey completion in assessment window for Phases 1-2
+# Function to compute indicator of baseline survey completion in assessment window for Phase 1
 mark_b_done_in_ax_window <- function(data, id_as_char, ema_notif_dates) {
   
   # Add EMA notification dates to data
@@ -360,15 +332,15 @@ mark_b_done_in_ax_window <- function(data, id_as_char, ema_notif_dates) {
   
   data <- data %>%
     left_join(ema_notif_dates, by = id_as_char, relationship = "many-to-one") %>%
+  
     # Compute indicator of survey completion before first EMA notification
     # Note: Given that "EndDate" and "first_ema_notif_date" are in different time
-    # zones ("America/Denver" for Phase 1 and "America/Chicago" for Phase 2 vs. 
-    # participants' local times stored as UTC, respectively), this comparison is 
-    # approximate. To rule out the role of time zone differences, derive actual
-    # time zones for "first_ema_notif_date" from LifePak GPS data (although GPS 
-    # data are missing for some observations)
+    # zones ("America/Denver" for Phase 1 vs. participants' local times stored as 
+    # UTC, respectively), this comparison is approximate. To rule out the role of 
+    # time zone differences, derive actual time zones for "first_ema_notif_date" 
+    # from LifePak GPS data (although GPS data are missing for some observations)
     mutate(in_window_b = as_date(EndDate) < first_ema_notif_date)
-  
+    
   # Throw warning if any surveys were not completed in this window (in which case 
   # further analysis to rule out role of differing time zones is warranted)
   if (any(data$in_window_b == FALSE)) {
@@ -423,8 +395,8 @@ mark_3m_done_in_ax_window <- function(data, id_as_char, ax_windows) {
   
 }
 
-# Function to compute indicators of follow-up survey completion in assessment window for Phase 2
-mark_fu_done_in_ax_window <- function(data, survey_prefix, ax_windows) {
+# Function to compute indicators of survey completion in assessment window for Phase 2
+mark_done_in_ax_window <- function(data, survey_prefix, ax_windows) {
   
   # Define input columns based on "survey_prefix"
   ax_window_start_org <- sym(paste0("ax_window_", survey_prefix, "_start_org"))
@@ -462,6 +434,18 @@ mark_fu_done_in_ax_window <- function(data, survey_prefix, ax_windows) {
       )
       
     )
+  
+  # For baseline surveys, throw warning if any surveys were not completed in original window 
+  # (in which case further analysis to rule out role of differing time zones is warranted)
+  # - Given that "EndDate" and "first_ema_notif_date" are in different time zones ("America/Chicago" 
+  # for Phase 2 vs. participants' local times stored as UTC, respectively), this comparison is approximate. 
+  # To rule out the role of time zone differences, derive actual time zones for "first_ema_notif_date" 
+  # from LifePak GPS data (although GPS data are missing for some observations).
+  if (survey_prefix == "b" & any(data[[in_window_org]] == FALSE)) {
+    
+    warning("Not all baseline surveys are in original window. Rule out role of differing time zones.")
+    
+  }
   
   return(data)
   
@@ -1094,7 +1078,7 @@ load_p2_codebook <- function(codebook_path) {
   
 }
 
-# Function to load and clean Phase 2 participant tracker, as this is done in each script
+# Function to load and clean Phase 2 participant tracker (helper no longer used)
 load_p2_tracker <- function(tracker_path) {
   
   tracker <- read_csv(tracker_path, col_types = "c") %>%

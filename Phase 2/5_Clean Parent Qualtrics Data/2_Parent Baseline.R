@@ -13,26 +13,27 @@ groundhog.library(
 
 
 ## Load helper functions
-source(here("Qualtrics Data Cleaning Helper Functions.R"))
+source(here("Directory Helper Functions.R"))
 source(here("Version Control Helper Functions.R"))
+source(here("Qualtrics Data Cleaning Helper Functions.R"))
 
 
 ## Load Qualtrics data
 # Get directories using helper function
-dirs <- get_p2_qualtrics_dirs("clean_data_staging_intermediate")
+dirs <- get_p2_dirs("clean_data_staging_intermediate")
 
 # Load corrected Qualtrics data
-pb_corrected <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Corrected Data - List by Wave.rds") %>%
+pb_corrected <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Parent Qualtrics Corrected Data - List by Wave.rds")) %>%
   pluck("pb")
 
 
 ## Load ID lookup and corrected item-level codebook
-id_lookup <- read_csv(here("Phase 2", "2025.08.01 Track to Treat P2 ID Lookup.csv"))
-codebook <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Qualtrics Corrected Codebook.rds")
+id_lookup <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 ID Lookup.rds"))
+codebook <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Qualtrics Corrected Codebook.rds"))
 
 
 ## Load assessment windows
-ax_windows <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Assessment Windows.rds")
+ax_windows <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Assessment Windows.rds"))
 
 
 
@@ -87,32 +88,25 @@ pb_valid_ids <- compute_item_completion_rate(pb_valid_ids, "pb", phase = 2)
 
 ### Remove any surveys (a) outside assessment window (or for parents of youth who 
 ### didn't start EMA) or (b) duplicated in window
-# Obtain EMA notification dates from assessment windows computed when cleaning youth Qualtrics data
-ema_notif_dates <- ax_windows[, c("lsmh_id", "first_ema_notif_date", "last_ema_notif_date", "end_ema_period")]
-
-# Compute indicator of baseline survey completion in window using helper function
-# - LSMH00920 has two responses, one with the most data before "first_ema_notif_date" 
-# and one with no data months later 
-pb_valid_ids <- mark_b_done_in_ax_window(pb_valid_ids, "lsmh_id", ema_notif_dates)
+# Compute indicator of baseline completion in window using helper function
+pb_valid_ids <- mark_done_in_ax_window(pb_valid_ids, "b", ax_windows)
 
 # Print and remove any baseline surveys outside window
+# - Note: Filtering on baseline window already keeps latter survey for LSMH02077, which 
+# README_ttt_p2_data_collection says to keep as it was done on the same day as the child
 pb_valid_ids %>%
-  filter(!in_window_b | is.na(in_window_b)) %>%
-  select(lsmh_id, "StartDate", "EndDate", "first_ema_notif_date", "in_window_b", "item_completion_rate") %>%
+  filter(!in_window_b_ext | is.na(in_window_b_ext)) %>%
+  select(lsmh_id, StartDate, EndDate, first_ema_notif_date,
+         ax_window_b_start_org, ax_window_b_end_org, in_window_b_org, 
+         days_before_start_window_b_org, days_after_end_window_b_org, 
+         ax_window_b_start_ext, ax_window_b_end_ext, in_window_b_ext, item_completion_rate) %>%
   arrange(lsmh_id, EndDate)
 
 pb_valid_ids <- pb_valid_ids %>%
-  filter(in_window_b)
-
-# For LSMH02077, manually keep the latter survey, as this was done on the same day
-# as the child, per README_ttt_p2_data_collection
-pb_manual_filter_02077 <- pb_valid_ids %>%
-  filter(
-    !(lsmh_id == "LSMH02077" & as_date(EndDate) == mdy("8/27/2022"))
-  )
+  filter(in_window_b_ext)
 
 # Remove duplicates using helper function
-pb_deduplicated <- remove_duplicates(pb_manual_filter_02077, lsmh_id)
+pb_deduplicated <- remove_duplicates(pb_valid_ids, lsmh_id)
 
 # Double-check deduplication
 identify_duplicates(pb_deduplicated, lsmh_id, phase = 2)
@@ -138,6 +132,13 @@ pb_recoded <- pb_deduplicated %>%
     pb_datetime = EndDate,
     pb_date = date(pb_datetime),
     pb_duration = EndDate - StartDate,
+    
+    # Baseline survey completion in original and extended assessment 
+    # windows and days survey was completed before/after original window
+    pb_in_window_org = in_window_b_org,
+    pb_in_window_ext = in_window_b_ext,
+    pb_days_before_start_window_b_org = days_before_start_window_b_org,
+    pb_days_after_end_window_b_org = days_after_end_window_b_org,
     
     
     ## Demographics at baseline
@@ -389,6 +390,14 @@ pb_recoded <- pb_deduplicated %>%
     pb_date,
     pb_datetime,
     pb_duration,
+    ax_window_b_start_org,
+    ax_window_b_end_org,
+    ax_window_b_start_ext,
+    ax_window_b_end_ext,
+    pb_in_window_org,
+    pb_in_window_ext,
+    pb_days_before_start_window_b_org,
+    pb_days_after_end_window_b_org,
     
     # Parent characteristics
     pb_parent_age,
@@ -465,8 +474,7 @@ walk(items_to_check, check_values, pb_recoded) # check_values() helper function
 
 ####  Save Data  ####
 # Save clean Qualtrics data
-# - Note: LSMH IDs meeting exclusion criteria are dropped later (in "Merge Parent Qualtrics Data.R")
-saveRDS(pb_recoded, dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Clean Data - Baseline.rds")
+saveRDS(pb_recoded, file.path(dirs$clean_data_staging_intermediate, "Phase 2 Parent Qualtrics Clean Data - Baseline.rds"))
 
 # Save log
-saveRDS(log, dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Clean Data Log - Baseline.rds")
+saveRDS(log, file.path(dirs$clean_data_staging_intermediate, "Phase 2 Parent Qualtrics Clean Data Log - Baseline.rds"))

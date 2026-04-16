@@ -13,26 +13,27 @@ groundhog.library(
 
 
 ## Load helper functions
-source(here("Qualtrics Data Cleaning Helper Functions.R"))
+source(here("Directory Helper Functions.R"))
 source(here("Version Control Helper Functions.R"))
+source(here("Qualtrics Data Cleaning Helper Functions.R"))
 
 
 ## Load Qualtrics data
 # Get directories using helper function
-dirs <- get_p2_qualtrics_dirs("clean_data_staging_intermediate")
+dirs <- get_p2_dirs("clean_data_staging_intermediate")
 
 # Load corrected Qualtrics data
-y12m_corrected <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Corrected Data - List by Wave.rds") %>%
+y12m_corrected <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Youth Qualtrics Corrected Data - List by Wave.rds")) %>%
   pluck("y12m")
 
 
 ## Load ID lookup and corrected item-level codebook
-id_lookup <- read_csv(here("Phase 2", "2025.08.01 Track to Treat P2 ID Lookup.csv"))
-codebook <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Qualtrics Corrected Codebook.rds")
+id_lookup <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 ID Lookup.rds"))
+codebook <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Qualtrics Corrected Codebook.rds"))
 
 
 ## Load assessment windows
-ax_windows <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Assessment Windows.rds")
+ax_windows <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Assessment Windows.rds"))
 
 
 
@@ -83,7 +84,7 @@ y12m_valid_ids <- compute_item_completion_rate(y12m_valid_ids, "y12m", phase = 2
 ### Remove any surveys (a) outside assessment window (or for youth who did not 
 ### complete intervention survey in window) or (b) duplicated in window
 # Compute indicators of survey completion in window using helper function
-y12m_valid_ids <- mark_fu_done_in_ax_window(y12m_valid_ids, "12m", ax_windows)
+y12m_valid_ids <- mark_done_in_ax_window(y12m_valid_ids, "12m", ax_windows)
 
 # Print (using helper function) and remove any surveys outside window
 y12m_valid_ids_out_window <- get_surveys_outside_window_3m_onward(y12m_valid_ids, "12m") %>% print()
@@ -257,8 +258,7 @@ walk(items_to_check, check_values, y12m_recoded) # check_values() helper functio
 
 ####  Save Data  ####
 # Save clean Qualtrics data
-# - Note: LSMH IDs meeting exclusion criteria are dropped later (in "Merge Youth Qualtrics Data.R")
-saveRDS(y12m_recoded, dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data - 12m.rds")
+saveRDS(y12m_recoded, file.path(dirs$clean_data_staging_intermediate, "Phase 2 Youth Qualtrics Clean Data - 12m.rds"))
 
 # Save log
-saveRDS(log, dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data Log - 12m.rds")
+saveRDS(log, file.path(dirs$clean_data_staging_intermediate, "Phase 2 Youth Qualtrics Clean Data Log - 12m.rds"))

@@ -11,17 +11,15 @@ groundhog.library(
   pkg = "here",
   date = groundhog_date
 )
-`%+%` <- paste0
 
 
-## Load helper function
+## Load helper functions
+source(here("Directory Helper Functions.R"))
 source(here("Version Control Helper Functions.R"))
 
 
-## Define directories
-clean_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT P2\\Data\\Clean Data (Isaac)\\"
-clean_data_staging_dir <- clean_data_dir %+% "staging\\"
-clean_data_final_dir <- clean_data_dir %+% "final_read_only\\"
+## Get directories using helper function
+dirs <- get_p2_dirs(c("clean_data_staging", "clean_data_final_read_only"))
 
 
 
@@ -53,20 +51,16 @@ clean_data_final_dir <- clean_data_dir %+% "final_read_only\\"
 
 ####  Run helper function  ####
 create_data_release(
-  clean_data_staging_dir,
-  clean_data_final_dir,
+  dirs$clean_data_staging,
+  dirs$clean_data_final_read_only,
   phase = 2,
   staged_filenames = c(
-    "Phase 2 Youth Qualtrics Clean Data - Baseline.rds",
-    "Phase 2 Youth Qualtrics Clean Data - Intervention.rds",
-    "Phase 2 Youth Qualtrics Clean Data - 3m.rds",
     "Phase 2 Youth Qualtrics Clean Data - All Waves.rds",
     "Phase 2 Youth Qualtrics Clean Data Log - All Waves.rds",
-    "Phase 2 Parent Qualtrics Clean Data - Baseline.rds",
-    "Phase 2 Parent Qualtrics Clean Data - 3m.rds",
     "Phase 2 Parent Qualtrics Clean Data - All Waves.rds",
     "Phase 2 Parent Qualtrics Clean Data Log - All Waves.rds",
     "Phase 2 LifePak Clean Data.rds",
-    "Phase 2 LifePak Clean Data Without Free Responses.rds"
+    "Phase 2 LifePak Clean Data Without Free Responses.rds",
+    "Phase 2 Cohort Indicators for Flow and Analysis.rds"
   )
 )

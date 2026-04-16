@@ -13,25 +13,26 @@ groundhog.library(
 
 
 ## Load helper functions
-source(here("Qualtrics Data Cleaning Helper Functions.R"))
+source(here("Directory Helper Functions.R"))
 source(here("Version Control Helper Functions.R"))
+source(here("Qualtrics Data Cleaning Helper Functions.R"))
 
 
 ## Load data
 # Get directories using helper function
-dirs <- get_p2_qualtrics_dirs(c("clean_data_staging", "clean_data_staging_intermediate"))
+dirs <- get_p2_dirs(c("clean_data_staging", "clean_data_staging_intermediate"))
 
 # Load corrected Qualtrics data
-yb_corrected <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Corrected Data - List by Wave.rds") %>%
+yb_corrected <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Youth Qualtrics Corrected Data - List by Wave.rds")) %>%
   pluck("yb")
 
 # Load clean LifePak data without free-response items (until these are deidentified)
-nis_clean_wout_free <- readRDS(dirs$clean_data_staging %+% "Phase 2 LifePak Clean Data Without Free Responses.rds")
+nis_clean_wout_free <- readRDS(file.path(dirs$clean_data_staging, "Phase 2 LifePak Clean Data Without Free Responses.rds"))
 
 
 ## Load ID lookup and corrected item-level codebook
-id_lookup <- read_csv(here("Phase 2", "2025.08.01 Track to Treat P2 ID Lookup.csv"))
-codebook <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Qualtrics Corrected Codebook.rds")
+id_lookup <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 ID Lookup.rds"))
+codebook <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Qualtrics Corrected Codebook.rds"))
 
 
 
@@ -97,8 +98,22 @@ ema_notif_dates <- nis_clean_wout_free %>%
     .groups = "drop"
   )
 
-# Compute indicator of baseline survey completion in window using helper function
-yb_valid_ids <- mark_b_done_in_ax_window(yb_valid_ids, "lsmh_id", ema_notif_dates)
+# Compute baseline survey window
+# - Baseline surveys were intended to be completed the day before the first EMA
+# notification. However, some were completed early (i.e., EMA started late). Thus, 
+# also compute an extended window starting a reasonable 21 days before first EMA 
+# notification and ending the day before first EMA notification.
+ax_windows_b <- ema_notif_dates %>%
+  mutate(
+    ax_window_b_start_org = first_ema_notif_date - days(1),
+    ax_window_b_end_org = ax_window_b_start_org,
+    
+    ax_window_b_start_ext = ax_window_b_start_org - days(21),
+    ax_window_b_end_ext = ax_window_b_end_org,
+  )
+
+# Compute indicator of baseline completion in window using helper function
+yb_valid_ids <- mark_done_in_ax_window(yb_valid_ids, "b", ax_windows_b)
 
 # Print and remove any baseline surveys outside window
 # - LSMH01677's "EndDate" is "2022-02-18 14:56:15" (in "America/Chicago"), after
@@ -108,16 +123,19 @@ yb_valid_ids <- mark_b_done_in_ax_window(yb_valid_ids, "lsmh_id", ema_notif_date
 # GPS data). Still, youth likely completed most of survey before EMA, as "StartDate"
 # is "2022-02-16 13:45:47" and "Progress" is 97; the RA likely confirmed near-100% 
 # progress before administering EMA (and parent completed baseline on 2022-02-16).
-#   - Thus, manually deem the survey to be within the window
-yb_valid_ids$in_window_b[yb_valid_ids$lsmh_id == "LSMH01677" & yb_valid_ids$EndDate == "2022-02-18 14:56:15"] <- TRUE
+#   - Thus, manually deem the survey to be within extended window
+yb_valid_ids$in_window_b_ext[yb_valid_ids$lsmh_id == "LSMH01677" & yb_valid_ids$EndDate == "2022-02-18 14:56:15"] <- TRUE
 
 yb_valid_ids %>%
-  filter(!in_window_b | is.na(in_window_b)) %>%
-  select(lsmh_id, "StartDate", "EndDate", "first_ema_notif_date", "in_window_b", "item_completion_rate") %>%
+  filter(!in_window_b_ext | is.na(in_window_b_ext)) %>%
+  select(lsmh_id, StartDate, EndDate, first_ema_notif_date,
+         ax_window_b_start_org, ax_window_b_end_org, in_window_b_org, 
+         days_before_start_window_b_org, days_after_end_window_b_org, 
+         ax_window_b_start_ext, ax_window_b_end_ext, in_window_b_ext, item_completion_rate) %>%
   arrange(lsmh_id, EndDate)
 
 yb_valid_ids <- yb_valid_ids %>%
-  filter(in_window_b)
+  filter(in_window_b_ext)
 
 # Remove duplicates using helper function
 yb_deduplicated <- remove_duplicates(yb_valid_ids, lsmh_id)
@@ -130,7 +148,9 @@ yb_ema_dates <- yb_deduplicated %>%
   select(
     lsmh_id = lsmh_id,
     StartDate_yb = StartDate, 
-    EndDate_yb = EndDate, 
+    EndDate_yb = EndDate,
+    ax_window_b_start_org, ax_window_b_end_org,
+    ax_window_b_start_ext, ax_window_b_end_ext,
     first_ema_notif_date, last_ema_notif_date, end_ema_period
   ) %>%
   ungroup()
@@ -157,7 +177,14 @@ yb_recoded <- yb_deduplicated %>%
     yb_date = date(yb_datetime),
     yb_duration = EndDate - StartDate,
     
+    # Baseline survey completion in original and extended assessment 
+    # windows and days survey was completed before/after original window
+    yb_in_window_org = in_window_b_org,
+    yb_in_window_ext = in_window_b_ext,
+    yb_days_before_start_window_b_org = days_before_start_window_b_org,
+    yb_days_after_end_window_b_org = days_after_end_window_b_org,
     
+
     ## BADS (Behavioral Activation for Depression Scale) subscales
     !!!bads_means("yb"),
     
@@ -237,6 +264,14 @@ yb_recoded <- yb_deduplicated %>%
     yb_date,
     yb_datetime,
     yb_duration,
+    ax_window_b_start_org,
+    ax_window_b_end_org,
+    ax_window_b_start_ext,
+    ax_window_b_end_ext,
+    yb_in_window_org,
+    yb_in_window_ext,
+    yb_days_before_start_window_b_org,
+    yb_days_after_end_window_b_org,
 
     # Measures
     matches("_bads_"),
@@ -286,11 +321,10 @@ walk(items_to_check, check_values, yb_recoded) # check_values() helper function
 
 ####  Save Data  ####
 # Save clean Qualtrics data
-# - Note: LSMH IDs meeting exclusion criteria are dropped later (in "Merge Youth Qualtrics Data.R")
-saveRDS(yb_recoded, dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data - Baseline.rds")
+saveRDS(yb_recoded, file.path(dirs$clean_data_staging_intermediate, "Phase 2 Youth Qualtrics Clean Data - Baseline.rds"))
 
 # Save log
-saveRDS(log, dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data Log - Baseline.rds")
+saveRDS(log, file.path(dirs$clean_data_staging_intermediate, "Phase 2 Youth Qualtrics Clean Data Log - Baseline.rds"))
 
 # Save dates for baseline survey and EMA for use in later scripts
-saveRDS(yb_ema_dates, dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Baseline and EMA Dates.rds")
+saveRDS(yb_ema_dates, file.path(dirs$clean_data_staging_intermediate, "Phase 2 Youth Qualtrics Baseline and EMA Dates.rds"))

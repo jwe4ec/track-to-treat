@@ -13,33 +13,33 @@ groundhog.library(
 
 
 ## Load helper functions
-source(here("Qualtrics Data Cleaning Helper Functions.R"))
+source(here("Directory Helper Functions.R"))
 source(here("Version Control Helper Functions.R"))
+source(here("Qualtrics Data Cleaning Helper Functions.R"))
 
 
 ## Load data into list
 # Get directories using helper function
-dirs <- get_p2_qualtrics_dirs(c("raw_data", "clean_data_staging_intermediate"))
-raw_data_dir <- dirs$raw_data
+dirs <- get_p2_dirs(c("raw_qualtrics_data", "clean_data_staging_intermediate"))
+raw_data_dir <- dirs$raw_qualtrics_data
 
-# Load raw Qualtrics datasets (storing paths) in this format: [respondent][wave]_[administration]_raw
+# Load raw Qualtrics datasets (storing paths) in this format: [respondent][wave]
 # - Note: Use "timeZone" specified for date columns (e.g., "StartDate") in third row of raw CSV
 raw_data_paths <- lst(
-  yb = raw_data_dir %+% "DP5+Phase+2+-+Youth+-+Baseline_January+21,+2026_11.24_n.csv",
-  yi = raw_data_dir %+% "DP5+Phase+2+-+Youth+-+Interventions_January+21,+2026_11.25_n.csv",
-  y3m = raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+1+-+3M_January+21,+2026_11.24_n.csv",
-  y6m = raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+2+-+6M_January+21,+2026_11.24_n.csv",
-  y12m = raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+3+-+12M_January+21,+2026_11.24_n.csv",
-  y18m = raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+4+-+18M_January+21,+2026_11.25_n.csv",
-  y24m = raw_data_dir %+% "DP5+Phase+2+-+Youth+-+FU+5+-+24M_January+29,+2026_10.59_n.csv"
+  yb   = file.path(raw_data_dir, "DP5+Phase+2+-+Youth+-+Baseline_January+21,+2026_11.24_n.csv"),
+  yi   = file.path(raw_data_dir, "DP5+Phase+2+-+Youth+-+Interventions_January+21,+2026_11.25_n.csv"),
+  y3m  = file.path(raw_data_dir, "DP5+Phase+2+-+Youth+-+FU+1+-+3M_January+21,+2026_11.24_n.csv"),
+  y6m  = file.path(raw_data_dir, "DP5+Phase+2+-+Youth+-+FU+2+-+6M_January+21,+2026_11.24_n.csv"),
+  y12m = file.path(raw_data_dir, "DP5+Phase+2+-+Youth+-+FU+3+-+12M_January+21,+2026_11.24_n.csv"),
+  y18m = file.path(raw_data_dir, "DP5+Phase+2+-+Youth+-+FU+4+-+18M_January+21,+2026_11.25_n.csv"),
+  y24m = file.path(raw_data_dir, "DP5+Phase+2+-+Youth+-+FU+5+-+24M_January+29,+2026_10.59_n.csv")
 )
 
 dat_ls_raw <- lapply(raw_data_paths, read_survey, time_zone = "America/Chicago")
 
 
-## Load ID lookup and (using helper function) item-level codebook
-id_lookup <- read_csv(here("Phase 2", "2025.08.01 Track to Treat P2 ID Lookup.csv"))
-codebook <- load_p2_codebook(here("Phase 2", "2026.02.12 Track to Treat P2 Codebook.xlsx"))
+## Load item-level codebook using helper function
+codebook <- load_p2_codebook(here("Phase 2", "2026.04.03 Track to Treat P2 Codebook.xlsx"))
 
 
 ## Check raw Qualtrics data versions using helper function
@@ -49,7 +49,7 @@ check_raw_data_ver(raw_metadata, raw_data_paths, dat_ls_raw, y_data_types)
 
 
 
-####  Fix Item Prefixes in Codebook and Data  ####
+####  Fix Item Names in Codebook and Data  ####
 # For "yb", add prefix to SRET items
 yb_sret_items_raw <- c("SRET", "SRET.keys", "SRET.time", "SRET.words", "tlcond")
 
@@ -64,17 +64,17 @@ dat_ls_renamed <- dat_ls_raw %>%
     )
   )
 
-# For "yi", fix BADS-SF items' prefixes from "b_" to "yi_"
-yi_bads_items_raw <- paste0("b_bads_", 1:9)
+# For "yi", fix BADS-SF items' prefixes from "b_" to "yi_" and change stems to "bads_sf"
+yi_bads_sf_items_raw <- paste0("b_bads_", 1:9)
 
-codebook$item[codebook$item %in% yi_bads_items_raw] <-
-  sub("^b_", "yi_", codebook$item[codebook$item %in% yi_bads_items_raw])
+codebook$item[codebook$item %in% yi_bads_sf_items_raw] <-
+  sub("^b_bads_", "yi_bads_sf_", codebook$item[codebook$item %in% yi_bads_sf_items_raw])
 
 dat_ls_renamed <- dat_ls_renamed %>%
   modify_in("yi", ~ rename_with(
       .x,
-      .cols = all_of(yi_bads_items_raw),
-      .fn = ~ sub("^b_", "yi_", .x)
+      .cols = all_of(yi_bads_sf_items_raw),
+      .fn = ~ sub("^b_bads_", "yi_bads_sf_", .x)
     )
   )
 
@@ -134,11 +134,27 @@ names(dat_ls_labeled) <- names(dat_ls_selected)
 
 ### Recode items that interfere with binding rows across waves
 dat_ls_recoded <- dat_ls_labeled %>%
-  # Item "sitbi_3b_2" should be numeric
+  ## Recode the following SITBI items, which should be numeric
+  # "sitbi_3b_2"
   modify_in("y3m", ~ mutate(.x, y3m_sitbi_3b_2 = as.numeric(na_if(y3m_sitbi_3b_2, "p")))) %>%
   modify_in("y6m", ~ mutate(.x, y6m_sitbi_3b_2 = as.numeric(na_if(y6m_sitbi_3b_2, "P")))) %>%
   
-  # Item "sitbi_4b_4" should be numeric
+  # "sitbi_3b_3"
+  modify_in("yb", ~ mutate(.x, yb_sitbi_3b_3 = as.numeric(na_if(yb_sitbi_3b_3, "0not sure")))) %>%
+  
+  # "sitbi_3b_4"
+  modify_in("yb", ~ mutate(.x, yb_sitbi_3b_4 = as.numeric(recode(
+      yb_sitbi_3b_4,
+      "0 not sure" = NA_character_,
+      "idk" = NA_character_,
+      "1,708" = "1708"
+    ))
+  ))%>%
+  
+  # "sitbi_4b_3"
+  modify_in("yb", ~ mutate(.x, yb_sitbi_4b_3 = as.numeric(na_if(yb_sitbi_4b_3, "i lost count")))) %>%
+  
+  # "sitbi_4b_4"
   modify_in("yb", ~ mutate(.x, yb_sitbi_4b_4 = as.numeric(recode(
       yb_sitbi_4b_4,
       "a lot" = NA_character_,
@@ -183,7 +199,7 @@ dat_ls_corrected <- dat_ls_recoded %>%
 
 ####  Save Data  ####
 # Corrected data (named list by wave)
-saveRDS(dat_ls_corrected, dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Corrected Data - List by Wave.rds")
+saveRDS(dat_ls_corrected, file.path(dirs$clean_data_staging_intermediate, "Phase 2 Youth Qualtrics Corrected Data - List by Wave.rds"))
 
 # Corrected codebook
-saveRDS(codebook, dirs$clean_data_staging_intermediate %+% "Phase 2 Qualtrics Corrected Codebook.rds")
+saveRDS(codebook, file.path(dirs$clean_data_staging_intermediate, "Phase 2 Qualtrics Corrected Codebook.rds"))

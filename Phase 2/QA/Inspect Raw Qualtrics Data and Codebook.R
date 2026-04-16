@@ -12,32 +12,33 @@ groundhog.library(
 
 
 ## Load helper functions
-source(here("Qualtrics Data Cleaning Helper Functions.R"))
+source(here("Directory Helper Functions.R"))
 source(here("Version Control Helper Functions.R"))
+source(here("Qualtrics Data Cleaning Helper Functions.R"))
 
 
 ## Load data into list
-# Get directories using helper function 
-dirs <- get_p2_qualtrics_dirs("raw_data") 
-raw_data_dir <-  dirs$raw_data
+# Get directories using helper function
+dirs <- get_p2_dirs(c("raw_qualtrics_data", "clean_data_staging_intermediate"))
+raw_data_dir <- dirs$raw_qualtrics_data
 
-# Load raw Qualtrics datasets (storing paths) in this format: [respondent][wave]_[administration]_raw
+# Load raw Qualtrics datasets (storing paths) in this format: [respondent][wave]_raw
 # - Note: Use "timeZone" specified for date columns (e.g., "StartDate") in third row of raw CSVs
 # - Use file.path() to build paths independent of the operating system
 raw_data_paths <- lst(
-  yb_raw = file.path(raw_data_dir, "DP5+Phase+2+-+Youth+-+Baseline_January+21,+2026_11.24_n.csv"),
-  yi_raw = file.path(raw_data_dir, "DP5+Phase+2+-+Youth+-+Interventions_January+21,+2026_11.25_n.csv"),
-  y3m_raw = file.path(raw_data_dir, "DP5+Phase+2+-+Youth+-+FU+1+-+3M_January+21,+2026_11.24_n.csv"),
-  y6m_raw = file.path(raw_data_dir, "DP5+Phase+2+-+Youth+-+FU+2+-+6M_January+21,+2026_11.24_n.csv"),
+  yb_raw   = file.path(raw_data_dir, "DP5+Phase+2+-+Youth+-+Baseline_January+21,+2026_11.24_n.csv"),
+  yi_raw   = file.path(raw_data_dir, "DP5+Phase+2+-+Youth+-+Interventions_January+21,+2026_11.25_n.csv"),
+  y3m_raw  = file.path(raw_data_dir, "DP5+Phase+2+-+Youth+-+FU+1+-+3M_January+21,+2026_11.24_n.csv"),
+  y6m_raw  = file.path(raw_data_dir, "DP5+Phase+2+-+Youth+-+FU+2+-+6M_January+21,+2026_11.24_n.csv"),
   y12m_raw = file.path(raw_data_dir, "DP5+Phase+2+-+Youth+-+FU+3+-+12M_January+21,+2026_11.24_n.csv"),
   y18m_raw = file.path(raw_data_dir, "DP5+Phase+2+-+Youth+-+FU+4+-+18M_January+21,+2026_11.25_n.csv"),
   y24m_raw = file.path(raw_data_dir, "DP5+Phase+2+-+Youth+-+FU+5+-+24M_January+29,+2026_10.59_n.csv"),
   
-  pb_raw = file.path(raw_data_dir, "DP5+Phase+2+-+Parent+-+Baseline_January+21,+2026_11.17_n.csv"),
-  p3m_raw = file.path(raw_data_dir, "DP5+Phase+2+-+Parent+-+FU+1+-+3M_January+21,+2026_11.18_n.csv"),
-  p6m_raw = file.path(raw_data_dir, "DP5+Phase+2+-+Parent+-+FU+2+-+6M_January+21,+2026_11.18_n.csv"),
+  pb_raw   = file.path(raw_data_dir, "DP5+Phase+2+-+Parent+-+Baseline_January+21,+2026_11.17_n.csv"),
+  p3m_raw  = file.path(raw_data_dir, "DP5+Phase+2+-+Parent+-+FU+1+-+3M_January+21,+2026_11.18_n.csv"),
+  p6m_raw  = file.path(raw_data_dir, "DP5+Phase+2+-+Parent+-+FU+2+-+6M_January+21,+2026_11.18_n.csv"),
   p12m_raw = file.path(raw_data_dir, "DP5+Phase+2+-+Parent+-+FU+3+-+12M_January+21,+2026_11.18_n.csv"),
-  p18m_raw = file.path (raw_data_dir, "DP5+Phase+2+-+Parent+-+FU+4+-+18M_January+21,+2026_11.18_n.csv"),
+  p18m_raw = file.path(raw_data_dir, "DP5+Phase+2+-+Parent+-+FU+4+-+18M_January+21,+2026_11.18_n.csv"),
   p24m_raw = file.path(raw_data_dir, "DP5+Phase+2+-+Parent+-+FU+5+-+24M_January+21,+2026_11.19_n.csv")
 )
 
@@ -45,8 +46,8 @@ dat_ls <- lapply(raw_data_paths, read_survey, time_zone = "America/Chicago")
 
 
 ## Load ID lookup and (using helper function) item-level codebook
-id_lookup <- read_csv(here("Phase 2", "2025.08.01 Track to Treat P2 ID Lookup.csv"))
-codebook <- load_p2_codebook(here("Phase 2", "2026.02.12 Track to Treat P2 Codebook.xlsx"))
+id_lookup <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 ID Lookup.rds"))
+codebook <- load_p2_codebook(here("Phase 2", "2026.04.03 Track to Treat P2 Codebook.xlsx"))
 
 
 ####  Check that all "_n" files are indeed numeric (based on example columns)  ####

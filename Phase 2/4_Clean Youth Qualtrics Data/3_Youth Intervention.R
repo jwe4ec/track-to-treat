@@ -13,25 +13,26 @@ groundhog.library(
 
 
 ## Load helper functions
-source(here("Qualtrics Data Cleaning Helper Functions.R"))
+source(here("Directory Helper Functions.R"))
 source(here("Version Control Helper Functions.R"))
+source(here("Qualtrics Data Cleaning Helper Functions.R"))
 
 
 ## Load Qualtrics data
 # Get directories using helper function
-dirs <- get_p2_qualtrics_dirs("clean_data_staging_intermediate")
+dirs <- get_p2_dirs("clean_data_staging_intermediate")
 
 # Load corrected Qualtrics data
-yi_corrected <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Corrected Data - List by Wave.rds") %>%
+yi_corrected <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Youth Qualtrics Corrected Data - List by Wave.rds")) %>%
   pluck("yi")
 
 # Load dates for baseline Qualtrics survey and EMA computed when cleaning baseline survey
-yb_ema_dates <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Baseline and EMA Dates.rds")
+yb_ema_dates <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Youth Qualtrics Baseline and EMA Dates.rds"))
 
 
 ## Load ID lookup and corrected item-level codebook
-id_lookup <- read_csv(here("Phase 2", "2025.08.01 Track to Treat P2 ID Lookup.csv"))
-codebook <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Qualtrics Corrected Codebook.rds")
+id_lookup <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 ID Lookup.rds"))
+codebook <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Qualtrics Corrected Codebook.rds"))
 
 
 
@@ -103,7 +104,7 @@ yi_valid_ids %>%
          exclude_random_text = NA, 
          exclude_too_short = NA,
          note = NA) %>% # Make note if needed
-  write.csv(dirs$clean_data_staging_intermediate %+% filename_to_check, row.names = FALSE)
+  write.csv(file.path(dirs$clean_data_staging_intermediate, filename_to_check), row.names = FALSE)
 
 # Manually copy exported file and rename as follows for Alyssa Gorkin (AG) to complete "exclude" columns.
 # AG initially did so using the 5/22/2025 interim youth intervention data on 8/2/2025, creating the file 
@@ -113,7 +114,7 @@ yi_valid_ids %>%
 filename_checked <- "2026.01.21 Phase 2 Youth Qualtrics Valid Data - Intervention Free-Responses Checked.csv"
 
 # Load checked responses and create table of LSMH IDs meeting exclusion criteria
-yi_valid_ids_free_text_checked <- read_csv(dirs$clean_data_staging_intermediate %+% filename_checked) %>%
+yi_valid_ids_free_text_checked <- read_csv(file.path(dirs$clean_data_staging_intermediate, filename_checked)) %>%
   mutate(EndDate = ymd_hms(EndDate, tz = "America/Chicago"))
 
 exclude_ids <- yi_valid_ids_free_text_checked %>%
@@ -123,9 +124,9 @@ exclude_ids <- yi_valid_ids_free_text_checked %>%
   select(lsmh_id, exclude, exclude_not_fluent, exclude_random_text, exclude_too_short)
 
 # Save LSMH IDs meeting exclusion criteria
-# - These IDs are loaded in "Merge Youth Qualtrics Data.R" and "Merge Parent Qualtrics Data.R" and used to
-# exclude LSMH IDs in those scripts after merging data across assessment points
-saveRDS(exclude_ids, dirs$clean_data_staging_intermediate %+% "Phase 2 LSMH IDs Meeting Free-Text Exclusion Criteria.rds")
+# - These IDs are loaded in "Create Cohort Indicators for Flow and Analysis.R" and
+# used to indicate LSMH IDs to exclude when analyzing the intent-to-treat sample
+saveRDS(exclude_ids, file.path(dirs$clean_data_staging_intermediate, "Phase 2 LSMH IDs Meeting Free-Text Exclusion Criteria.rds"))
 
 
 ### Identify duplicates and compute item completion rate for removing duplicates
@@ -156,12 +157,12 @@ ax_windows_yi <- yb_ema_dates %>%
     ax_window_yi_end_org = ax_window_yi_start_org + weeks(3),
     
     ax_window_yi_start_ext = end_ema_period + days(1),
-    ax_window_yi_end_ext = ax_window_yi_start_ext + weeks(6),
+    ax_window_yi_end_ext = ax_window_yi_start_ext + weeks(6)
   ) %>%
   ungroup()
 
 # Compute indicator of intervention completion in window using helper function
-yi_valid_ids <- mark_fu_done_in_ax_window(yi_valid_ids, "yi", ax_windows_yi)
+yi_valid_ids <- mark_done_in_ax_window(yi_valid_ids, "yi", ax_windows_yi)
 
 # Print and remove any intervention surveys outside window
 yi_valid_ids %>%
@@ -288,6 +289,9 @@ yi_recoded <- yi_deduplicated %>%
     yi_days_before_start_window_yi_org = days_before_start_window_yi_org,
     yi_days_after_end_window_yi_org = days_after_end_window_yi_org,
     
+    # SSI complete (i.e., any response on Program Feedback Scale immediately post-SSI)
+    yi_ssi_complete = !if_all(matches("^yi_pfs_"), is.na),
+    
     
     ## BADS-SF (Behavioral Activation for Depression Scale - Short Form)
     # Activation subscale
@@ -349,7 +353,6 @@ yi_recoded <- yi_deduplicated %>%
     yi_date,
     yi_datetime,
     yi_duration,
-    condition,
     ax_window_yi_start_org,
     ax_window_yi_end_org,
     ax_window_yi_start_ext,
@@ -358,9 +361,11 @@ yi_recoded <- yi_deduplicated %>%
     yi_in_window_ext,
     yi_days_before_start_window_yi_org,
     yi_days_after_end_window_yi_org,
+    condition,
+    yi_ssi_complete,
     
     # Measures
-    matches("_bads_"),
+    matches("_bads_sf_"),
     matches("_bhs_"),
     matches("_iptq_"),
     yi_perc_change_hope,
@@ -376,7 +381,7 @@ yi_recoded <- yi_deduplicated %>%
 ### Check that values are in expected range
 items_to_check <- yi_recoded %>%
   select(
-    matches("_bads_"),
+    matches("_bads_sf_"),
     matches("_bhs_"),
     matches("_iptq_"),
     yi_perc_change_hope,
@@ -393,11 +398,10 @@ walk(items_to_check, check_values, yi_recoded) # check_values() helper function
 
 ####  Save Data  ####
 # Save clean Qualtrics data
-# - Note: LSMH IDs meeting exclusion criteria are dropped later (in "Merge Youth Qualtrics Data.R")
-saveRDS(yi_recoded, dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data - Intervention.rds")
+saveRDS(yi_recoded, file.path(dirs$clean_data_staging_intermediate, "Phase 2 Youth Qualtrics Clean Data - Intervention.rds"))
 
 # Save assessment windows
-saveRDS(ax_windows, dirs$clean_data_staging_intermediate %+% "Phase 2 Assessment Windows.rds")
+saveRDS(ax_windows, file.path(dirs$clean_data_staging_intermediate, "Phase 2 Assessment Windows.rds"))
 
 # Save log
-saveRDS(log, dirs$clean_data_staging_intermediate %+% "Phase 2 Youth Qualtrics Clean Data Log - Intervention.rds")
+saveRDS(log, file.path(dirs$clean_data_staging_intermediate, "Phase 2 Youth Qualtrics Clean Data Log - Intervention.rds"))

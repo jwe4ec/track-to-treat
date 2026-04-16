@@ -1,4 +1,4 @@
-## Track-to-Treat Phase 2 Data Cleaning, Parent Qualtrics, 3-Month Follow-Up
+## Track-to-Treat Phase 2 Data Cleaning, Parent Qualtrics, 18-Month Follow-Up
 # R version 4.4.3
 
 ####  Startup  ####
@@ -13,26 +13,27 @@ groundhog.library(
 
 
 ## Load helper functions
-source(here("Qualtrics Data Cleaning Helper Functions.R"))
+source(here("Directory Helper Functions.R"))
 source(here("Version Control Helper Functions.R"))
+source(here("Qualtrics Data Cleaning Helper Functions.R"))
 
 
 ## Load Qualtrics data
 # Get directories using helper function
-dirs <- get_p2_qualtrics_dirs("clean_data_staging_intermediate")
+dirs <- get_p2_dirs("clean_data_staging_intermediate")
 
 # Load corrected Qualtrics data
-p3m_corrected <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Corrected Data - List by Wave.rds") %>%
-  pluck("p3m")
+p18m_corrected <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Parent Qualtrics Corrected Data - List by Wave.rds")) %>%
+  pluck("p18m")
 
 
 ## Load ID lookup and corrected item-level codebook
-id_lookup <- read_csv(here("Phase 2", "2025.08.01 Track to Treat P2 ID Lookup.csv"))
-codebook <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Qualtrics Corrected Codebook.rds")
+id_lookup <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 ID Lookup.rds"))
+codebook <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Qualtrics Corrected Codebook.rds"))
 
 
 ## Load assessment windows
-ax_windows <- readRDS(dirs$clean_data_staging_intermediate %+% "Phase 2 Assessment Windows.rds")
+ax_windows <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 Assessment Windows.rds"))
 
 
 
@@ -47,59 +48,60 @@ log <- list(
 
 
 ### Fix LSMH IDs (manually as necessary)
-p3m_fixed_ids <- p3m_corrected %>%
+p18m_fixed_ids <- p18m_corrected %>%
   rowwise() %>%
   mutate(
     lsmh_id = case_when(
       
       # Cases to be manually recoded
-      lsmh_id == "LMSH00886" ~ "LSMH00886",
+      lsmh_id == "LSMH01710" & p18m_lsmh_id == "LSMH17100" ~ "LSMH01710",
+      lsmh_id == "LSMH02307" & p18m_lsmh_id == "LSMH02265" ~ "LSMH02265",
       
       # All others (helper function for cases in which IDs are same or one/both IDs are missing)
-      TRUE ~ resolve_id_pair(lsmh_id, p3m_lsmh_id)
+      TRUE ~ resolve_id_pair(lsmh_id, p18m_lsmh_id)
       
     )
   ) %>%
   ungroup()
 
 # Check LSMH ID format
-warn_invalid_id_format(p3m_fixed_ids$lsmh_id)
+warn_invalid_id_format(p18m_fixed_ids$lsmh_id)
 
 
 ### Remove invalid responses
 # Filter to known valid LSMH IDs (marked "keep" in id_lookup) using helper function
-p3m_valid_ids <- remove_invalid_p2_qualtrics_responses(p3m_fixed_ids, id_lookup)
+p18m_valid_ids <- remove_invalid_p2_qualtrics_responses(p18m_fixed_ids, id_lookup)
 
 
 ### Identify duplicates and compute item completion rate for removing duplicates
 # Identify duplicates using helper function
-identify_duplicates(p3m_valid_ids, lsmh_id, phase = 2)
+identify_duplicates(p18m_valid_ids, lsmh_id, phase = 2)
 
 # Compute item completion rate using helper function (given that Qualtrics's "Progress"
 # and "Finished" variables reflect only clicking through survey, not completing items)
-p3m_valid_ids <- compute_item_completion_rate(p3m_valid_ids, "p3m", phase = 2)
+p18m_valid_ids <- compute_item_completion_rate(p18m_valid_ids, "p18m", phase = 2)
 
 
 ### Remove any surveys (a) outside assessment window (or for parents of youth who 
 ### did not complete intervention survey in window) or (b) duplicated in window
 # Compute indicators of survey completion in window using helper function
-p3m_valid_ids <- mark_fu_done_in_ax_window(p3m_valid_ids, "3m", ax_windows)
+p18m_valid_ids <- mark_done_in_ax_window(p18m_valid_ids, "18m", ax_windows)
 
 # Print (using helper function) and remove any surveys outside window
-p3m_valid_ids_out_window <- get_surveys_outside_window_3m_onward(p3m_valid_ids, "3m") %>% print()
+p18m_valid_ids_out_window <- get_surveys_outside_window_3m_onward(p18m_valid_ids, "18m") %>% print()
 
-p3m_valid_ids <- p3m_valid_ids %>%
-  filter(in_window_3m_ext)
+p18m_valid_ids <- p18m_valid_ids %>%
+  filter(in_window_18m_ext)
 
 # Remove duplicates using helper function
-p3m_deduplicated <- remove_duplicates(p3m_valid_ids, lsmh_id)
+p18m_deduplicated <- remove_duplicates(p18m_valid_ids, lsmh_id)
 
 # Double-check deduplication
-identify_duplicates(p3m_deduplicated, lsmh_id, phase = 2)
+identify_duplicates(p18m_deduplicated, lsmh_id, phase = 2)
 
 
 ### Clean columns
-p3m_recoded <- p3m_deduplicated %>%
+p18m_recoded <- p18m_deduplicated %>%
   
   # Un-reverse code items with helper function
   unreverse_code_items(codebook) %>%
@@ -112,51 +114,51 @@ p3m_recoded <- p3m_deduplicated %>%
     # ID ("lsmh_id" cleaned above)
     
     # Survey completion
-    p3m_complete = !is.na(EndDate),
+    p18m_complete = !is.na(EndDate),
     
     # Survey datetime and duration
-    p3m_datetime = EndDate,
-    p3m_date = date(p3m_datetime),
-    p3m_duration = EndDate - StartDate,
+    p18m_datetime = EndDate,
+    p18m_date = date(p18m_datetime),
+    p18m_duration = EndDate - StartDate,
     
     # Follow-up survey completion in original and extended assessment 
     # windows and days survey was completed before/after original window
-    p3m_in_window_org = in_window_3m_org,
-    p3m_in_window_ext = in_window_3m_ext,
-    p3m_days_before_start_window_3m_org = days_before_start_window_3m_org,
-    p3m_days_after_end_window_3m_org = days_after_end_window_3m_org,
+    p18m_in_window_org = in_window_18m_org,
+    p18m_in_window_ext = in_window_18m_ext,
+    p18m_days_before_start_window_18m_org = days_before_start_window_18m_org,
+    p18m_days_after_end_window_18m_org = days_after_end_window_18m_org,
     
     
     ## Child treatment history (assessed at follow-ups only if "childtx_change" is Yes)
     # Current and lifetime treatment
-    p3m_childtx_lifetime = p3m_childtx_1 == 1 | p3m_childtx_3 == 1,
-    p3m_childtx_current = p3m_childtx_3 == 1,
+    p18m_childtx_lifetime = p18m_childtx_1 == 1 | p18m_childtx_3 == 1,
+    p18m_childtx_current = p18m_childtx_3 == 1,
     
     
     ## BACE (Barriers to Accessing Care Evaluation) overall mean score and subscale
-    !!!bace_means("p3m"),
+    !!!bace_means("p18m"),
     
     
     ## BFAMG (Brief Family Assessment Measure - General Scale) overall mean score
-    p3m_bfamg_mean = mean_across("p3m", "bfamg", name = "p3m_bfamg_mean"),
+    p18m_bfamg_mean = mean_across("p18m", "bfamg", name = "p18m_bfamg_mean"),
     
     
     ## BHS-4 (Beck Hopelessness Scale - 4-item) overall mean score
-    p3m_bhs_mean = mean_across("p3m", "bhs", name = "p3m_bhs_mean"),
+    p18m_bhs_mean = mean_across("p18m", "bhs", name = "p18m_bhs_mean"),
     
     
     ## 17 items from BSI-18 (Brief Symptom Inventory-18): overall mean score and subscales
     # Overall mean score and depression subscale lack suicidal thoughts item
-    !!!bsi_means("p3m"),
+    !!!bsi_means("p18m"),
     
     
     ## CDI-2-P (Children's Depression Inventory - 2 - Parent Report) overall mean score and subscales
-    !!!cdi_p_means("p3m"),
+    !!!cdi_p_means("p18m"),
     
     
     ## SCARED-Parent (Screen for Child Anxiety and Related Disorders - Parent) overall mean score and subscales
-    !!!scared_means("p3m")
-
+    !!!scared_means("p18m")
+    
   ) %>%
   ungroup() %>%
   
@@ -165,19 +167,19 @@ p3m_recoded <- p3m_deduplicated %>%
     
     # Metadata
     lsmh_id,
-    p3m_complete,
-    p3m_date,
-    p3m_datetime,
-    p3m_duration,
-    ax_window_3m_start_org,
-    ax_window_3m_end_org,
-    ax_window_3m_start_ext,
-    ax_window_3m_end_ext,
-    p3m_in_window_org,
-    p3m_in_window_ext,
-    p3m_days_before_start_window_3m_org,
-    p3m_days_after_end_window_3m_org,
-
+    p18m_complete,
+    p18m_date,
+    p18m_datetime,
+    p18m_duration,
+    ax_window_18m_start_org,
+    ax_window_18m_end_org,
+    ax_window_18m_start_ext,
+    ax_window_18m_end_ext,
+    p18m_in_window_org,
+    p18m_in_window_ext,
+    p18m_days_before_start_window_18m_org,
+    p18m_days_after_end_window_18m_org,
+    
     # Child treatment history
     matches("childtx_change"),
     matches("childtx_lifetime"),
@@ -195,7 +197,7 @@ p3m_recoded <- p3m_deduplicated %>%
 
 
 ### Check that values are in expected range
-items_to_check <- p3m_recoded %>%
+items_to_check <- p18m_recoded %>%
   select(
     matches("_bace_"),
     matches("_bfamg_"),
@@ -207,14 +209,13 @@ items_to_check <- p3m_recoded %>%
   ) %>%
   names()
 
-walk(items_to_check, check_values, p3m_recoded) # check_values() helper function
+walk(items_to_check, check_values, p18m_recoded) # check_values() helper function
 
 
 
 ####  Save Data  ####
 # Save clean Qualtrics data
-# - Note: LSMH IDs meeting exclusion criteria are dropped later (in "Merge Parent Qualtrics Data.R")
-saveRDS(p3m_recoded, dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Clean Data - 3m.rds")
+saveRDS(p18m_recoded, file.path(dirs$clean_data_staging_intermediate, "Phase 2 Parent Qualtrics Clean Data - 18m.rds"))
 
 # Save log
-saveRDS(log, dirs$clean_data_staging_intermediate %+% "Phase 2 Parent Qualtrics Clean Data Log - 3m.rds")
+saveRDS(log, file.path(dirs$clean_data_staging_intermediate, "Phase 2 Parent Qualtrics Clean Data Log - 18m.rds"))
