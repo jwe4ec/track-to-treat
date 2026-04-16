@@ -246,9 +246,9 @@ stopifnot(
 
 #### Check measure item labels for measures present in at least 6 waves (e.g., repeated measure)
 
-check_meas_item_lbls <- function(meas_item_col_lbls_clss, stem_wave_counts_df, min_waves = 6) {
+check_meas_item_lbls <- function(meas_item_col_lbls_clss, stem_wave_counts_df, min_waves = 1) {
   # Get stems repeated across multiple waves (i.e., from stem wave counts those in BL and all FU or ALL TP)
-  repeated_stems <- stem_wave_counts_df$stem[stem_wave_counts_df$n_present >= min_waves]
+  repeated_stems <- stem_wave_counts_df$stem[stem_wave_counts_df$n_present > min_waves]
   
   wave_names <- names(meas_item_col_lbls_clss)
   
@@ -303,6 +303,7 @@ y_meas_item_col_lbls_clss_sans_prefix <- lapply(y_meas_item_col_lbls_clss, funct
   
   prefix_items <- grep("^(scared_|scsc_4|sitbi_|mvps_)", wave_item_stems, value = TRUE)
   wave_lbls[prefix_items] <- sub("^y[a-z0-9]*_", "", wave_lbls[prefix_items])
+  #wave_lbls[prefix_items] <- sub("^(yb_|yi_|y3m_|y6m_|y12m_|y24m_).", "", wave_lbls[prefix_items]) # in trying a more specifc one, there are other issues introduced, think we should keep it high level
   
   tab_items <- grep("^(shs_1|shs_2|mvps_)", wave_item_stems, value = TRUE)
   wave_lbls[tab_items] <- gsub("\t", " ", wave_lbls[tab_items])
@@ -329,7 +330,7 @@ p_meas_item_col_lbls_clss_sans_prefix <- lapply(p_meas_item_col_lbls_clss, funct
   wave_lbls[newline_items] <- gsub("\n", " ", wave_lbls[newline_items])
   
   if_yes_items <- grep("^(childmeds_)", wave_item_stems, value = TRUE)
-  wave_lbls[if_yes_items] <- sub("If YES,\np", "P", wave_lbls[if_yes_items])
+  wave_lbls[if_yes_items] <- sub("^If YES,\np", "P", wave_lbls[if_yes_items])
   
   wave$lbls <- wave_lbls
   return(wave)
@@ -337,8 +338,26 @@ p_meas_item_col_lbls_clss_sans_prefix <- lapply(p_meas_item_col_lbls_clss, funct
 
 # Now lets check the labels again:
 y_diff_lbls_clnd <- check_meas_item_lbls(y_meas_item_col_lbls_clss_sans_prefix, y_stem_wave_counts_df)
+
 p_diff_lbls_clnd <- check_meas_item_lbls(p_meas_item_col_lbls_clss_sans_prefix, p_stem_wave_counts_df)
 
+
+### Inspect items from youth label discrepancies (BADS, SITBI, PCSC, SCSC, Scared)
+#Youth differences remain due to minor wording changes, small grammatical errors, and BADS sf mix up. 
+#Grammatical errors include extra/missing commas or periods, or additional letters (e.g., get vs gets)
+#Wording changes reflect minor additions of words (e.g., "is" and the "grades" vs)
+
+y_lbls_diff_groups <- list(
+  bads_sf_item_discrep = y_diff_lbls_clnd %>%
+    filter(str_detect(stem, "bads")),
+  
+  minor_grammatical_typos = y_diff_lbls_clnd %>%
+    filter(stem %in% c("scsc_4","sitbi_3b_1","sitbi_3b_2","sitbi_3b_3","scared_c_9","scared_a_2")),
+  
+  wording_changes = y_diff_lbls_clnd %>%
+    filter(str_detect(stem, "pcsc") |
+             stem %in% c("sitbi_3c","sitbi_4c","sitbi_1a","sitbi_2d"))
+)
 
 ### Check whether measure item classes are same across all waves
 ## Define function to check classes 
@@ -392,9 +411,6 @@ p_cols_with_diff_clss_due_to_char <- "caregiver1_3_10_TEXT"
 
 get_clss_diff_cols(p_meas_item_col_lbls_clss_sans_prefix, p_cols_with_diff_clss_due_to_char)
 lapply(dat_ls$pb_raw[paste0("pb_", p_cols_with_diff_clss_due_to_char)], class)  # At baseline
-
-get_clss_diff_cols(p_meas_item_col_lbls_clss_sans_prefix, p_cols_with_diff_clss_due_to_accommodations_2)
-class(dat_ls$pb_raw$pb_accommodations_2)  # At baseline-- you can see now these were only being pulled because they're null in some waves, this can be removed
 
 
 ####  Check for measure items missing from codebook  ####
