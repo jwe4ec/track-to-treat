@@ -141,6 +141,8 @@ Data cleaning notes:
     * Some items had minor wording differences across time points (see raw codebook for details)
       * Youth item `scared_a_2`: "get" vs. "gets"
       * Youth items `pcsc_1`, `pcsc_7`, and `pcsc_13`: "grades" vs. "marks"
+      * Youth item `sitbi_1a`: missing "or" at some waves
+      * Youth items `sitbi_2d`, `sitbi_3c`, `sitbi_4c`: missing "is" at some waves
     * After cleaning each wave individually, LSMH IDs meeting exclusion criteria per youth intervention free-text responses are dropped in "Merge Youth Qualtrics Data.R" and "Merge Parent Qualtrics Data.R"
     * TODO: Note which participants are retained at each wave (e.g., "yb" removed if not started EMA)
     * Youth data collected but not cleaned:

@@ -108,8 +108,11 @@ names(dat_ls_labeled) <- names(dat_ls_selected)
 
 
 ### Recode items that interfere with binding rows across waves
-# None
-dat_ls_recoded <- dat_ls_labeled
+dat_ls_recoded <- dat_ls_labeled %>%
+  ## Recode the following item, which should be character
+  # "caregiver1_3_10_TEXT"
+  modify_in("p3m", ~ mutate(.x, p3m_caregiver1_3_10_TEXT = as.character(p3m_caregiver1_3_10_TEXT))) %>%
+  modify_in("p18m", ~ mutate(.x, p18m_caregiver1_3_10_TEXT = as.character(p18m_caregiver1_3_10_TEXT)))
 
 
 ### Manually move rows to correct waves
