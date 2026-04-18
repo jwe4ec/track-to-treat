@@ -48,8 +48,13 @@ File organization:
     * 8_Merge Parent Qualtrics Data.R
   * 6_Create Cohort Indicators for Flow and Analysis.R
   * 7_Create Clean Data Release.R
-  * QA/
-    * Inspect Raw Qualtrics Data and Codebook.R (checking raw data and codebook for issues to clean)
+  * QA/ (checking for issues to clean)
+    * 1_Inspect Raw Qualtrics Data and Codebook.R
+    * 2_Check Measure Item Metadata Across Waves.R
+    * QA Helper Functions.R
+* Directory Helper Functions.R
+* Version Control Helper Functions.R
+* Qualtrics Data Cleaning Helper Functions.R
 
 Data cleaning notes:
 
