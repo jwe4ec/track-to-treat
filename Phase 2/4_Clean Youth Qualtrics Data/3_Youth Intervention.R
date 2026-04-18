@@ -184,10 +184,10 @@ identify_duplicates(yi_deduplicated, lsmh_id, phase = 2)
 
 ### Use deduplicated data to define assessment windows for follow-up surveys in later scripts
 # Compute potential assessment windows based on intervention completion date
-# - In Phase I, 3-month assessment window start dates were computed manually by adding 3
+# - In Phase 1, 3-month assessment window start dates were computed manually by adding 3
 # to the month number and then rolling to the last real date of the prior month when this
 # yields a date that does not exist. In R, this is "as_date(EndDate) %m+% months(3)".
-# - In Phase II, follow-up window start dates were computed using Qualtrics Workflows such that 
+# - In Phase 2, follow-up window start dates were computed using Qualtrics Workflows such that 
 # once the intervention survey was completed, Qualtrics sent the 3-, 6-, 12-, 18-, and 24-month 
 # surveys to youth and parents after those number of months had passed since the intervention 
 # survey completion date stored in Qualtrics (per Arielle Smith on 7/31/25). Per Qualtrics Support, 
