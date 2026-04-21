@@ -150,10 +150,14 @@ Data cleaning notes:
         * Given that "y3m-y24m" windows are based on "yi" end date (see "Youth Intervention.R")
       * "pb", "p3m-p24m": Parents of youth retained at corresponding waves
       * The approximate assessment windows above were reasonably extended from the original windows
-    * Youth data collected but not cleaned:
-      * TODO
-    * Parent data collected but not cleaned:
-      * TODO
+    * Data collected but not cleaned (see raw codebook for details)
+      * Youth
+        * Prognostic Pessimism for Depression scale (PPD)
+        * Pubertal Development Scale (PDS)
+        * Self-Referential Encoding Task (SRET)
+      * Parent
+        * COVID-19 items
+        * Prognostic Pessimism for Depression scale (PPD)
 
 Version control:
   * Expected raw data versions are tracked in "Raw <P1/P2> Metadata.csv" files
