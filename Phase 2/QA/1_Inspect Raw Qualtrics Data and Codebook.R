@@ -13,8 +13,8 @@ groundhog.library(
 
 ## Load helper functions
 source(here("Directory Helper Functions.R"))
-source(here("Version Control Helper Functions.R"))
 source(here("Qualtrics Data Cleaning Helper Functions.R"))
+source(here("Phase 2", "QA", "QA Helper Functions.R"))
 
 
 ## Load data into list
@@ -22,7 +22,7 @@ source(here("Qualtrics Data Cleaning Helper Functions.R"))
 dirs <- get_p2_dirs(c("raw_qualtrics_data", "clean_data_staging_intermediate"))
 raw_data_dir <- dirs$raw_qualtrics_data
 
-# Load raw Qualtrics datasets (storing paths) in this format: [respondent][wave]_raw
+# Load raw youth and parent Qualtrics data (excluding phone screen data)
 # - Note: Use "timeZone" specified for date columns (e.g., "StartDate") in third row of raw CSVs
 raw_data_paths <- lst(
   yb_raw   = file.path(raw_data_dir, "DP5+Phase+2+-+Youth+-+Baseline_January+21,+2026_11.24_n.csv"),
@@ -46,7 +46,7 @@ dat_ls <- lapply(raw_data_paths, read_survey, time_zone = "America/Chicago")
 
 ## Load ID lookup and (using helper function) item-level codebook
 id_lookup <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 2 ID Lookup.rds"))
-codebook <- load_p2_codebook(here("Phase 2", "2026.04.03 Track to Treat P2 Codebook.xlsx"))
+codebook <- load_p2_codebook(here("Phase 2", "2026.04.18 Track to Treat P2 Codebook.xlsx"))
 
 
 
@@ -132,239 +132,6 @@ lapply(dat_ls_cols, \(x) x$test_cols)
 lapply(dat_ls_cols, \(x) x$other_cols)
 lapply(dat_ls_cols, \(x) x$ssi_item_cols)
 lapply(dat_ls_cols, \(x) x$meas_item_cols)
-
-
-
-####  Check if stems of measure item column names are same across follow-up waves  ####
-### TODO: Alyssa to generalize this section to check across all waves
-
-
-### Restrict to 3- to 24-month follow-ups
-dat_ls_cols_fu <- dat_ls_cols[grepl("\\d+m_raw$", names(dat_ls_cols))]
-
-
-### Get names of measure items for youth and parent surveys
-fu_meas_item_cols_stems <- lapply(dat_ls_cols_fu, function(dat_cols) {
-  meas_item_cols <- dat_cols$meas_item_cols
-  
-  meas_item_cols_stems <- str_split_fixed(meas_item_cols, "_", 2)[, 2]
-  
-  return(meas_item_cols_stems)
-})
-
-y_fu_meas_item_cols_stems <- fu_meas_item_cols_stems[grepl("^y", names(fu_meas_item_cols_stems))]
-p_fu_meas_item_cols_stems <- fu_meas_item_cols_stems[grepl("^p", names(fu_meas_item_cols_stems))]
-
-
-### Confirm that all measure items within a given follow-up survey are unique
-stopifnot(
-  all(sapply(y_fu_meas_item_cols_stems, \(stems) length(stems) == length(unique(stems)))),
-  all(sapply(p_fu_meas_item_cols_stems, \(stems) length(stems) == length(unique(stems))))
-)
-
-
-### Confirm that measure item stems are same across follow-up surveys
-## True for youth surveys
-stopifnot(all(table(unlist(y_fu_meas_item_cols_stems)) == length(y_fu_meas_item_cols_stems)))
-
-## Not for parent surveys (due to "accommodations_2" items; see sections below)
-all(table(unlist(p_fu_meas_item_cols_stems)) == length(p_fu_meas_item_cols_stems))
-
-# True for parent surveys when excluding "accommodations_2" items
-p_fu_meas_item_cols_stems_no_accom_2 <- lapply(p_fu_meas_item_cols_stems, function(stems) {
-  accom_2_items <- c("accom_2", "accommodations_", "accommodations_2")
-  
-  stems_no_accom_2 <- setdiff(stems, accom_2_items)
-  
-  return(stems_no_accom_2)
-})
-
-stopifnot(all(table(unlist(p_fu_meas_item_cols_stems_no_accom_2)) == length(p_fu_meas_item_cols_stems_no_accom_2)))
-
-
-
-####  Check if labels and classes of measure items are same across follow-up waves  ####
-### TODO: Alyssa to generalize this section to check across all waves
-
-
-### Restrict to 3- to 24-month follow-ups
-dat_ls_fu <- dat_ls[grepl("\\d+m_raw$", names(dat_ls))]
-
-
-### Get labels and classes of measure items for youth and parent surveys and name by measure item stems
-fu_meas_item_col_lbls_clss <- lapply(names(dat_ls_fu), function(dat_name) {
-  dat                 <- dat_ls_fu[[dat_name]]
-  meas_item_cols      <- dat_ls_cols[[dat_name]]$meas_item_cols
-  meas_item_col_stems <- str_split_fixed(meas_item_cols, "_", 2)[, 2]
-  
-  out <- list()
-  
-  out$lbls <- lapply(meas_item_cols, \(col) attr(dat[[col]], "label"))
-  out$clss <- lapply(meas_item_cols, \(col) class(dat[[col]]))
-  
-  names(out$lbls) <- meas_item_col_stems
-  names(out$clss) <- meas_item_col_stems
-  
-  return(out)
-})
-names(fu_meas_item_col_lbls_clss) <- names(dat_ls_fu)
-
-y_fu_meas_item_col_lbls_clss <- fu_meas_item_col_lbls_clss[grepl("^y", names(fu_meas_item_col_lbls_clss))]
-p_fu_meas_item_col_lbls_clss <- fu_meas_item_col_lbls_clss[grepl("^p", names(fu_meas_item_col_lbls_clss))]
-
-
-### Confirm that all measure item labels within a given follow-up survey are unique
-stopifnot(
-  all(sapply(y_fu_meas_item_col_lbls_clss, \(wave) length(wave$lbls) == length(unique(wave$lbls)))),
-  all(sapply(p_fu_meas_item_col_lbls_clss, \(wave) length(wave$lbls) == length(unique(wave$lbls))))
-)
-
-
-### Remove survey-specific prefixes from certain item labels
-# In youth data (SITBI Item 3b, SCARED items)
-y_fu_meas_item_col_lbls_clss_sans_prefix <- lapply(y_fu_meas_item_col_lbls_clss, function(wave) {
-  wave_lbls       <- wave$lbls
-  wave_item_stems <- names(wave_lbls)
-  
-  sitbi_3b_item_stems <- grep("sitbi_3b_", wave_item_stems, value = TRUE)
-  scared_item_stems   <- grep("scared_", wave_item_stems, value = TRUE)
-  
-  wave_lbls[sitbi_3b_item_stems] <- sub("^y\\d+m_", "", wave_lbls[sitbi_3b_item_stems])
-  wave_lbls[scared_item_stems]   <- sub("^y\\d+m_", "", wave_lbls[scared_item_stems])
-  
-  wave$lbls <- wave_lbls
-  
-  return(wave)
-})
-
-# In parent data (SCARED items)
-p_fu_meas_item_col_lbls_clss_sans_prefix <- lapply(p_fu_meas_item_col_lbls_clss, function(wave) {
-  wave_lbls <- wave$lbls
-  wave_item_stems <- names(wave_lbls)
-  
-  scared_item_stems <- grep("scared_", wave_item_stems, value = TRUE)
-  
-  wave_lbls[scared_item_stems] <- sub("^p\\d+m_", "", wave_lbls[scared_item_stems])
-  
-  wave$lbls <- wave_lbls
-  
-  return(wave)
-})
-
-
-### Check whether measure item labels are same across follow-up surveys
-## Define function to check labels 
-check_fu_meas_item_lbls <- function(fu_meas_item_col_lbs_clss) {
-  # Get all unique measure item columns (i.e., their stems) across follow-up surveys
-  all_cols <- unique(unlist(lapply(fu_meas_item_col_lbs_clss, \(wave) names(wave$lbls))))
-  
-  # Find measure item stems that have different labels across follow-up surveys
-  diff_cols <- character()
-  
-  for (col in all_cols) {
-    # Get labels for column across all follow-up surveys
-    lbls <- sapply(fu_meas_item_col_lbs_clss, \(wave) wave$lbls[[col]])
-    
-    # Check if more than one unique label
-    if (length(unique(lbls)) > 1) diff_cols <- c(diff_cols, col)
-  }
-  
-  return(diff_cols)
-}
-
-
-## Run function to check labels for youth and parent data
-y_cols_with_diff_lbls <- check_fu_meas_item_lbls(y_fu_meas_item_col_lbls_clss_sans_prefix)
-p_cols_with_diff_lbls <- check_fu_meas_item_lbls(p_fu_meas_item_col_lbls_clss_sans_prefix)
-
-stopifnot(
-  y_cols_with_diff_lbls == c("scared_a_2", "scared_c_9", "pcsc_1", "pcsc_7", "pcsc_13"),
-  p_cols_with_diff_lbls == c("accom_2", "accommodations_2", "accommodations_")
-)
-
-
-## Inspect items with different labels across follow-up surveys
-# Define function
-get_lbls_diff_cols <- function(col_lbls_clss, cols_with_diff_lbls) {
-  diff_lbls <- lapply(cols_with_diff_lbls, \(col) lapply(col_lbls_clss, \(wave) wave$lbls[[col]]))
-  names(diff_lbls) <- cols_with_diff_lbls
-  
-  return(diff_lbls)
-}
-
-# Differences for youth items are due to (a) minor typos (SCARED items) or (b) referring to
-# "grades" versus "marks" at some time points (PCSC items)
-# - Noted this in README and documented details in raw codebook
-y_cols_with_diff_lbls_due_to_typos           <- c("scared_a_2", "scared_c_9")
-y_cols_with_diff_lbls_due_to_grades_vs_marks <- c("pcsc_1", "pcsc_7", "pcsc_13")
-
-get_lbls_diff_cols(y_fu_meas_item_col_lbls_clss_sans_prefix, y_cols_with_diff_lbls_due_to_typos)
-lapply(dat_ls$yb_raw[paste0("yb_", y_cols_with_diff_lbls_due_to_typos)], attr, which = "label")  # At baseline
-
-get_lbls_diff_cols(y_fu_meas_item_col_lbls_clss_sans_prefix, y_cols_with_diff_lbls_due_to_grades_vs_marks)
-lapply(dat_ls$yb_raw[paste0("yb_", y_cols_with_diff_lbls_due_to_grades_vs_marks)], attr, which = "label")  # At baseline
-
-# Differences for parent items are due only to different names for "accommodations_2" item
-
-get_lbls_diff_cols(p_fu_meas_item_col_lbls_clss_sans_prefix, p_cols_with_diff_lbls)
-
-
-### Check whether measure item classes are same across follow-up waves
-## Define function to check classes 
-check_fu_meas_item_clss <- function(fu_meas_item_col_lbs_clss) {
-  # Get all unique measure item columns (i.e., their stems) across follow-up surveys
-  all_cols <- unique(unlist(lapply(fu_meas_item_col_lbs_clss, \(wave) names(wave$clss))))
-  
-  # Find measure item stems that have different classes across follow-up surveys
-  diff_cols <- character()
-  
-  for (col in all_cols) {
-    # Get classes for column across all follow-up surveys
-    clss <- sapply(fu_meas_item_col_lbs_clss, \(wave) wave$clss[[col]])
-    
-    # Check if more than one unique class
-    if (length(unique(clss)) > 1) diff_cols <- c(diff_cols, col)
-  }
-  
-  return(diff_cols)
-}
-
-
-## Run function to check classes for youth and parent data
-y_cols_with_diff_clss <- check_fu_meas_item_clss(y_fu_meas_item_col_lbls_clss_sans_prefix)
-p_cols_with_diff_clss <- check_fu_meas_item_clss(p_fu_meas_item_col_lbls_clss_sans_prefix)
-
-stopifnot(
-  setequal(y_cols_with_diff_clss, c("sitbi_3b_2", "sitbi_4b_4")),
-  setequal(p_cols_with_diff_clss, c("caregiver1_3_10_TEXT", "accom_2", "accommodations_2", "accommodations_"))
-)
-
-
-## Inspect items with different classes across follow-up surveys
-# Define function
-get_clss_diff_cols <- function(col_lbls_clss, cols_with_diff_clss) {
-  diff_clss <- lapply(cols_with_diff_clss, \(col) lapply(col_lbls_clss, \(wave) wave$clss[[col]]))
-  names(diff_clss) <- cols_with_diff_clss
-  
-  return(diff_clss)
-}
-
-# Differences for youth items are due to some character responses (SITBI items)
-# - Recoded responses in "Correct Codebook and Raw Youth Data.R"
-
-get_clss_diff_cols(y_fu_meas_item_col_lbls_clss_sans_prefix, y_cols_with_diff_clss)
-lapply(dat_ls$yb_raw[paste0("yb_", y_cols_with_diff_clss)], class)  # At baseline
-
-# Differences for parent items are due to (a) all NAs at some waves for "caregiver1_3_10_TEXT"
-# (not an issue for binding rows) and (b) different names for "accommodations_2" item
-p_cols_with_diff_clss_due_to_char             <- "caregiver1_3_10_TEXT"
-p_cols_with_diff_clss_due_to_accommodations_2 <- c("accom_2", "accommodations_2", "accommodations_")
-
-get_clss_diff_cols(p_fu_meas_item_col_lbls_clss_sans_prefix, p_cols_with_diff_clss_due_to_char)
-lapply(dat_ls$pb_raw[paste0("pb_", p_cols_with_diff_clss_due_to_char)], class)  # At baseline
-
-get_clss_diff_cols(p_fu_meas_item_col_lbls_clss_sans_prefix, p_cols_with_diff_clss_due_to_accommodations_2)
-class(dat_ls$pb_raw$pb_accommodations_2)  # At baseline
 
 
 
@@ -491,40 +258,7 @@ table(codebook$reversed, codebook$reverse_base, useNA = "always")
 
 
 
-####  Check for items in data across waves  ####
-## Define function to check for item pattern in data across waves, with option
-## to restrict to columns of a given type
-check_item_pattern <- function(dat_ls_cols, pattern, col_type = "all") {
-  if (col_type == "all") {
-    cat("All columns:\n\n")
-  } else {
-    cat("Columns of type '", col_type, "':\n\n", sep = "")
-  }
-  
-  lapply(dat_ls_cols, function(dat_cols) {
-    if (col_type == "all") {
-      cols <- unlist(dat_cols, use.names = FALSE)
-    } else {
-      cols <- dat_cols[[col_type]]
-    }
-    
-    cols[grepl(pattern, cols)]
-  })
-}
-
-
-## Define function to check label for item pattern in data across waves
-check_item_pattern_label <- function(dat_ls, pattern) {
-  lapply(dat_ls, function(dat) {
-    target_cols <- names(dat)[grepl(pattern, names(dat))]
-    
-    sapply(target_cols, function(target_col) {
-      attr(dat[[target_col]], "label")
-    }, USE.NAMES = FALSE)
-  })
-}
-
-
+####  Check for items in data across waves (using helper functions)  ####
 ## SCARED item "scared_c_11", which was absent from youth baseline survey in Phase 1
 # It's present in Phase 2 as "I am shy" at "yb", "y3m", "y6m", "y12m", "y18m", and "y24m"
 check_item_pattern(dat_ls_cols, "scared_c_11", "meas_item_cols")
@@ -537,3 +271,12 @@ check_item_pattern(dat_ls_cols, "\\.\\.\\.")
 
 # - "yi_raw" contains "lsmh_id...18" and "lsmh_id...601" (renamed in code)
 # - "pb_raw" contains "test...511" and "test...512" (renamed in code)
+
+
+
+####  Save data  ####
+# List of raw youth and parent Qualtrics data
+saveRDS(dat_ls, file.path(dirs$clean_data_staging_intermediate, "Phase 2 QA List of Raw Qualtrics Data.rds"))
+
+# List of raw youth and parent Qualtrics data columns by type
+saveRDS(dat_ls_cols, file.path(dirs$clean_data_staging_intermediate, "Phase 2 QA List of Raw Qualtrics Data Columns by Type.rds"))

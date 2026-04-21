@@ -39,7 +39,7 @@ dat_ls_raw <- lapply(raw_data_paths, read_survey, time_zone = "America/Chicago")
 
 
 ## Load item-level codebook using helper function
-codebook <- load_p2_codebook(here("Phase 2", "2026.04.03 Track to Treat P2 Codebook.xlsx"))
+codebook <- load_p2_codebook(here("Phase 2", "2026.04.18 Track to Treat P2 Codebook.xlsx"))
 
 
 ## Check raw Qualtrics data versions using helper function
@@ -149,7 +149,7 @@ dat_ls_recoded <- dat_ls_labeled %>%
       "idk" = NA_character_,
       "1,708" = "1708"
     ))
-  ))%>%
+  )) %>%
   
   # "sitbi_4b_3"
   modify_in("yb", ~ mutate(.x, yb_sitbi_4b_3 = as.numeric(na_if(yb_sitbi_4b_3, "i lost count")))) %>%

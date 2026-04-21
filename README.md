@@ -48,8 +48,13 @@ Old data cleaning code, including documentation (some of which informed the code
     * 8_Merge Parent Qualtrics Data.R
   * 6_Create Cohort Indicators for Flow and Analysis.R
   * 7_Create Clean Data Release.R
-  * QA/
-    * Inspect Raw Qualtrics Data and Codebook.R (checking raw data and codebook for issues to clean)
+  * QA/ (checking for issues to clean)
+    * 1_Inspect Raw Qualtrics Data and Codebook.R
+    * 2_Check Measure Item Metadata Across Waves.R
+    * QA Helper Functions.R
+* Directory Helper Functions.R
+* Version Control Helper Functions.R
+* Qualtrics Data Cleaning Helper Functions.R
 
 ## Data cleaning notes
 
@@ -149,6 +154,8 @@ Old data cleaning code, including documentation (some of which informed the code
   * Some items had minor wording differences across time points (see raw codebook for details)
     * Youth item `scared_a_2`: "get" vs. "gets"
     * Youth items `pcsc_1`, `pcsc_7`, and `pcsc_13`: "grades" vs. "marks"
+    * Youth item `sitbi_1a`: missing "or" at some waves
+    * Youth items `sitbi_2d`, `sitbi_3c`, `sitbi_4c`: missing "is" at some waves
   * Surveys retained at each wave (given need to deduplicate surveys within assessment windows):
     * "yb": Youth who did "yb" survey in window (within 3 weeks before starting EMA) and started EMA
       * Given that "yb" window is based on first EMA notification date (see "Youth Baseline.R")
