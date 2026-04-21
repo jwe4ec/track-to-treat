@@ -141,10 +141,15 @@ Data cleaning notes:
     * Some items had minor wording differences across time points (see raw codebook for details)
       * Youth item `scared_a_2`: "get" vs. "gets"
       * Youth items `pcsc_1`, `pcsc_7`, and `pcsc_13`: "grades" vs. "marks"
-    * Participants retained at each wave (given need to deduplicate surveys in assessment windows):
-      * "yb": youth who started EMA
-      * "yi", "y3m-y24m": TODO
-      * "pb", "p3m-p24m": TODO
+    * Surveys retained at each wave (given need to deduplicate surveys within assessment windows):
+      * "yb": Youth who did "yb" survey in window (within 3 weeks before starting EMA) and started EMA
+        * Given that "yb" window is based on first EMA notification date (see "Youth Baseline.R")
+      * "yi": Youth who did "yi" survey in window (within 6 weeks after end of 3-week EMA period)
+        * See "Youth Intervention.R"
+      * "y3m-y24m": Youth who did given survey in window (3-24 months after ending "yi", +6 weeks/-1 week) and "yi" survey in window
+        * Given that "y3m-y24m" windows are based on "yi" end date (see "Youth Intervention.R")
+      * "pb", "p3m-p24m": Parents of youth retained at corresponding waves
+      * The approximate assessment windows above were reasonably extended from the original windows
     * Youth data collected but not cleaned:
       * TODO
     * Parent data collected but not cleaned:
