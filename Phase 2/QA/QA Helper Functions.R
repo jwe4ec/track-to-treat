@@ -3,6 +3,7 @@
 ## Function to check for item pattern in data across waves
 # - With option to restrict to columns of a given type
 check_item_pattern <- function(dat_ls_cols, pattern, col_type = "all") {
+  
   if (col_type == "all") {
     cat("All columns:\n\n")
   } else {
@@ -18,11 +19,13 @@ check_item_pattern <- function(dat_ls_cols, pattern, col_type = "all") {
     
     cols[grepl(pattern, cols)]
   })
+  
 }
 
 
 ## Function to check label for item pattern in data across waves
 check_item_pattern_label <- function(dat_ls, pattern) {
+  
   lapply(dat_ls, function(dat) {
     target_cols <- names(dat)[grepl(pattern, names(dat))]
     
@@ -30,11 +33,13 @@ check_item_pattern_label <- function(dat_ls, pattern) {
       attr(dat[[target_col]], "label")
     }, USE.NAMES = FALSE)
   })
+  
 }
 
 
 ## Function to compute number of waves in which each stem is present
 compute_stem_wave_counts <- function(meas_item_cols_prefixes_stems) {
+  
   waves <- names(meas_item_cols_prefixes_stems)
   n_total_waves <- length(waves)
   stems_by_wave <- lapply(meas_item_cols_prefixes_stems, \(x) x$stems)
@@ -59,12 +64,14 @@ compute_stem_wave_counts <- function(meas_item_cols_prefixes_stems) {
   row.names(stem_wave_counts_df) <- NULL
   
   return(stem_wave_counts_df)
+  
 }
 
 
 ## Function to create data frame of repeated-measure item stems with different labels across waves
 # - Note: Whitespace differences can't be reliably detected by viewing data frame
 create_diff_repeated_meas_item_lbl_df <- function(meas_item_col_lbls_clss, stem_wave_counts_df) {
+  
   # Get stems for repeated-measure items
   repeated_stems <- stem_wave_counts_df$stem[stem_wave_counts_df$n_present > 1]
   
@@ -126,12 +133,14 @@ create_diff_repeated_meas_item_lbl_df <- function(meas_item_col_lbls_clss, stem_
   })
   
   return(diff_lbl_df)
+  
 }
 
 
 ## Function to inspect labels for items with different labels across waves
 # - Note: Return list given that labels are hard to inspect in data frame
 get_diff_lbls <- function(diff_lbl_df, stems_with_diff_lbls) {
+  
   diff_lbls <- lapply(stems_with_diff_lbls, \(stem) {
     row <- diff_lbl_df[diff_lbl_df$stem == stem, ]
     
@@ -146,11 +155,13 @@ get_diff_lbls <- function(diff_lbl_df, stems_with_diff_lbls) {
   names(diff_lbls) <- stems_with_diff_lbls
   
   return(diff_lbls)
+  
 }
 
 
 ## Function to get repeated-measure item stems with different classes across waves
 get_stems_diff_clss <- function(meas_item_col_lbs_clss, stem_wave_counts_df) {
+  
   # Get stems for repeated-measure items
   repeated_stems <- stem_wave_counts_df$stem[stem_wave_counts_df$n_present > 1]
   
@@ -170,15 +181,18 @@ get_stems_diff_clss <- function(meas_item_col_lbs_clss, stem_wave_counts_df) {
   }
   
   return(stems_diff_clss)
+  
 }
 
 
 ## Function to inspect classes for item stems across waves
 get_clss <- function(col_lbls_clss, stems) {
+  
   clss <- lapply(stems, \(stem) {
     unlist(lapply(col_lbls_clss, \(wave) wave$clss[[stem]]))
   })
   names(clss) <- stems
   
   return(clss)
+  
 }
