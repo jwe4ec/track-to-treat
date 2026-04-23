@@ -161,7 +161,7 @@ Old data cleaning code, including documentation (some of which informed the code
       * Given that "yb" window is based on first EMA notification date (see "Youth Baseline.R")
     * "yi": Youth who did "yi" survey in window (within 6 weeks after end of 3-week EMA period)
       * See "Youth Intervention.R"
-    * "y3m-y24m": Youth who did given survey in window (3-24 months after ending "yi", +6 weeks/-1 week) and "yi" survey in window
+    * "y3m-y24m": Youth who did given survey in window (3-24 months after ending "yi", +6 weeks and -1 week) and "yi" survey in window
       * Given that "y3m-y24m" windows are based on "yi" end date (see "Youth Intervention.R")
     * "pb", "p3m-p24m": Parents of youth retained at corresponding waves
     * The approximate assessment windows above were reasonably extended from the original windows
