@@ -89,18 +89,19 @@ yi_valid_ids <- remove_invalid_p2_qualtrics_responses(yi_fixed_ids, id_lookup)
 
 
 ### Manually check selected free-text columns for the following exclusion criteria
-# - Check all columns below for (a) lack of English fluency and (b) random text responses
-# - Check all columns below except "abc_q_6" and "abc_q_20" for (c) responses < 3 words
+# - Check all columns below for (a) copy/paste responses, (b) lack of English fluency, and (c) random text
+# - Check all columns below except "abc_q_6" and "abc_q_20" for (d) responses < 3 words
 # Export selected columns to check
 cols_to_check <- c(paste0("shar_feel_q_", 1:3), paste0("proj_pers_q_", 1:3), "abc_q_6", "abc_q_7_b", "abc_q_20")
-filename_to_check <- "2026.01.21 Phase 2 Youth Qualtrics Valid Data - Intervention Free-Responses to Check.csv"
+filename_to_check <- "2026.04.23 Phase 2 Youth Qualtrics Valid Data - Intervention Free-Responses to Check.csv"
 
 yi_valid_ids %>%
   select(lsmh_id, condition, EndDate, all_of(cols_to_check)) %>%
   arrange(condition, lsmh_id, EndDate) %>%
   mutate(EndDate = format(EndDate, "%Y-%m-%d %H:%M:%S %Z"), # Character to avoid Excel parsing/stripping info
          exclude = NA, # Mark as 0 or 1
-         exclude_not_fluent = NA, # If "exclude" is 1, mark reason(s) as 1 (otherwise leave as NA)
+         exclude_copy_paste = NA, # If "exclude" is 1, mark reason(s) as 1 (otherwise leave as NA)
+         exclude_not_fluent = NA,
          exclude_random_text = NA, 
          exclude_too_short = NA,
          note = NA) %>% # Make note if needed
@@ -110,8 +111,9 @@ yi_valid_ids %>%
 # AG initially did so using the 5/22/2025 interim youth intervention data on 8/2/2025, creating the file 
 # "2025.08.02 Phase 2 Youth Qualtrics Valid Data - Intervention Free-Responses Checked.csv" (whose "EndDate" 
 # was in "America/Denver"). Given that responses in the interim and final data are the same, Jeremy Eberle 
-# manually copied AG's "exclude" ratings into the file below (whose "EndDate" is in "America/Chicago").
-filename_checked <- "2026.01.21 Phase 2 Youth Qualtrics Valid Data - Intervention Free-Responses Checked.csv"
+# manually copied AG's "exclude" ratings into the file below (whose "EndDate" is in "America/Chicago") and
+# did a second check for copy/paste responses (for the "exclude_copy_paste" column added on 4/23/2026).
+filename_checked <- "2026.04.23 Phase 2 Youth Qualtrics Valid Data - Intervention Free-Responses Checked.csv"
 
 # Load checked responses and create table of LSMH IDs meeting exclusion criteria
 yi_valid_ids_free_text_checked <- read_csv(file.path(dirs$clean_data_staging_intermediate, filename_checked)) %>%
@@ -121,7 +123,7 @@ exclude_ids <- yi_valid_ids_free_text_checked %>%
   group_by(lsmh_id) %>%
   filter(all(exclude == 1)) %>%
   ungroup() %>%
-  select(lsmh_id, exclude, exclude_not_fluent, exclude_random_text, exclude_too_short)
+  select(lsmh_id, exclude, exclude_copy_paste, exclude_not_fluent, exclude_random_text, exclude_too_short)
 
 # Save LSMH IDs meeting exclusion criteria
 # - These IDs are loaded in "Create Cohort Indicators for Flow and Analysis.R" and
