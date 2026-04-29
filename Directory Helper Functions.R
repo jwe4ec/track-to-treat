@@ -1,0 +1,44 @@
+## Helper functions for directories
+
+# Function to get directories for Phase 2 data
+get_p2_dirs <- function(type = c("raw_tracking_log_data", "raw_lifepak_data", "raw_qualtrics_data",
+                                 "clean_data_staging", "clean_data_staging_intermediate",
+                                 "clean_data_final_read_only")) {
+  
+  # Define path to "jslab/" on "resfiles" server depending on operating system
+  jslab_dir <- if (.Platform$OS.type == "windows") {
+    "R:/MSS/Schleider_Lab/jslab"
+  } else if (.Platform$OS.type == "unix") {
+    "/Volumes/fsmresfiles/MSS/Schleider_Lab/jslab"
+  } else {
+    stop("Specify path to 'jslab/' for your operating system in 'get_p2_dirs()'")
+  }
+  
+  # Build all paths using file.path(), which works across operating systems
+  raw_tracking_log_data_dir <- file.path(jslab_dir, "TRACK to TREAT P2", "Data", "Tracking Log")
+  raw_lifepak_data_dir <- file.path(jslab_dir, "TRACK to TREAT P2", "Data", "LifePak", "2025.05.21")
+  raw_qualtrics_data_dir <- file.path(jslab_dir, "TRACK to TREAT P2", "Data", "Qualtrics", "Raw", "2026.02.26_final")
+  
+  clean_data_dir <- file.path(jslab_dir, "TRACK to TREAT P2", "Data", "Clean Data (Isaac)")
+  clean_data_staging_dir <- file.path(clean_data_dir, "staging")
+  clean_data_staging_intermediate_dir <- file.path(clean_data_staging_dir, "intermediate")
+  clean_data_final_read_only_dir <- file.path(clean_data_dir, "final_read_only")
+  
+  # Select desired directories
+  all_dirs <- list(
+    raw_tracking_log_data = raw_tracking_log_data_dir,
+    raw_lifepak_data = raw_lifepak_data_dir,
+    raw_qualtrics_data = raw_qualtrics_data_dir,
+    clean_data_staging = clean_data_staging_dir,
+    clean_data_staging_intermediate = clean_data_staging_intermediate_dir,
+    clean_data_final_read_only = clean_data_final_read_only_dir
+  )
+  
+  dirs <- all_dirs[type]
+  
+  message("Using these directories:")
+  str(dirs)
+  
+  return(dirs)
+  
+}
