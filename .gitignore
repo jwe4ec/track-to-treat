@@ -3,3 +3,6 @@
 .RData
 .Ruserdata
 .positai
+
+# Environment variables used to set path to "jslab/"
+.Renviron

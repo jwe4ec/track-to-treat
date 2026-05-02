@@ -1,6 +1,11 @@
 # track-to-treat
 
-Centralized data cleaning code for Track to Treat. Data are stored in the local repository on /resfiles.
+Centralized data cleaning code for Track to Treat
+
+Data are stored locally in the `jslab/` directory on FSMResFiles
+* Set path to `jslab/` via an environment variable in a local `.Renviron` file (not pushed to GitHub):
+  * `JSLAB_DIR_WINDOWS` for Windows
+  * `JSLAB_DIR_UNIX` for macOS/Linux
 
 Old data cleaning code, including documentation (some of which informed the code in this repository), is here:
 

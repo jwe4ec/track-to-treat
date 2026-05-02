@@ -1,18 +1,33 @@
 ## Helper functions for directories
 
+# Function to get path to "jslab/" on FSMResFiles server depending on operating system
+get_jslab_dir <- function() {
+  
+  jslab_dir <- if (.Platform$OS.type == "windows") {
+    Sys.getenv("JSLAB_DIR_WINDOWS")
+  } else if (.Platform$OS.type == "unix") {
+    Sys.getenv("JSLAB_DIR_UNIX")
+  } else {
+    stop(paste("Set path to 'jslab/' for your operating system (OS) as environmental variable",
+               "in an '.Renviron' file, then update 'get_jslab_dir()' to read it for your OS"))
+  }
+  
+  if (jslab_dir == "") {
+    stop(paste("No path to 'jslab/' set in '.Renviron'. Need to set path as environmental variable",
+               "JSLAB_DIR_WINDOWS or JSLAB_DIR_UNIX (depending on your OS), in an '.Renviron' file."))
+  }
+  
+  return(jslab_dir)
+  
+}
+
 # Function to get directories for Phase 2 data
 get_p2_dirs <- function(type = c("raw_tracking_log_data", "raw_lifepak_data", "raw_qualtrics_data",
                                  "clean_data_staging", "clean_data_staging_intermediate",
                                  "clean_data_final_read_only")) {
   
-  # Define path to "jslab/" on "resfiles" server depending on operating system
-  jslab_dir <- if (.Platform$OS.type == "windows") {
-    "R:/MSS/Schleider_Lab/jslab"
-  } else if (.Platform$OS.type == "unix") {
-    "/Volumes/fsmresfiles/MSS/Schleider_Lab/jslab"
-  } else {
-    stop("Specify path to 'jslab/' for your operating system in 'get_p2_dirs()'")
-  }
+  # User helper to get path to "jslab/"
+  jslab_dir <- get_jslab_dir()
   
   # Build all paths using file.path(), which works across operating systems
   raw_tracking_log_data_dir <- file.path(jslab_dir, "TRACK to TREAT P2", "Data", "Tracking Log")
