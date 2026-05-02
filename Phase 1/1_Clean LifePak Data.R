@@ -15,23 +15,22 @@ groundhog.library(
 
 
 ## Load helper functions
+source(here("Directory Helper Functions.R"))
 source(here("Version Control Helper Functions.R"))
 
 
 ## Load data
-# Save directories
-raw_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\LifePak Raw Data (Do Not Modify)\\"
-clean_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\Clean Data (Isaac)\\"
-clean_data_staging_dir <- clean_data_dir %+% "staging\\"
-clean_data_staging_intermediate_dir <- clean_data_staging_dir %+% "intermediate\\"
+# Get directories using helper function
+dirs <- get_p1_dirs(c("raw_lifepak_data", "clean_data_staging_intermediate"))
+raw_data_dir <- dirs$raw_lifepak_data
 
 # Load NIS ("notification-initiated survey") datasets
 raw_data_paths <- list(
-  nis_1 = raw_data_dir %+% "3T_P1_V1_NIS_2020_Mar_02.csv",
-  nis_2 = raw_data_dir %+% "3T_P1_V2_NIS_2020_Mar_13.csv",
-  nis_3 = raw_data_dir %+% "3T_P1_V2_NIS_21200_958251_Download2.csv",
-  nis_4 = raw_data_dir %+% "3T_P1_V2_NIS_21200_958251_Download3.csv",
-  nis_5 = raw_data_dir %+% "3T_P1_V4_NIS.csv"
+  nis_1 = file.path(raw_data_dir, "3T_P1_V1_NIS_2020_Mar_02.csv"),
+  nis_2 = file.path(raw_data_dir, "3T_P1_V2_NIS_2020_Mar_13.csv"),
+  nis_3 = file.path(raw_data_dir, "3T_P1_V2_NIS_21200_958251_Download2.csv"),
+  nis_4 = file.path(raw_data_dir, "3T_P1_V2_NIS_21200_958251_Download3.csv"),
+  nis_5 = file.path(raw_data_dir, "3T_P1_V4_NIS.csv")
 )
 
 raw_data <- lapply(raw_data_paths, read.csv)
@@ -333,4 +332,4 @@ nis_valid <- nis_deduplicated %>%
 
 
 ####  Save Data  ####
-saveRDS(nis_valid, clean_data_staging_intermediate_dir %+% "Phase 1 LifePak Clean Data Without LSMH ID.rds")
+saveRDS(nis_valid, file.path(dirs$clean_data_staging_intermediate, "Phase 1 LifePak Clean Data Without LSMH ID.rds"))

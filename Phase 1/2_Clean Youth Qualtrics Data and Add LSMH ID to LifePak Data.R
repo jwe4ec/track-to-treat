@@ -11,32 +11,30 @@ groundhog.library(
   pkg = c("tidyverse", "lubridate", "qualtRics", "here", "openxlsx", "digest"),
   date = groundhog_date
 )
-`%+%` <- paste0
 
 
 ## Load helper functions
-source(here("Qualtrics Data Cleaning Helper Functions.R"))
+source(here("Directory Helper Functions.R"))
 source(here("Version Control Helper Functions.R"))
+source(here("Qualtrics Data Cleaning Helper Functions.R"))
 
 
 ## Load data
-# Save directories
-raw_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\Qualtrics Data\\Raw Data\\"
-clean_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\Clean Data (Isaac)\\"
-clean_data_staging_dir <- clean_data_dir %+% "staging\\"
-clean_data_staging_intermediate_dir <- clean_data_staging_dir %+% "intermediate\\"
+# Get directories using helper function
+dirs <- get_p1_dirs(c("raw_qualtrics_data", "clean_data_staging", "clean_data_staging_intermediate"))
+raw_data_dir <- dirs$raw_qualtrics_data
 
 # Load raw Qualtrics datasets (storing paths) in this format: [respondent][wave]_[administration]_raw
 # - Note: Use "timeZone" specified for date columns (e.g., "StartDate") in third row of raw CSV
-raw_data_paths <- list(yb_in_person_raw = raw_data_dir %+% "dp5_b_child_p1_numeric.csv",
-                       yb_remote_raw = raw_data_dir %+% "dp5_b_child_remote_p1_numeric.csv",
-                       y3m_raw = raw_data_dir %+% "dp5_3m_child_p1_numeric.csv")
+raw_data_paths <- list(yb_in_person_raw = file.path(raw_data_dir, "dp5_b_child_p1_numeric.csv"),
+                       yb_remote_raw    = file.path(raw_data_dir, "dp5_b_child_remote_p1_numeric.csv"),
+                       y3m_raw          = file.path(raw_data_dir, "dp5_3m_child_p1_numeric.csv"))
 
 raw_data <- lapply(raw_data_paths, read_survey, time_zone = "America/Denver")
 list2env(raw_data, envir = .GlobalEnv)
 
 # Load intermediate LifePak data
-nis_valid <- readRDS(clean_data_staging_intermediate_dir %+% "Phase 1 LifePak Clean Data Without LSMH ID.rds")
+nis_valid <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 1 LifePak Clean Data Without LSMH ID.rds"))
 
 # Load item-level codebook file
 codebook_path <- here("Phase 1", "2025.05.01 Track to Treat P1 Codebook.xlsx")
@@ -618,18 +616,18 @@ check_dups_over_time(y_clean, c("yb", "y3m"), "CDI-2 SR")
 
 ####  Save Data  ####
 # Save clean Qualtrics data
-saveRDS(y_clean, clean_data_staging_dir %+% "Phase 1 Youth Qualtrics Clean Data.rds")
+saveRDS(y_clean, file.path(dirs$clean_data_staging, "Phase 1 Youth Qualtrics Clean Data.rds"))
 
 # Save log
-saveRDS(log, clean_data_staging_dir %+% "Phase 1 Youth Qualtrics Clean Data Log.rds")
+saveRDS(log, file.path(dirs$clean_data_staging, "Phase 1 Youth Qualtrics Clean Data Log.rds"))
 
 # Save assessment windows
-saveRDS(ax_windows, clean_data_staging_intermediate_dir %+% "Phase 1 Assessment Windows.rds")
+saveRDS(ax_windows, file.path(dirs$clean_data_staging_intermediate, "Phase 1 Assessment Windows.rds"))
 
 # Save clean LifePak data with free-response items
-saveRDS(nis_valid_with_lsmh_id, clean_data_staging_dir %+% "Phase 1 LifePak Clean Data.rds")
+saveRDS(nis_valid_with_lsmh_id, file.path(dirs$clean_data_staging, "Phase 1 LifePak Clean Data.rds"))
 
 # Save clean LifePak data without free-response items (until these are deidentified)
 nis_valid_with_lsmh_id %>%
   select(-c("most_pleasant", "most_unpleasant", "other_night")) %>%
-  saveRDS(clean_data_staging_dir %+% "Phase 1 LifePak Clean Data Without Free Responses.rds")
+  saveRDS(file.path(dirs$clean_data_staging, "Phase 1 LifePak Clean Data Without Free Responses.rds"))

@@ -1,14 +1,29 @@
 ## Check overlap across Qualtrics, LifePak datasets
 # R version 4.4.3
+
+## Load packages
+library(groundhog) # 3.2.2
+groundhog_date <- "2025-03-28"
+meta.groundhog(groundhog_date)
+groundhog.library(
+  pkg = "here",
+  date = groundhog_date
+)
 `%+%` <- paste0
 
-## Load data
-clean_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\Clean Data (Isaac)\\"
-clean_data_staging_dir <- clean_data_dir %+% "staging\\"
 
-qualtrics_y <- readRDS(clean_data_staging_dir %+% "Phase 1 Youth Qualtrics Clean Data.rds")
-qualtrics_p <- readRDS(clean_data_staging_dir %+% "Phase 1 Parent Qualtrics Clean Data.rds")
-lifepak_y <- readRDS(clean_data_staging_dir %+% "Phase 1 LifePak Clean Data.rds")
+## Load helper functions
+source(here("Directory Helper Functions.R"))
+
+
+## Load data
+# Get directories using helper function
+dirs <- get_p1_dirs("clean_data_staging")
+
+# Load clean data
+qualtrics_y <- readRDS(file.path(dirs$clean_data_staging, "Phase 1 Youth Qualtrics Clean Data.rds"))
+qualtrics_p <- readRDS(file.path(dirs$clean_data_staging, "Phase 1 Parent Qualtrics Clean Data.rds"))
+lifepak_y <- readRDS(file.path(dirs$clean_data_staging, "Phase 1 LifePak Clean Data.rds"))
 
 
 ## Check overlap: youth Qualtrics to LifePak
