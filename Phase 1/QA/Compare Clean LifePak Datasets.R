@@ -6,23 +6,30 @@ library(groundhog) # 3.2.2
 groundhog_date <- "2025-03-28"
 meta.groundhog(groundhog_date)
 groundhog.library(
-  pkg = "tidyverse",
+  pkg = c("tidyverse", "here"),
   date = groundhog_date
 )
 `%+%` <- paste0
 
 
-## Load data
-# Mine
-clean_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\Clean Data (Isaac)\\"
-clean_data_staging_dir <- clean_data_dir %+% "staging\\"
+## Load helper functions
+source(here("Directory Helper Functions.R"))
 
-nis_valid <- readRDS(clean_data_staging_dir %+% "Phase 1 LifePak Clean Data.rds")
+
+## Load data
+# Get directories using helper function
+dirs <- get_p1_dirs("clean_data_staging")
+jslab_dir <- get_jslab_dir()
+
+# Mine
+nis_valid <- readRDS(file.path(dirs$clean_data_staging, "Phase 1 LifePak Clean Data.rds"))
 lp_me <- nis_valid %>%
   mutate(lifepak_id = as.numeric(lifepak_id))
 
 # Michael's
-lp_mi <- read.csv("R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\Processed Data\\2022 From Michael Mullarkey\\deid_cleaned_lifepak_ttt_phase_1.csv") %>%
+lp_mi <- read.csv(file.path(jslab_dir, "TRACK to TREAT", "Data",
+                            "Processed Data", "2022 From Michael Mullarkey",
+                            "deid_cleaned_lifepak_ttt_phase_1.csv")) %>%
   mutate(
     notification_datetime = as_datetime(notification_time),
     response_datetime = as_datetime(response_time)

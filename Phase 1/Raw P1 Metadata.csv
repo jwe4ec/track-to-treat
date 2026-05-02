@@ -1,12 +1,12 @@
 data_type,survey_name,filename,size,nrow,ncol,hash
-lifepak,TRACK to TREAT P1,3T_P1_V1_NIS_2020_Mar_02.csv,132446,426,58,f8687eb0c737220110f8acf8e5682ec607f4194f0d1f904f9348c5156db63cf7
-lifepak,TRACK to TREAT P1 - V2,3T_P1_V2_NIS_2020_Mar_13.csv,229037,936,58,6f9324e13c6f7c4e6ea4485b27cdf0737bccb97fe6c2582c62610d3152e92cb4
-lifepak,TRACK to TREAT - 00347,3T_P1_V2_NIS_21200_958251_Download2.csv,1519,1,58,c9413f16be379470935633940a9a1f5e7b57ea883a71302126e0b6b4616f2d03
-lifepak,TRACK to TREAT P1 - 00347 V2,3T_P1_V2_NIS_21200_958251_Download3.csv,6018,20,58,7b30d8175103b3fe6ad1d0c7b038df8536ae9ed7657f60d6bd56e52d85591c55
-lifepak,TRACK to TREAT P1 - V4,3T_P1_V4_NIS.csv,2642300,9863,58,4f3658bdad4171173223626bf5453a3860c598d7c5828d33a36eca96574f0a63
-y_qualtrics,TRACK to TREAT Initial Youth Survey - Phase 1 - February 10 2020,dp5_b_child_p1_numeric.csv,332324,38,409,647169f0481a506e7969decfd9e7d0eb54a118d45b20247e6ff14ed7c22d9270
-y_qualtrics,DP-5 - Youth Survey REMOTE - Phase 1,dp5_b_child_remote_p1_numeric.csv,954024,104,592,71003d444009be4d3f5d497dc0ae919e83ed29aa19e3698f23dbbe85c1d880ae
-y_qualtrics,DP-5 - 3M - Youth Survey REMOTE - Phase 1,dp5_3m_child_p1_numeric.csv,1124699,227,583,fcf9bccf96908fc7799b79d17f079533d7b947e99537bcdb4775b056d6986c17
-p_qualtrics,Track to Treat PARENT MEASURES - Phase 1 - February 8 2020,dp5_b_parent_p1_numeric.csv,78393,25,272,cefd23229b1927244e68933d420815c93483fb751545f6d5d1e863d56d9526b6
-p_qualtrics,DP-5 - PARENT MEASURES REMOTE - Phase 1,dp5_b_parent_remote_p1_numeric.csv,279083,109,495,b36260dba3578fdcdd54982d7529e42c936e96ee0abfaa57c90eb11caf2f9464
-p_qualtrics,DP-5 - 3M - PARENT MEASURES REMOTE - Phase 1,dp5_3m_parent_p1_numeric.csv,271271,107,489,b2ff754d21fe26572cac194a5a26e01243cfb29d45a3d391579438e10b61d1b7
+lifepak,TRACK to TREAT P1,3T_P1_V1_NIS_2020_Mar_02.csv,132446,426,58,000a1d2f92f58fafe4c5f1e032b6558760f68cdbaf5dc363ba1a727b414e5d90
+lifepak,TRACK to TREAT P1 - V2,3T_P1_V2_NIS_2020_Mar_13.csv,229037,936,58,13b4247454ef1a0aa31249af5e8e05931bf9103630eb5ca447a4f45d9769b948
+lifepak,TRACK to TREAT - 00347,3T_P1_V2_NIS_21200_958251_Download2.csv,1519,1,58,1f2161ee2d8344485f3190ed5b59f28d7c479b5256fdf0dab92419bedc56b78e
+lifepak,TRACK to TREAT P1 - 00347 V2,3T_P1_V2_NIS_21200_958251_Download3.csv,6018,20,58,87071850afde6a392ad751a3be5816723bd4bf25555bbdb95e9211d83da8e9af
+lifepak,TRACK to TREAT P1 - V4,3T_P1_V4_NIS.csv,2642300,9863,58,2831a1f325683c2b9d7b06d1eb4f6b612bc96619c04e2672dab98732b6461c92
+y_qualtrics,TRACK to TREAT Initial Youth Survey - Phase 1 - February 10 2020,dp5_b_child_p1_numeric.csv,332324,38,409,dff8e83cdfce60e5075d6aa8181543477b02ad95fc162952e79989ecc49f5255
+y_qualtrics,DP-5 - Youth Survey REMOTE - Phase 1,dp5_b_child_remote_p1_numeric.csv,954024,104,592,f25a3dcc9978697ab6f01a1794ecbea24b57938daf337ba601cb92d85b44f1b6
+y_qualtrics,DP-5 - 3M - Youth Survey REMOTE - Phase 1,dp5_3m_child_p1_numeric.csv,1124699,227,583,d4e42687a006a44e28eb5f714072427679e3612511c262148a2058a24194be96
+p_qualtrics,Track to Treat PARENT MEASURES - Phase 1 - February 8 2020,dp5_b_parent_p1_numeric.csv,78393,25,272,9170e658faad508120e2d5a287f2fd7b6aa21512b1197b30c6715f3fc0d95c35
+p_qualtrics,DP-5 - PARENT MEASURES REMOTE - Phase 1,dp5_b_parent_remote_p1_numeric.csv,279083,109,495,ef2aa478d6f3ceecea58e316dcde486d8485866bdcdd59d48d0eecb7e085d4b2
+p_qualtrics,DP-5 - 3M - PARENT MEASURES REMOTE - Phase 1,dp5_3m_parent_p1_numeric.csv,271271,107,489,3e454baa8b5faa6cfc7886cf6a24d456c70b307926b1bcf029d034654aa852b9

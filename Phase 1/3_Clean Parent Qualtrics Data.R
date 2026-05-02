@@ -11,34 +11,32 @@ groundhog.library(
   pkg = c("tidyverse", "qualtRics", "here", "openxlsx", "digest"),
   date = groundhog_date
 )
-`%+%` <- paste0
 
 
 ## Load helper functions
-source(here("Qualtrics Data Cleaning Helper Functions.R"))
+source(here("Directory Helper Functions.R"))
 source(here("Version Control Helper Functions.R"))
+source(here("Qualtrics Data Cleaning Helper Functions.R"))
 
 
 ## Load data
-# Save directories
-raw_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\Qualtrics Data\\Raw Data\\"
-clean_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\Clean Data (Isaac)\\"
-clean_data_staging_dir <- clean_data_dir %+% "staging\\"
-clean_data_staging_intermediate_dir <- clean_data_staging_dir %+% "intermediate\\"
+# Get directories using helper function
+dirs <- get_p1_dirs(c("raw_qualtrics_data", "clean_data_staging", "clean_data_staging_intermediate"))
+raw_data_dir <- dirs$raw_qualtrics_data
 
 # Load raw parent Qualtrics datasets (storing paths) in this format: [respondent][wave]_[administration]_raw
 # - Note: Use "timeZone" specified for date columns (e.g., "StartDate") in third row of raw CSV
 raw_data_paths <- list(
-  pb_in_person_raw = raw_data_dir %+% "dp5_b_parent_p1_numeric.csv",
-  pb_remote_raw = raw_data_dir %+% "dp5_b_parent_remote_p1_numeric.csv",
-  p3m_raw = raw_data_dir %+% "dp5_3m_parent_p1_numeric.csv"
+  pb_in_person_raw = file.path(raw_data_dir, "dp5_b_parent_p1_numeric.csv"),
+  pb_remote_raw    = file.path(raw_data_dir, "dp5_b_parent_remote_p1_numeric.csv"),
+  p3m_raw          = file.path(raw_data_dir, "dp5_3m_parent_p1_numeric.csv")
 )
 
 raw_data <- lapply(raw_data_paths, read_survey, time_zone = "America/Denver")
 list2env(raw_data, envir = .GlobalEnv)
 
 # Load assessment windows computed when cleaning youth Qualtrics data
-ax_windows <- readRDS(clean_data_staging_intermediate_dir %+% "Phase 1 Assessment Windows.rds")
+ax_windows <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 1 Assessment Windows.rds"))
 
 # Load item-level codebook file
 codebook_path <- here("Phase 1", "2025.05.01 Track to Treat P1 Codebook.xlsx")
@@ -653,7 +651,7 @@ walk(
 
 ####  Save Data  ####
 # Save clean parent Qualtrics data
-saveRDS(p_clean, clean_data_staging_dir %+% "Phase 1 Parent Qualtrics Clean Data.rds")
+saveRDS(p_clean, file.path(dirs$clean_data_staging, "Phase 1 Parent Qualtrics Clean Data.rds"))
 
 # Save log
-saveRDS(log, clean_data_staging_dir %+% "Phase 1 Parent Qualtrics Clean Data Log.rds")
+saveRDS(log, file.path(dirs$clean_data_staging, "Phase 1 Parent Qualtrics Clean Data Log.rds"))
