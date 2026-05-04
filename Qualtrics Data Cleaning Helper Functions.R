@@ -333,13 +333,14 @@ mark_b_done_in_ax_window <- function(data, id_as_char, ema_notif_dates) {
   data <- data %>%
     left_join(ema_notif_dates, by = id_as_char, relationship = "many-to-one") %>%
   
-    # Compute indicator of survey completion before first EMA notification
+    # Compute indicator of survey completion within 7 days before first EMA notification
     # Note: Given that "EndDate" and "first_ema_notif_date" are in different time
     # zones ("America/Denver" for Phase 1 vs. participants' local times stored as 
     # UTC, respectively), this comparison is approximate. To rule out the role of 
     # time zone differences, derive actual time zones for "first_ema_notif_date" 
     # from LifePak GPS data (although GPS data are missing for some observations)
-    mutate(in_window_b = as_date(EndDate) < first_ema_notif_date)
+    mutate(in_window_b = as_date(EndDate) >= first_ema_notif_date - days(7) & 
+             as_date(EndDate) <= first_ema_notif_date - days(1))
     
   # Throw warning if any surveys were not completed in this window (in which case 
   # further analysis to rule out role of differing time zones is warranted)
@@ -1020,7 +1021,42 @@ check_dups_over_time <- function(data, prefixes, .measure, .subscale, exclude) {
 
 }
 
-# Function to load and clean Phase 2 codebook, as this is done in each script
+# Function to load Phase 1 codebook
+load_p1_codebook <- function(codebook_path) {
+  
+  sheet_name <- "Qualtrics Variables"
+  (sheet_last_row <- nrow(openxlsx::read.xlsx(codebook_path, sheet_name)) + 1) # Add 1 for header row
+  
+  codebook <- openxlsx::read.xlsx(
+    codebook_path,
+    sheet_name,
+    rows = c(1, 3:sheet_last_row) # Skip column description row
+  ) %>%
+    # Select only necessary variables
+    select(
+      item = Variable.Name,
+      measure = Measure,
+      subscale = Subscale,
+      minimum = Minimum,
+      maximum = Maximum,
+      reversed = `Is.the.variable.reverse.coded?`
+    ) %>%
+    mutate(
+      # Make `reversed` logical
+      reversed = reversed == 1,
+      # Create `reverse_base`: the number a response should be subtracted from to reverse it
+      reverse_base = if_else(
+        reversed,
+        maximum + minimum,
+        NA_real_
+      )
+    )
+  
+  return(codebook)
+  
+}
+
+# Function to load and clean Phase 2 codebook
 load_p2_codebook <- function(codebook_path) {
   
   sheet_name <- "Qualtrics Measure Variables"

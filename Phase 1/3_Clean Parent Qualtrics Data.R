@@ -39,34 +39,7 @@ list2env(raw_data, envir = .GlobalEnv)
 ax_windows <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 1 Assessment Windows.rds"))
 
 # Load item-level codebook file
-codebook_path <- here("Phase 1", "2025.05.01 Track to Treat P1 Codebook.xlsx")
-sheet_name <- "Qualtrics Variables"
-(sheet_last_row <- nrow(openxlsx::read.xlsx(codebook_path, sheet_name)) + 1) # Add 1 for header row
-
-codebook <- openxlsx::read.xlsx(
-  codebook_path,
-  sheet_name,
-  rows = c(1, 3:sheet_last_row) # Skip column description row
-) %>%
-  # Select only necessary variables
-  select(
-    item = Variable.Name,
-    measure = Measure,
-    subscale = Subscale,
-    minimum = Minimum,
-    maximum = Maximum,
-    reversed = `Is.the.variable.reverse.coded?`
-  ) %>%
-  mutate(
-    # Make `reversed` logical
-    reversed = reversed == 1,
-    # Create `reverse_base`: the number a response should be subtracted from to reverse it
-    reverse_base = if_else(
-      reversed,
-      maximum + minimum,
-      NA_real_
-    )
-  )
+codebook <- load_p1_codebook(here("Phase 1", "2025.05.01 Track to Treat P1 Codebook.xlsx"))
 
 
 ## Check raw Qualtrics data versions using helper function
@@ -133,16 +106,20 @@ pb_valid_ids <- compute_item_completion_rate(pb_valid_ids, "pb")
 p3m_valid_ids <- compute_item_completion_rate(p3m_valid_ids, "p3m")
 
 
-### Remove any baseline surveys (a) outside assessment window or (b) duplicated in window
+### Remove any baseline surveys (a) outside assessment window (or for parents of
+# any youth who did not start EMA, but all youth did) or (b) duplicated in window
 # Obtain EMA notification dates from assessment windows computed when cleaning youth Qualtrics data
 ema_notif_dates <- ax_windows[, c("lsmh_id", "first_ema_notif_date", "last_ema_notif_date", "end_ema_period")]
 
 # Compute indicator of baseline survey completion in window using helper function
+# - Baseline surveys were intended to be completed the day before the first EMA
+# notification. Although all youth did so, one parent completed "pb" 7 days early.
+# Thus, the window's start date is extended earlier by a reasonable 7 days.
 pb_valid_ids <- mark_b_done_in_ax_window(pb_valid_ids, "pb_lsmh_id", ema_notif_dates)
 
 # Print and remove any baseline surveys outside window (0)
 pb_valid_ids %>%
-  filter(!in_window_b) %>%
+  filter(!in_window_b | is.na(in_window_b)) %>%
   select(pb_lsmh_id, "StartDate", "EndDate", "first_ema_notif_date", "in_window_b", "item_completion_rate") %>%
   arrange(pb_lsmh_id, EndDate)
 
@@ -156,13 +133,14 @@ pb_deduplicated <- remove_duplicates(pb_valid_ids, pb_lsmh_id)
 identify_duplicates(pb_deduplicated, pb_lsmh_id)
 
 
-### Remove any follow-up surveys (a) outside assessment window or (b) duplicated in window
+### Remove any follow-up surveys (a) outside assessment window (or for parents of any youth who
+# did not complete baseline survey in window, but all youth did) or (b) duplicated in window
 # Compute indicators of 3-month survey completion in window using helper function
 p3m_valid_ids <- mark_3m_done_in_ax_window(p3m_valid_ids, "p3m_lsmh_id", ax_windows)
 
 # Print and remove 3-month surveys outside window
 p3m_valid_ids %>%
-  filter(!in_window_3m_ext) %>%
+  filter(!in_window_3m_ext | is.na(in_window_3m_ext)) %>%
   select(p3m_lsmh_id, "StartDate", "EndDate", "start_window_3m_org", "end_window_3m_org",
          "in_window_3m_org", "days_before_start_window_3m_org", "days_after_end_window_3m_org",
          "start_window_3m_ext", "end_window_3m_ext", "in_window_3m_ext", "item_completion_rate") %>%
