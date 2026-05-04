@@ -11,62 +11,33 @@ groundhog.library(
   pkg = c("tidyverse", "lubridate", "qualtRics", "here", "openxlsx", "digest"),
   date = groundhog_date
 )
-`%+%` <- paste0
 
 
 ## Load helper functions
-source(here("Qualtrics Data Cleaning Helper Functions.R"))
+source(here("Directory Helper Functions.R"))
 source(here("Version Control Helper Functions.R"))
+source(here("Qualtrics Data Cleaning Helper Functions.R"))
 
 
 ## Load data
-# Save directories
-raw_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\Qualtrics Data\\Raw Data\\"
-clean_data_dir <- "R:\\MSS\\Schleider_Lab\\jslab\\TRACK to TREAT\\Data\\Clean Data (Isaac)\\"
-clean_data_staging_dir <- clean_data_dir %+% "staging\\"
-clean_data_staging_intermediate_dir <- clean_data_staging_dir %+% "intermediate\\"
+# Get directories using helper function
+dirs <- get_p1_dirs(c("raw_qualtrics_data", "clean_data_staging", "clean_data_staging_intermediate"))
+raw_data_dir <- dirs$raw_qualtrics_data
 
 # Load raw Qualtrics datasets (storing paths) in this format: [respondent][wave]_[administration]_raw
 # - Note: Use "timeZone" specified for date columns (e.g., "StartDate") in third row of raw CSV
-raw_data_paths <- list(yb_in_person_raw = raw_data_dir %+% "dp5_b_child_p1_numeric.csv",
-                       yb_remote_raw = raw_data_dir %+% "dp5_b_child_remote_p1_numeric.csv",
-                       y3m_raw = raw_data_dir %+% "dp5_3m_child_p1_numeric.csv")
+raw_data_paths <- list(yb_in_person_raw = file.path(raw_data_dir, "dp5_b_child_p1_numeric.csv"),
+                       yb_remote_raw    = file.path(raw_data_dir, "dp5_b_child_remote_p1_numeric.csv"),
+                       y3m_raw          = file.path(raw_data_dir, "dp5_3m_child_p1_numeric.csv"))
 
 raw_data <- lapply(raw_data_paths, read_survey, time_zone = "America/Denver")
 list2env(raw_data, envir = .GlobalEnv)
 
 # Load intermediate LifePak data
-nis_valid <- readRDS(clean_data_staging_intermediate_dir %+% "Phase 1 LifePak Clean Data Without LSMH ID.rds")
+nis_valid <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 1 LifePak Clean Data Without LSMH ID.rds"))
 
 # Load item-level codebook file
-codebook_path <- here("Phase 1", "2025.05.01 Track to Treat P1 Codebook.xlsx")
-sheet_name <- "Qualtrics Variables"
-(sheet_last_row <- nrow(openxlsx::read.xlsx(codebook_path, sheet_name)) + 1) # Add 1 for header row
-
-codebook <- openxlsx::read.xlsx(
-  codebook_path,
-  sheet_name,
-  rows = c(1, 3:sheet_last_row) # Skip column description row
-) %>%
-  # Select only necessary variables
-  select(
-    item = Variable.Name,
-    measure = Measure,
-    subscale = Subscale,
-    minimum = Minimum,
-    maximum = Maximum,
-    reversed = `Is.the.variable.reverse.coded?`
-  ) %>%
-  mutate(
-    # Make `reversed` logical
-    reversed = reversed == 1,
-    # Create `reverse_base`: the number a response should be subtracted from to reverse it
-    reverse_base = if_else(
-      reversed,
-      maximum + minimum,
-      NA_real_
-    )
-  )
+codebook <- load_p1_codebook(here("Phase 1", "2025.05.01 Track to Treat P1 Codebook.xlsx"))
 
 
 ## Check raw Qualtrics data versions using helper function
@@ -167,7 +138,8 @@ yb_valid_ids <- compute_item_completion_rate(yb_valid_ids, "yb")
 y3m_valid_ids <- compute_item_completion_rate(y3m_valid_ids, "y3m")
 
 
-### Remove any baseline surveys (a) outside assessment window or (b) duplicated in window
+### Remove any baseline surveys (a) outside assessment window (or for any youth
+# who did not start EMA, but all did) or (b) duplicated in window
 # Obtain EMA notification dates from LifePak data and compute end of EMA period
 ema_notif_dates <- nis_valid_with_lsmh_id %>%
   group_by(lifepak_id) %>%
@@ -180,11 +152,15 @@ ema_notif_dates <- nis_valid_with_lsmh_id %>%
   )
 
 # Compute indicator of baseline survey completion in window using helper function
+# - Baseline surveys were intended to be completed the day before the first EMA
+# notification. Although all youth did so, one parent completed "pb" 7 days early
+# (see "Clean Parent Qualtrics Data.R"). Thus, the window's start date is extended
+# earlier by a reasonable 7 days.
 yb_valid_ids <- mark_b_done_in_ax_window(yb_valid_ids, "yb_lsmh_id", ema_notif_dates)
 
 # Print and remove any baseline surveys outside window (0)
 yb_valid_ids %>%
-  filter(!in_window_b) %>%
+  filter(!in_window_b | is.na(in_window_b)) %>%
   select(yb_lsmh_id, "StartDate", "EndDate", "first_ema_notif_date", "in_window_b", "item_completion_rate") %>%
   arrange(yb_lsmh_id, EndDate)
 
@@ -198,7 +174,8 @@ yb_deduplicated <- remove_duplicates(yb_valid_ids, yb_lsmh_id)
 identify_duplicates(yb_deduplicated, yb_lsmh_id)
 
 
-### Remove any follow-up surveys (a) outside assessment window or (b) duplicated in window
+### Remove any follow-up surveys (a) outside assessment window (or for any youth who
+# did not complete baseline survey in window, but all did) or (b) duplicated in window
 # Compute potential assessment windows based on baseline survey completion date
 # - In Phase I, 3-month assessment window start dates were computed manually by adding 3 
 # to the month number and then rolling to the last real date of the prior month when this
@@ -208,9 +185,9 @@ identify_duplicates(yb_deduplicated, yb_lsmh_id)
 # which rolls forward to the closest real date (not necessarily the first date of
 # the next month). In R: "seq(as_date(EndDate), by = "3 months", length.out = 2)[2]".
 # - End dates for windows were not recorded. Thus, have leeway and use Phase II formula
-# above (more forgiving) to compute end dates from start dates for the original window.
-# - Because some surveys were completed late, also compute an extended window that
-# extends the original window's end date by a reasonable 14 days.
+# above (more forgiving) to compute end dates from start dates for the original window
+# - Because some surveys were completed late (none were completed early), also compute 
+# an extended window that extends the original window's end date by a reasonable 14 days
 ax_windows <- yb_deduplicated %>%
   select(
     lsmh_id = yb_lsmh_id, 
@@ -232,7 +209,7 @@ y3m_valid_ids <- mark_3m_done_in_ax_window(y3m_valid_ids, "y3m_lsmh_id", ax_wind
 
 # Print and remove 3-month surveys outside window
 y3m_valid_ids %>%
-  filter(!in_window_3m_ext) %>%
+  filter(!in_window_3m_ext | is.na(in_window_3m_ext)) %>%
   select(y3m_lsmh_id, "StartDate", "EndDate", "start_window_3m_org", "end_window_3m_org",
          "in_window_3m_org", "days_before_start_window_3m_org", "days_after_end_window_3m_org",
          "start_window_3m_ext", "end_window_3m_ext", "in_window_3m_ext", "item_completion_rate") %>%
@@ -618,18 +595,18 @@ check_dups_over_time(y_clean, c("yb", "y3m"), "CDI-2 SR")
 
 ####  Save Data  ####
 # Save clean Qualtrics data
-saveRDS(y_clean, clean_data_staging_dir %+% "Phase 1 Youth Qualtrics Clean Data.rds")
+saveRDS(y_clean, file.path(dirs$clean_data_staging, "Phase 1 Youth Qualtrics Clean Data.rds"))
 
 # Save log
-saveRDS(log, clean_data_staging_dir %+% "Phase 1 Youth Qualtrics Clean Data Log.rds")
+saveRDS(log, file.path(dirs$clean_data_staging, "Phase 1 Youth Qualtrics Clean Data Log.rds"))
 
 # Save assessment windows
-saveRDS(ax_windows, clean_data_staging_intermediate_dir %+% "Phase 1 Assessment Windows.rds")
+saveRDS(ax_windows, file.path(dirs$clean_data_staging_intermediate, "Phase 1 Assessment Windows.rds"))
 
 # Save clean LifePak data with free-response items
-saveRDS(nis_valid_with_lsmh_id, clean_data_staging_dir %+% "Phase 1 LifePak Clean Data.rds")
+saveRDS(nis_valid_with_lsmh_id, file.path(dirs$clean_data_staging, "Phase 1 LifePak Clean Data.rds"))
 
 # Save clean LifePak data without free-response items (until these are deidentified)
 nis_valid_with_lsmh_id %>%
   select(-c("most_pleasant", "most_unpleasant", "other_night")) %>%
-  saveRDS(clean_data_staging_dir %+% "Phase 1 LifePak Clean Data Without Free Responses.rds")
+  saveRDS(file.path(dirs$clean_data_staging, "Phase 1 LifePak Clean Data Without Free Responses.rds"))

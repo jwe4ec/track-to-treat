@@ -1,4 +1,4 @@
-## Track-to-Treat Phase 1 Data Cleaning
+## Track-to-Treat Phase 2 Data Cleaning
 ## Create clean data release
 # R version 4.4.3
 
@@ -11,16 +11,15 @@ groundhog.library(
   pkg = "here",
   date = groundhog_date
 )
-`%+%` <- paste0
 
 
-## Load helper function
+## Load helper functions
 source(here("Directory Helper Functions.R"))
 source(here("Version Control Helper Functions.R"))
 
 
 ## Get directories using helper function
-dirs <- get_p1_dirs(c("clean_data_staging", "clean_data_final_read_only"))
+dirs <- get_p2_dirs(c("clean_data_staging", "clean_data_final_read_only"))
 
 
 
@@ -54,13 +53,14 @@ dirs <- get_p1_dirs(c("clean_data_staging", "clean_data_final_read_only"))
 create_data_release(
   dirs$clean_data_staging,
   dirs$clean_data_final_read_only,
-  phase = 1,
+  phase = 2,
   staged_filenames = c(
-    "Phase 1 Youth Qualtrics Clean Data.rds",
-    "Phase 1 Youth Qualtrics Clean Data Log.rds",
-    "Phase 1 Parent Qualtrics Clean Data.rds",
-    "Phase 1 Parent Qualtrics Clean Data Log.rds",
-    "Phase 1 LifePak Clean Data.rds",
-    "Phase 1 LifePak Clean Data Without Free Responses.rds"
+    "Phase 2 Youth Qualtrics Clean Data - All Waves.rds",
+    "Phase 2 Youth Qualtrics Clean Data Log - All Waves.rds",
+    "Phase 2 Parent Qualtrics Clean Data - All Waves.rds",
+    "Phase 2 Parent Qualtrics Clean Data Log - All Waves.rds",
+    "Phase 2 LifePak Clean Data.rds",
+    "Phase 2 LifePak Clean Data Without Free Responses.rds",
+    "Phase 2 Cohort Indicators for Flow and Analysis.rds"
   )
 )

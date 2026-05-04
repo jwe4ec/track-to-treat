@@ -1,5 +1,5 @@
-#### Helper function to check raw data versions ####
-check_raw_data_ver <- function(raw_metadata, path_ls, data_ls, data_type,
+####  Helper function to check raw data versions for Phases 1-2  ####
+check_raw_data_ver <- function(raw_metadata, path_ls, data_ls, data_types,
                                write_loaded_raw_metadata = FALSE) {
   
   # Get metadata of loaded raw data files
@@ -7,7 +7,7 @@ check_raw_data_ver <- function(raw_metadata, path_ls, data_ls, data_type,
                                     size = sapply(path_ls, function(x) file.info(x)$size),
                                     nrow = sapply(data_ls, nrow),
                                     ncol = sapply(data_ls, ncol),
-                                    hash = sapply(path_ls, digest, algo = "sha256"),
+                                    hash = sapply(path_ls, digest, algo = "sha256", file = TRUE),
                                     row.names = NULL)
   
   # Optionally export loaded metadata (for help building "Raw <P1/P2> Metadata.csv"
@@ -20,7 +20,7 @@ check_raw_data_ver <- function(raw_metadata, path_ls, data_ls, data_type,
   }
   
   # Compare metadata of loaded raw data files to metadata expected
-  expected_raw_metadata <- raw_metadata[raw_metadata$data_type == data_type, ]
+  expected_raw_metadata <- raw_metadata[raw_metadata$data_type %in% data_types, ]
   expected_raw_metadata[, c("data_type", "survey_name")] <- NULL
   row.names(expected_raw_metadata) <- 1:nrow(expected_raw_metadata)
 
@@ -42,11 +42,11 @@ check_raw_data_ver <- function(raw_metadata, path_ls, data_ls, data_type,
 
 }
 
-#### Helper function to create versioned clean data release ####
-create_data_release <- function(clean_data_staging_dir, clean_data_final_dir, staged_filenames) {
+####  Helper function to create versioned clean data release for Phases 1-2  ####
+create_data_release <- function(clean_data_staging_dir, clean_data_final_dir, phase, staged_filenames) {
   
   ### Load staged files into named list
-  staged_files <- lapply(paste0(clean_data_staging_dir, "\\", staged_filenames), readRDS)
+  staged_files <- lapply(file.path(clean_data_staging_dir, staged_filenames), readRDS)
   names(staged_files) <- staged_filenames
   
   ### Obtain version info from user via console (preventing storage of info in script, 
@@ -56,7 +56,7 @@ create_data_release <- function(clean_data_staging_dir, clean_data_final_dir, st
   
   ## Obtain version number from user via console and ensure correct format
   repeat {
-    ver_prompt <- "Enter a version number in this format (e.g., v0.1): "
+    ver_prompt <- paste("Enter a version number for Phase", phase, "data in this format (e.g., v0.1): ")
     version <- readline(ver_prompt)
     
     if (!grepl("v", version) | !grepl("\\.", version)) {
@@ -108,7 +108,7 @@ create_data_release <- function(clean_data_staging_dir, clean_data_final_dir, st
   cat("A folder named '", folder_name, "' will be created in:\n", 
       clean_data_final_dir, "\n\n",
       
-      "Containing these clean data files (named per 'system_date'):\n", 
+      "Containing these Phase ", phase, " clean data files (named per 'system_date'):\n", 
       paste(names(staged_files), collapse = "\n"), "\n\n",
       
       "And this README noting the 'cleaning_code_date' and other info:\n",
@@ -123,19 +123,19 @@ create_data_release <- function(clean_data_staging_dir, clean_data_final_dir, st
   }
   
   ## Create folder
-  clean_data_final_folder_dir <- paste0(clean_data_final_dir, folder_name, "\\")
+  clean_data_final_folder_dir <- file.path(clean_data_final_dir, folder_name)
   dir.create(clean_data_final_folder_dir)
   
   ## Save clean data files to folder
   lapply(names(staged_files), function(staged_filename) {
     saveRDS(staged_files[[staged_filename]],
-            file = paste0(clean_data_final_folder_dir, staged_filename))
+            file = file.path(clean_data_final_folder_dir, staged_filename))
   })
   
   ## Save README file to folder
-  sink(file = paste0(clean_data_final_folder_dir, readme_name))
+  sink(file = file.path(clean_data_final_folder_dir, readme_name))
   
-  cat("Clean Data for Project Track-to-Treat\n",
+  cat("Clean Data for Phase ", phase, " of Project Track-to-Treat\n",
       "Contributors: Isaac Ahuvia, Jeremy Eberle, Alyssa Gorkin\n\n",
       
       "This folder, the following clean data files it contains, and this README\n",
@@ -143,7 +143,7 @@ create_data_release <- function(clean_data_staging_dir, clean_data_final_dir, st
       
       "Repository URL and README: https://github.com/isaacahuvia/track-to-treat\n\n",
       
-      "The code as of ", cleaning_code_date, " was run on ", system_date, " by the person below,\n",
+      "The Phase ", phase, " code as of ", cleaning_code_date, " was run on ", system_date, " by the person below,\n",
       "who assigned the following version number\n\n",
       
       "Version:    ", version, "\n",

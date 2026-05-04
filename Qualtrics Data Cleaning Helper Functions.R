@@ -1,9 +1,53 @@
 ## Helper functions for Qualtrics data cleaning
 
-# New syntax to paste strings together
+# New syntax to paste strings together for Phases 1-2
 `%+%` <- paste0
 
-# Function to drop invalid responses
+# Function to resolve pairs of IDs in generic ways (for use in case_when() ) for Phase 2
+resolve_id_pair <- function(id1, id2) {
+  id1_name <- deparse(substitute(id1))
+  id2_name <- deparse(substitute(id2))
+  
+  case_when(
+    
+    # Cases where both match
+    id1 == id2 ~ id1,
+    
+    # Cases where one is missing (keep the non-missing value)
+    is.na(id2) & !is.na(id1) ~ id1,
+    is.na(id1) & !is.na(id2) ~ id2,
+    
+    # Cases where both are missing
+    is.na(id1) & is.na(id2) ~ NA_character_,
+    
+    # Additional cases are flagged for cleaning
+    TRUE ~ paste0("ID combination unaccounted for (", 
+                  id1_name, " '", id1, "', ", id2_name, " '", id2, "')")
+    
+  )
+  
+}
+
+# Function to warn about LSMH IDs or LifePak IDs with invalid format for Phase 2
+warn_invalid_id_format <- function(ids, type = "lsmh_id") {
+  
+  if (type == "lsmh_id") {
+    # Find non-NA IDs that don't match "LSMH" followed by 5 digits
+    ids_invalid_format <- ids[!is.na(ids) & !grepl("^LSMH\\d{5}$", ids)]
+  } else if (type == "lifepak_id") {
+    # Find non-NA IDs that don't have 6 digits
+    ids_invalid_format <- ids[!is.na(ids) & !grepl("^\\d{6}$", ids)]
+  }
+  
+  if (length(ids_invalid_format) > 0) {
+    warning("Invalid ID format for:\n", paste(" ", ids_invalid_format, collapse = "\n"))
+  } else {
+    message("No invalid ID formats")
+  }
+
+}
+
+# Function to drop invalid responses for Phase 1
 remove_invalid_responses <- function(data, id) {
   
   # Taking the data, filter out cases where ID variable is missing (unclear why) or in invalid_ids
@@ -32,8 +76,61 @@ remove_invalid_responses <- function(data, id) {
   
 }
 
-# Function to fill LifePak ID across duplicates (there is at least one case where a 
-# respondent provided their LifePak ID only in a duplicated, noncomplete response)
+# Function to drop invalid Phase 2 Qualtrics responses
+remove_invalid_p2_qualtrics_responses <- function(data, id_lookup) {
+  
+  # Get known valid LSMH IDs (avoiding tidylog output)
+  valid_ids <- id_lookup %>%
+    dplyr::filter(action == "keep") %>%
+    dplyr::distinct(lsmh_id)
+  
+  # Filter to known valid LSMH IDs
+  message("Filtering to known valid LSMH IDs:")
+  
+  out <- data %>%
+    inner_join(
+      valid_ids,
+      by = "lsmh_id",
+      relationship = "many-to-one"
+    )
+  
+  # Distinguish known invalid LSMH IDs from unknown LSMH IDs
+  # - Can't base invalid LSMH IDs on "action = 'drop'" in ID lookup because some 
+  # LSMH IDs have both "keep" and "drop" rows in ID lookup
+
+  invalid_or_unknown_ids <- unique(setdiff(data$lsmh_id, valid_ids$lsmh_id))
+  
+  invalid_ids <- intersect(invalid_or_unknown_ids, id_lookup$lsmh_id)
+  unknown_ids <- setdiff(invalid_or_unknown_ids, id_lookup$lsmh_id)
+  
+  # Print number of rows removed for known invalid LSMH IDs (avoiding tidylog output)
+  
+  rows_rm_invalid_ids <- data %>%
+    dplyr::filter(lsmh_id %in% invalid_ids) %>%
+    dplyr::count(lsmh_id)
+  
+  message("Just FYI, ", sum(rows_rm_invalid_ids$n), " rows removed for ",
+          length(invalid_ids), " known invalid LSMH IDs:")
+  
+  print(rows_rm_invalid_ids)
+  
+  # Print number of rows removed for unknown LSMH IDs (avoiding tidylog output)
+  rows_rm_unknown_ids <- data %>%
+    dplyr::filter(lsmh_id %in% unknown_ids) %>%
+    dplyr::count(lsmh_id)
+  
+  message("Just FYI, ", sum(rows_rm_unknown_ids$n), " rows removed for ",
+          length(unknown_ids), " unknown LSMH IDs ",
+          "(if these rows show errors in IDs, fix them in mutate() above):")
+  
+  print(rows_rm_unknown_ids)
+  
+  return(out)
+  
+}
+
+# Function to fill LifePak ID across duplicates for Phase 1 (there is at least one case 
+# where a respondent gave their LifePak ID only in a duplicated, noncomplete response)
 fill_lifepak_id <- function(data, lsmh_id, lifepak_id) {
 
   ## Check that each LSMH ID has <= 1 LifePak ID
@@ -57,22 +154,28 @@ fill_lifepak_id <- function(data, lsmh_id, lifepak_id) {
   
 }
 
-# Function to identify duplicates
-identify_duplicates <- function(data, id) {
+# Function to identify duplicates for Phases 1-2
+identify_duplicates <- function(data, id, completion_indicator = Finished, phase = 1) {
   
-  # Taking the data...
-  out <- data %>%
-    # ... filter out cases where the ID is missing or in invalid_ids...
-    filter(
-      !is.na({{id}}),
-      !{{id}} %in% invalid_ids
-    ) %>%
-    # ... then, grouping by the ID variable...
+  if (phase == 1) {
+    # Filter out cases where the ID is missing or in invalid_ids
+    data_filtered <- data %>%
+      filter(
+        !is.na({{id}}),
+        !{{id}} %in% invalid_ids
+      )
+  } else if (phase == 2) {
+    # Data have already been filtered to valid IDs
+    data_filtered <- data
+  }
+  
+  out <- data_filtered %>%
+    # ... Now, grouping by the ID variable...
     group_by({{id}}) %>%
     # ... count the total number of rows and the number of rows with completed responses.
     summarize(
       total = n(),
-      complete = sum(Finished)
+      complete = sum({{completion_indicator}})
     ) %>%
     # Finally, arrange the dataset such that duplicates are at the top
     arrange(desc(complete), desc(total))
@@ -92,37 +195,117 @@ identify_duplicates <- function(data, id) {
   
 }
 
-# Function to compute item completion rate
-compute_item_completion_rate <- function(data, survey_prefix) {
+# Function to remove click and page time variables for Phase 2
+rm_click_page_time_vars <- function(data) {
   
-  # Metadata columns
-  qualtrics_metadata <- c(
+  data %>% select(
+    -matches("Click Count"),
+    -matches("First Click"),
+    -matches("Last Click"),
+    -matches("Page Submit")
+    )
+  
+}
+
+# Function to rename "mvps" to "mpvs" throughout for Phase 2
+rename_mvps_to_mpvs <- function(data) {
+  
+  data %>% rename_with(
+    .cols = contains("mvps"),
+    .fn = ~ gsub("mvps", "mpvs", .x)
+    )
+  
+}
+
+# Function to un-reverse code items for Phase 2
+unreverse_code_items <- function(data, codebook) {
+  
+  data %>% mutate(
+    across(
+      .cols = any_of(codebook$item[codebook$reversed %in% 1]),
+      .fns = ~ codebook$reverse_base[codebook$item == cur_column()] - .x
+    )
+  )
+  
+}
+
+# Function to compute item completion rate for Phases 1-2
+compute_item_completion_rate <- function(data, survey_prefix, phase = 1) {
+  
+  qualtrics_metadata_both_phases <- c(
     "StartDate", "EndDate", "Status", "IPAddress", "Progress", "Duration (in seconds)", 
     "Finished", "RecordedDate", "ResponseId", "RecipientLastName", "RecipientFirstName", 
     "RecipientEmail", "ExternalReference", "LocationLatitude", "LocationLongitude", 
-    "DistributionChannel", "UserLanguage", "status", "SC0"
+    "DistributionChannel", "UserLanguage", "status"
   )
   
-  survey_metadata <- c(
-    "administration", "assent_signature", "consent_signature", "p3m_address", 
-    "p3m_child_name", "p3m_childcell", "p3m_childemail", "p3m_date", "p3m_homephone",
-    "p3m_lsmh_id", "p3m_lsmh_id_validate", "p3m_parentcell", "p3m_parentemail",
-    "p3m_workphone", "p3m_wrapup_optin", "password_child", "password_parent", 
-    "pb_address", "pb_child_name", "pb_childcell", "pb_childemail", "pb_date",
-    "pb_homephone", "pb_interview", "pb_lsmh_id", "pb_lsmh_id_validate", "pb_parentcell", 
-    "pb_parentemail", "pb_workphone", "y3_childname", "y3_lsmh_id_ validate",
-    "y3m_chrome_browser", "y3m_lsmh_id", "yb_end", "yb_end_3", "yb_interview",
-    "yb_LifePak ID", "yb_LifePak ID Verify", "yb_lsmh_id", "yb_lsmh_id_ validate", 
-    "yb_phone", "yb_phone_validate"
-  )
+  if (phase == 1) {
+    
+    # Phase 1 metadata columns
+    qualtrics_metadata <- c(qualtrics_metadata_both_phases, "SC0")
+    
+    survey_metadata <- c(
+      "administration", "assent_signature", "consent_signature", "p3m_address", 
+      "p3m_child_name", "p3m_childcell", "p3m_childemail", "p3m_date", "p3m_homephone",
+      "p3m_lsmh_id", "p3m_lsmh_id_validate", "p3m_parentcell", "p3m_parentemail",
+      "p3m_workphone", "p3m_wrapup_optin", "password_child", "password_parent", 
+      "pb_address", "pb_child_name", "pb_childcell", "pb_childemail", "pb_date",
+      "pb_homephone", "pb_interview", "pb_lsmh_id", "pb_lsmh_id_validate", "pb_parentcell", 
+      "pb_parentemail", "pb_workphone", "y3_childname", "y3_lsmh_id_ validate",
+      "y3m_chrome_browser", "y3m_lsmh_id", "yb_end", "yb_end_3", "yb_interview",
+      "yb_LifePak ID", "yb_LifePak ID Verify", "yb_lsmh_id", "yb_lsmh_id_ validate", 
+      "yb_phone", "yb_phone_validate"
+    )
+    
+    # Columns with click and time on page information
+    click_time_cols <- names(data)[grepl("time.*(Click|Submit)", names(data))]
+    
+    metadata <- c(qualtrics_metadata, survey_metadata, click_time_cols)
+    
+  } else if (phase == 2) {
+
+    # Phase 2 metadata columns
+    qualtrics_metadata <- c(qualtrics_metadata_both_phases, paste0("SC", 0:12))
+    
+    survey_metadata <- c(
+      "condition", "email_id", "lsmh_id", "lsmh_id_col1", "lsmh_id_col2",
+      "pb_password_parent", "pb_consent_name", "pb_consent_signature_Id",
+      "pb_consent_signature_Name", "pb_consent_signature_Size", "pb_consent_signature_Type",
+      "pb_lsmh_id", "pb_lsmh_id_check", "pb_childname", "pb_date", "pb_address",
+      "pb_homephone", "pb_parentcell", "pb_childcell", "pb_workphone", "pb_parentemail",
+      "pb_childemail", "pb_interview", "Test", "test_col1", "test_col2",
+      "p3m_lsmh_id", "p3m_childname", "p3m_date",
+      "p6m_lsmh_id", "p6m_childname", "p6m_date",
+      "p12m_lsmh_id", "p12m_childname", "p12m_date", "test",
+      "p18m_lsmh_id", "p18m_childname", "p18m_date",
+      "p24m_lsmh_id", "p24m_childname", "p24m_date", "p24m_summary_report",
+      "yb_assent_name", "yb_assent_signature_Id", "yb_assent_signature_Name", 
+      "yb_assent_signature_Size", "yb_assent_signature_Type", "yb_interview", "yb_lifepak", 
+      "yb_lifepak_check", "yb_lsmh_id", "yb_password_child", "yb_phone", "yb_phone_check",
+      "yi_teen_name", "yi_parent_email_1", "yi_parent_email_2",
+      "y3m_lsmh_id", "y3m_lsmh_id_check", "y3m_childname",
+      "y6m_lsmh_id", "y6m_childname",
+      "y12m_lsmh_id", "y12m_lsmh_id_check", "y12m_childname",
+      "y18m_lsmh_id", "y18m_lsmh_id_check", "y18m_childname",
+      "y24m_lsmh_id", "y24m_lsmh_id_check", "y24m_childname"
+      )
+    
+    # Columns with click and time on page information
+    click_time_cols <- names(data)[grepl("(time|_tim_).*(Click|Submit)", names(data))]
+    
+    # Columns with ranks of selected options (NA if option is not selected)
+    rank_cols <- names(data)[grepl("_RANK", names(data))]
+    
+    metadata <- c(qualtrics_metadata, survey_metadata, click_time_cols, rank_cols)
+  
+  }
   
   # Remove columns that should not be included in calculation
   data_for_calculation <- data %>%
     select(
-      -matches("time.*(Click|Submit)"), # Columns with click and time on page information
       -matches("_TEXT"), # Columns with specified responses for response options of "Other" (or similar)
-      -any_of(qualtrics_metadata),
-      -any_of(survey_metadata)
+      -any_of(metadata),
+      -matches("^[yp].*_original_dataset$") # Phase 2 columns created to label each row's original dataset
     )
   
   # Calculate item completion rate
@@ -141,7 +324,7 @@ compute_item_completion_rate <- function(data, survey_prefix) {
   
 }
 
-# Function to compute indicator of baseline survey completion in assessment window
+# Function to compute indicator of baseline survey completion in assessment window for Phase 1
 mark_b_done_in_ax_window <- function(data, id_as_char, ema_notif_dates) {
   
   # Add EMA notification dates to data
@@ -149,14 +332,16 @@ mark_b_done_in_ax_window <- function(data, id_as_char, ema_notif_dates) {
   
   data <- data %>%
     left_join(ema_notif_dates, by = id_as_char, relationship = "many-to-one") %>%
-    # Compute indicator of survey completion before first EMA notification
-    # Note: Given that "EndDate" and "first_ema_notif_date" are in different time
-    # zones ("America/Denver" for Phase I vs. participants' local times stored as 
-    # UTC, respectively), this comparison is approximate. To rule out the role of
-    # time zone differences, derive actual time zones for "first_ema_notif_date"
-    # from LifePak GPS data (although GPS data are missing for some observations)
-    mutate(in_window_b = as_date(EndDate) < first_ema_notif_date)
   
+    # Compute indicator of survey completion within 7 days before first EMA notification
+    # Note: Given that "EndDate" and "first_ema_notif_date" are in different time
+    # zones ("America/Denver" for Phase 1 vs. participants' local times stored as 
+    # UTC, respectively), this comparison is approximate. To rule out the role of 
+    # time zone differences, derive actual time zones for "first_ema_notif_date" 
+    # from LifePak GPS data (although GPS data are missing for some observations)
+    mutate(in_window_b = as_date(EndDate) >= first_ema_notif_date - days(7) & 
+             as_date(EndDate) <= first_ema_notif_date - days(1))
+    
   # Throw warning if any surveys were not completed in this window (in which case 
   # further analysis to rule out role of differing time zones is warranted)
   if (any(data$in_window_b == FALSE)) {
@@ -169,7 +354,7 @@ mark_b_done_in_ax_window <- function(data, id_as_char, ema_notif_dates) {
   
 }
 
-# Function to compute indicators of follow-up survey completion in assessment window
+# Function to compute indicators of follow-up survey completion in assessment window for Phase 1
 mark_3m_done_in_ax_window <- function(data, id_as_char, ax_windows) {
   
   # Add assessment window dates to data
@@ -211,8 +396,94 @@ mark_3m_done_in_ax_window <- function(data, id_as_char, ax_windows) {
   
 }
 
-# Function to deduplicate datasets, keeping first (most) complete response
-remove_duplicates <- function(data, id) {
+# Function to compute indicators of survey completion in assessment window for Phase 2
+mark_done_in_ax_window <- function(data, survey_prefix, ax_windows) {
+  
+  # Define input columns based on "survey_prefix"
+  ax_window_start_org <- sym(paste0("ax_window_", survey_prefix, "_start_org"))
+  ax_window_end_org   <- sym(paste0("ax_window_", survey_prefix, "_end_org"))
+  ax_window_start_ext <- sym(paste0("ax_window_", survey_prefix, "_start_ext"))
+  ax_window_end_ext   <- sym(paste0("ax_window_", survey_prefix, "_end_ext"))
+  
+  # Define output columns based on "survey_prefix"
+  in_window_org <- paste0("in_window_", survey_prefix, "_org")
+  in_window_ext <- paste0("in_window_", survey_prefix, "_ext")
+  days_before_start_window_org <- paste0("days_before_start_window_", survey_prefix, "_org")
+  days_after_end_window_org <- paste0("days_after_end_window_", survey_prefix, "_org")
+  
+  # Add assessment window dates to data
+  data <- data %>%
+    left_join(ax_windows, by = "lsmh_id", relationship = "many-to-one") %>%
+    mutate(
+      
+      # Compute indicators of survey completion in original and extended windows
+      !!in_window_org := as_date(EndDate) >= !!ax_window_start_org & as_date(EndDate) <= !!ax_window_end_org,
+      !!in_window_ext := as_date(EndDate) >= !!ax_window_start_ext & as_date(EndDate) <= !!ax_window_end_ext,
+      
+      # If done early, compute days before start of original window
+      !!days_before_start_window_org := ifelse(
+        as_date(EndDate) < !!ax_window_start_org,
+        as_date(EndDate) - !!ax_window_start_org,
+        NA
+      ),
+      
+      # If done late, compute days after end of original window
+      !!days_after_end_window_org := ifelse(
+        as_date(EndDate) > !!ax_window_end_org,
+        as_date(EndDate) - !!ax_window_end_org,
+        NA
+      )
+      
+    )
+  
+  # For baseline surveys, throw warning if any surveys were not completed in original window 
+  # (in which case further analysis to rule out role of differing time zones is warranted)
+  # - Given that "EndDate" and "first_ema_notif_date" are in different time zones ("America/Chicago" 
+  # for Phase 2 vs. participants' local times stored as UTC, respectively), this comparison is approximate. 
+  # To rule out the role of time zone differences, derive actual time zones for "first_ema_notif_date" 
+  # from LifePak GPS data (although GPS data are missing for some observations).
+  if (survey_prefix == "b" & any(data[[in_window_org]] == FALSE)) {
+    
+    warning("Not all baseline surveys are in original window. Rule out role of differing time zones.")
+    
+  }
+  
+  return(data)
+  
+}
+
+# Function to get any surveys outside window (for surveys at or after 3m follow-up) for Phase 2
+get_surveys_outside_window_3m_onward <- function(data, survey_prefix) {
+  
+  # Define input columns based on "survey_prefix"
+  ax_window_start_org          <- sym(paste0("ax_window_", survey_prefix, "_start_org"))
+  ax_window_end_org            <- sym(paste0("ax_window_", survey_prefix, "_end_org"))
+  ax_window_start_ext          <- sym(paste0("ax_window_", survey_prefix, "_start_ext"))
+  ax_window_end_ext            <- sym(paste0("ax_window_", survey_prefix, "_end_ext"))
+  in_window_org                <- sym(paste0("in_window_", survey_prefix, "_org"))
+  in_window_ext                <- sym(paste0("in_window_", survey_prefix, "_ext"))
+  days_before_start_window_org <- sym(paste0("days_before_start_window_", survey_prefix, "_org"))
+  days_after_end_window_org    <- sym(paste0("days_after_end_window_", survey_prefix, "_org"))
+  
+  # Get surveys outside of window
+  out <- data %>%
+    filter(! (!!in_window_ext) | is.na(!!in_window_ext)) %>%
+    select(lsmh_id, StartDate, EndDate, 
+           !!ax_window_start_org, !!ax_window_end_org, !!in_window_org, 
+           !!days_before_start_window_org, !!days_after_end_window_org, 
+           !!ax_window_start_ext, !!ax_window_end_ext, !!in_window_ext, 
+           item_completion_rate) %>%
+    arrange(lsmh_id, EndDate)
+  
+  # Print filter criteria
+  message("Returning surveys for which '", rlang::as_string(in_window_ext), "' is FALSE or NA")
+  
+  return(out)
+  
+}
+
+# Function to deduplicate datasets, keeping first (most) complete response for Phases 1-2
+remove_duplicates <- function(data, id, date = EndDate) {
   
   # Taking the data...
   data %>%
@@ -222,7 +493,7 @@ remove_duplicates <- function(data, id) {
     # responses at top), then by EndDate (putting first/oldest responses at top)...
     arrange(
       desc(item_completion_rate),
-      EndDate
+      {{date}}
     ) %>%
     # ... finally, take only the top response
     slice_head(n = 1) %>%
@@ -231,7 +502,7 @@ remove_duplicates <- function(data, id) {
   
 }
 
-# Function to return items from the codebook file, given some criteria
+# Function to return items from the codebook file, given some criteria, for Phases 1-2
 get_items <- function(.prefix, .measure, .subscale) {
   
   # Confirm provided measure and subscale are in the codebook
@@ -253,7 +524,7 @@ get_items <- function(.prefix, .measure, .subscale) {
     # Take the codebook and...
     filtered_codebook <- codebook %>%
       # ... filter to rows where...
-      filter(
+      dplyr::filter(
         # ... the item column starts with .prefix, and...
         grepl("^" %+% .prefix, item),
         # ... the measure column matches .measure
@@ -266,7 +537,7 @@ get_items <- function(.prefix, .measure, .subscale) {
     # Take the codebook and...
     filtered_codebook <- codebook %>%
       # ... filter to rows where...
-      filter(
+      dplyr::filter(
         # ... the item column starts with .prefix, and...
         grepl("^" %+% .prefix, item),
         # ... the measure column matches .measure, and...
@@ -288,7 +559,7 @@ get_items <- function(.prefix, .measure, .subscale) {
 }
 
 # Function to take the mean across items from get_items() and to log the items
-# used to compute the mean
+# used to compute the mean for Phases 1-2
 mean_across <- function(.prefix, .measure, .subscale, name, exclude) {
   
   # Get items
@@ -327,7 +598,7 @@ mean_across <- function(.prefix, .measure, .subscale, name, exclude) {
 }
 
 # Function to take the sum (count) across items from get_items() and to log the items
-# used to compute the sum
+# used to compute the sum for Phases 1-2
 count_across <- function(.prefix, .measure, .subscale, name, exclude) {
   
   # Get items
@@ -363,8 +634,271 @@ count_across <- function(.prefix, .measure, .subscale, name, exclude) {
   
 }
 
-# Function to check that values of categorical items are as expected
-check_values <- function(.data, .item) {
+# Function to return expressions for computing BACE means (overall score and subscales) for Phase 2
+bace_means <- function(.prefix) {
+  
+  # Define names for means
+  overall <- paste0(.prefix, "_bace_mean")
+  stigma  <- paste0(.prefix, "_bace_stigma_mean")
+  
+  # Return list of expressions to splice into mutate()
+  exprs_for_mutate <- rlang::exprs(
+    # Overall mean score
+    !!overall := mean_across(!!.prefix, "bace", name = !!overall),
+    
+    # Treatment stigma subscale
+    !!stigma  := mean_across(!!.prefix, "bace", "Treatment Stigma", name = !!stigma)
+  )
+  
+  message("Returning these expressions to splice into mutate() for BACE means:")
+  str(exprs_for_mutate)
+  
+  return(exprs_for_mutate)
+  
+}
+
+# Function to return expressions for computing BADS means (subscales only) for Phase 2
+bads_means <- function(.prefix) {
+  
+  # Define names for means
+  ac <- paste0(.prefix, "_bads_ac_mean")
+  ar <- paste0(.prefix, "_bads_ar_mean")
+  ws <- paste0(.prefix, "_bads_ws_mean")
+  si <- paste0(.prefix, "_bads_si_mean")
+  
+  # Return list of expressions to splice into mutate()
+  exprs_for_mutate <- rlang::exprs(
+    # Activation subscale
+    !!ac := mean_across(!!.prefix, "bads", "AC", name = !!ac),
+    
+    # Avoidance/rumination subscale
+    !!ar := mean_across(!!.prefix, "bads", "AR", name = !!ar),
+    
+    # Work/school impairment subscale
+    !!ws := mean_across(!!.prefix, "bads", "WS", name = !!ws),
+    
+    # Social impairment subscale
+    !!si := mean_across(!!.prefix, "bads", "SI", name = !!si),
+    
+    # Overall score can also be computed (for instructions, see https://doi.org/b23r6w )
+  )
+  
+  message("Returning these expressions to splice into mutate() for BADS means:")
+  str(exprs_for_mutate)
+  
+  return(exprs_for_mutate)
+  
+}
+
+# Function to return expressions for computing BSI means (overall score and subscales) for Phase 2
+bsi_means <- function(.prefix) {
+  
+  # Define names for means
+  overall <- paste0(.prefix, "_bsi_mean")
+  s       <- paste0(.prefix, "_bsi_s_mean")
+  d       <- paste0(.prefix, "_bsi_d_mean")
+  a       <- paste0(.prefix, "_bsi_a_mean")
+  
+  # Return list of expressions to splice into mutate()
+  exprs_for_mutate <- rlang::exprs(
+    # Overall mean score (without suicidal thoughts item)
+    !!overall := mean_across(!!.prefix, "bsi", name = !!overall),
+    
+    # Somatization subscale
+    !!s       := mean_across(!!.prefix, "bsi", "S", name = !!s),
+    
+    # Depression subscale (without suicidal thoughts item)
+    !!d       := mean_across(!!.prefix, "bsi", "D", name = !!d),
+    
+    # Anxiety subscale
+    !!a       := mean_across(!!.prefix, "bsi", "A", name = !!a)
+  )
+  
+  message("Returning these expressions to splice into mutate() for BSI means:")
+  str(exprs_for_mutate)
+  
+  return(exprs_for_mutate)
+  
+}
+
+# Function to return expressions for computing CDI-2-P means (overall score and subscales) for Phase 2
+cdi_p_means <- function(.prefix) {
+  
+  # Define names for means
+  overall    <- paste0(.prefix, "_cdi_mean")
+  emotional  <- paste0(.prefix, "_cdi_emotional_mean")
+  functional <- paste0(.prefix, "_cdi_functional_mean")
+  
+  # Return list of expressions to splice into mutate()
+  exprs_for_mutate <- rlang::exprs(
+    # Overall mean score
+    !!overall    := mean_across(!!.prefix, "CDI-2 P", name = !!overall),
+    
+    # Emotional problems subscale
+    !!emotional  := mean_across(!!.prefix, "CDI-2 P", "Emotional Problems", name = !!emotional),
+    
+    # Functional problems subscale
+    !!functional := mean_across(!!.prefix, "CDI-2 P", "Functional Problems", name = !!functional)
+  )
+  
+  message("Returning these expressions to splice into mutate() for CDI-2-P means:")
+  str(exprs_for_mutate)
+  
+  return(exprs_for_mutate)
+  
+}
+
+# Function to return expressions for computing CDI-2-SR means (overall score and subscales) for Phase 2
+cdi_sr_means <- function(.prefix) {
+
+  # Define names for means
+  overall    <- paste0(.prefix, "_cdi_mean")
+  nmps       <- paste0(.prefix, "_cdi_nmps_mean")
+  nse        <- paste0(.prefix, "_cdi_nse_mean")
+  inef       <- paste0(.prefix, "_cdi_inef_mean")
+  inter      <- paste0(.prefix, "_cdi_inter_mean")
+  emotional  <- paste0(.prefix, "_cdi_emotional_mean")
+  functional <- paste0(.prefix, "_cdi_functional_mean")
+
+  # Return list of expressions to splice into mutate()
+  exprs_for_mutate <- rlang::exprs(
+    # Overall mean score
+    !!overall    := mean_across(!!.prefix, "CDI-2 SR", name = !!overall),
+
+    # Negative mood/physical symptoms subscale
+    !!nmps       := mean_across(!!.prefix, "CDI-2 SR", "Negative Mood/Physical Symptoms", name = !!nmps),
+
+    # Negative self-esteem subscale
+    !!nse        := mean_across(!!.prefix, "CDI-2 SR", "Negative Self-Esteem", name = !!nse),
+
+    # Ineffectiveness subscale
+    !!inef       := mean_across(!!.prefix, "CDI-2 SR", "Ineffectiveness", name = !!inef),
+
+    # Interpersonal problems subscale
+    !!inter      := mean_across(!!.prefix, "CDI-2 SR", "Interpersonal Problems", name = !!inter),
+
+    # Emotional problems subscale
+    !!emotional  := ( !!sym(nmps) * 9 + !!sym(nse) * 6 ) / 15,
+
+    # Functional problems subscale
+    !!functional := ( !!sym(inef) * 8 + !!sym(inter) * 5 ) / 13
+  )
+  
+  message("Returning these expressions to splice into mutate() for CDI-2-SR means:")
+  str(exprs_for_mutate)
+  
+  return(exprs_for_mutate)
+
+}
+
+# Function to return expressions for computing MPVS means (overall score and subscales) for Phase 2
+mpvs_means <- function(.prefix) {
+  
+  # Define names for means
+  overall  <- paste0(.prefix, "_mpvs_mean")
+  physical <- paste0(.prefix, "_mpvs_physical_mean")
+  social   <- paste0(.prefix, "_mpvs_social_mean")
+  verbal   <- paste0(.prefix, "_mpvs_verbal_mean")
+  property <- paste0(.prefix, "_mpvs_property_mean")
+  
+  # Return list of expressions to splice into mutate()
+  exprs_for_mutate <- rlang::exprs(
+    # Overall mean score
+    !!overall  := mean_across(!!.prefix, "mpvs", name = !!overall),
+    
+    # Physical victimization subscale
+    !!physical := mean_across(!!.prefix, "mpvs", "Physical Victimization", name = !!physical),
+    
+    # Social manipulation subscale
+    !!social   := mean_across(!!.prefix, "mpvs", "Social Manipulation", name = !!social),
+    
+    # Verbal victimization subscale
+    !!verbal   := mean_across(!!.prefix, "mpvs", "Verbal Victimization", name = !!verbal),
+    
+    # Attacks on property subscale
+    !!property := mean_across(!!.prefix, "mpvs", "Attacks on Property", name = !!property)
+  )
+  
+  message("Returning these expressions to splice into mutate() for MPVS means:")
+  str(exprs_for_mutate)
+  
+  return(exprs_for_mutate)
+  
+}
+
+# Function to return expressions for computing PCSC means (overall score and subscales) for Phase 2
+pcsc_means <- function(.prefix) {
+  
+  # Define names for means
+  overall     <- paste0(.prefix, "_pcsc_mean")
+  academic    <- paste0(.prefix, "_pcsc_academic_mean")
+  social      <- paste0(.prefix, "_pcsc_social_mean")
+  behavioral  <- paste0(.prefix, "_pcsc_behavioral_mean")
+  
+  # Return list of expressions to splice into mutate()
+  exprs_for_mutate <- rlang::exprs(
+    # Overall mean score
+    !!overall    := mean_across(!!.prefix, "pcsc", name = !!overall),
+    
+    # Academic subscale
+    !!academic   := mean_across(!!.prefix, "pcsc", "Academic", name = !!academic),
+    
+    # Social subscale
+    !!social     := mean_across(!!.prefix, "pcsc", "Social", name = !!social),
+    
+    # Behavioral subscale
+    !!behavioral := mean_across(!!.prefix, "pcsc", "Behavioral", name = !!behavioral)
+  )
+  
+  message("Returning these expressions to splice into mutate() for PCSC means:")
+  str(exprs_for_mutate)
+  
+  return(exprs_for_mutate)
+  
+}
+
+# Function to return expressions for computing SCARED (-Child and -Parent) means 
+# (overall score and subscales) for Phase 2
+scared_means <- function(.prefix) {
+  
+  # Define names for means
+  overall <- paste0(.prefix, "_scared_mean")
+  paso    <- paste0(.prefix, "_scared_paso_mean")
+  ga      <- paste0(.prefix, "_scared_ga_mean")
+  sep     <- paste0(.prefix, "_scared_sep_mean")
+  soc     <- paste0(.prefix, "_scared_soc_mean")
+  sch     <- paste0(.prefix, "_scared_sch_mean")
+  
+  # Return list of expressions to splice into mutate()
+  exprs_for_mutate <- rlang::exprs(
+    # Overall mean score
+    !!overall := mean_across(!!.prefix, "scared", name = !!overall),
+    
+    # Panic disorder/significant somatic symptoms subscale
+    !!paso    := mean_across(!!.prefix, "scared", "PA/SO", name = !!paso),
+    
+    # Generalized anxiety disorder subscale
+    !!ga      := mean_across(!!.prefix, "scared", "GA", name = !!ga),
+    
+    # Separation anxiety disorder subscale
+    !!sep     := mean_across(!!.prefix, "scared", "SEP", name = !!sep),
+    
+    # Social phobic disorder subscale
+    !!soc     := mean_across(!!.prefix, "scared", "SOC", name = !!soc),
+    
+    # Significant school avoidance subscale
+    !!sch     := mean_across(!!.prefix, "scared", "SCH", name = !!sch)
+  )
+  
+  message("Returning these expressions to splice into mutate() for SCARED means:")
+  str(exprs_for_mutate)
+  
+  return(exprs_for_mutate)
+  
+}
+
+# Function to check that values of categorical items are as expected (for use in walk() ) for Phases 1-2
+check_values <- function(.item, .data) {
   
   # Ensure item is in codebook and data
   if(!.item %in% colnames(.data)) stop(".item not in .data")
@@ -387,7 +921,7 @@ check_values <- function(.data, .item) {
   
 }
 
-# Function to check for duplicate responses to measure's (or subscale's) items over time
+# Function to check for duplicate responses to measure's (or subscale's) items over time for Phases 1-2
 # - Note: If excluding items, provide the items' names at every time point
 check_dups_over_time <- function(data, prefixes, .measure, .subscale, exclude) {
 
@@ -453,19 +987,157 @@ check_dups_over_time <- function(data, prefixes, .measure, .subscale, exclude) {
                  values_to = "value") %>%
     pivot_wider(names_from = "item", values_from = "value") %>%
     select(-survey)
-
-  # Check for duplicate responses over time
-  dup_ids <- unique(data$lsmh_id[duplicated(data)])
+  
+  # Check for duplicate responses over time (ignoring rows with NA for every item),
+  # labeling them (and whether they reflect 0 for all items or another pattern)
+  data <- data %>%
+    drop_na(-lsmh_id) %>%
+    group_by(lsmh_id) %>%
+    mutate(
+      dup = duplicated(across(all_of(item_cols_no_prefix))) |
+        duplicated(across(all_of(item_cols_no_prefix)), fromLast = TRUE),
+      dup_all_zero = dup & if_all(all_of(item_cols_no_prefix), ~ .x == 0),
+      dup_other = dup & !dup_all_zero
+    ) %>%
+    ungroup()
+  
+  dup_ids <- unique(data$lsmh_id[data$dup])
+  dup_all_zero_ids <- unique(data$lsmh_id[data$dup_all_zero])
+  dup_other_ids <- unique(data$lsmh_id[data$dup_other])
   
   if (length(dup_ids) == 0) {
     
-    cat("No duplicated responses over time")
+    message("No duplicated responses over time")
     
   } else {
     
-    cat("Duplicated responses over time for these IDs (see below): ", dup_ids, "\n\n")
-    print(data[data$lsmh_id %in% dup_ids, ])
+    message("Duplicated responses (all 0) over time for these IDs: ",
+            if(length(dup_all_zero_ids) == 0) "None" else toString(dup_all_zero_ids))
+    message("Duplicated responses (other) over time for these IDs: ",
+            if(length(dup_other_ids) == 0) "None" else toString(dup_other_ids), "\n")
+    print(data[data$lsmh_id %in% dup_ids, ], n = Inf)
     
   }
 
+}
+
+# Function to load Phase 1 codebook
+load_p1_codebook <- function(codebook_path) {
+  
+  sheet_name <- "Qualtrics Variables"
+  (sheet_last_row <- nrow(openxlsx::read.xlsx(codebook_path, sheet_name)) + 1) # Add 1 for header row
+  
+  codebook <- openxlsx::read.xlsx(
+    codebook_path,
+    sheet_name,
+    rows = c(1, 3:sheet_last_row) # Skip column description row
+  ) %>%
+    # Select only necessary variables
+    select(
+      item = Variable.Name,
+      measure = Measure,
+      subscale = Subscale,
+      minimum = Minimum,
+      maximum = Maximum,
+      reversed = `Is.the.variable.reverse.coded?`
+    ) %>%
+    mutate(
+      # Make `reversed` logical
+      reversed = reversed == 1,
+      # Create `reverse_base`: the number a response should be subtracted from to reverse it
+      reverse_base = if_else(
+        reversed,
+        maximum + minimum,
+        NA_real_
+      )
+    )
+  
+  return(codebook)
+  
+}
+
+# Function to load and clean Phase 2 codebook
+load_p2_codebook <- function(codebook_path) {
+  
+  sheet_name <- "Qualtrics Measure Variables"
+  (sheet_last_row <- nrow(openxlsx::read.xlsx(codebook_path, sheet_name)) + 1) # Add 1 for header row
+  
+  codebook <- openxlsx::read.xlsx(
+    codebook_path,
+    sheet_name,
+    rows = c(1, 3:sheet_last_row) # Skip column description row
+  ) %>%
+    # Select only necessary variables
+    select(
+      item = Variable.Name,
+      measure = Measure,
+      subscale = Subscale,
+      minimum = Minimum,
+      maximum = Maximum,
+      reversed = `Is.the.variable.reverse.coded?`
+    ) %>%
+    mutate(
+      # Make `reversed` logical
+      reversed = reversed == 1,
+      # Create `reverse_base`: the number a response should be subtracted from to reverse it
+      reverse_base = if_else(
+        reversed,
+        maximum + minimum,
+        NA_real_
+      )
+    ) %>%
+    # Expand codebook, such that each row with "[x]" in the item name is now one row per wave,
+    # with "[x]" replaced with the wave numbers (e.g., "y[x]" -> "yb", "y3m", etc.)
+    # Create a new column to expand by
+    mutate(
+      wave = if_else(
+        # If "[x]" is in the item name...
+        grepl("\\[x\\]", item),
+        # ... make `waves` a list with one value per wave, otherwise...
+        list(c("b", "3m", "6m", "12m", "18m", "24m")),
+        # ... make it an empty list
+        list(c(""))
+      )
+    ) %>%
+    # Unnest such that there is now one row per item per wave
+    unnest_longer(col = wave) %>%
+    # Overwrite the `item` column so that "[x]"s are replaced with the actual waves
+    mutate(
+      item = str_replace(
+        string = item,
+        pattern = "\\[x\\]",
+        replacement = wave
+      )
+    )
+  
+  return(codebook)
+  
+}
+
+# Function to load and clean Phase 2 participant tracker (helper no longer used)
+load_p2_tracker <- function(tracker_path) {
+  
+  tracker <- read_csv(tracker_path, col_types = "c") %>%
+    mutate(
+      baseline_date = `Baseline Date/Time` %>%
+        lubridate::mdy_hm() %>%
+        lubridate::date()
+    ) %>%
+    select(
+      lsmh_id = `LSMH ID`,
+      lifepak_id = `LifePak ID`,
+      phase = Phase,
+      baseline_date
+    )
+  
+}
+
+# Function to compute assessment window start or end date via seq() method by
+# adding a given interval to a given reference date for Phase 2
+compute_date_w_seq <- function(reference_date, interval) {
+  if (is.na(reference_date)) {
+    NA
+  } else {
+    seq(from = reference_date, by = interval, length.out = 2)[2]
+  }
 }
