@@ -2,17 +2,37 @@
 
 Centralized data cleaning code for Track to Treat
 
-Data are stored locally in the `jslab/` directory on FSMResFiles
-* Set path to `jslab/` via an environment variable in a local `.Renviron` file (not pushed to GitHub):
-  * `JSLAB_DIR_WINDOWS` for Windows
-  * `JSLAB_DIR_UNIX` for macOS/Linux
-
 Old data cleaning code, including documentation (some of which informed the code in this repository), is here:
 
 * Phase 1: https://github.com/jwe4ec/ttt-p1-main-analysis [URL may change]
 * Phase 2: https://github.com/jwe4ec/ttt-p2-cleaning [URL may change]
 
 ## File organization
+
+### Data
+
+TODO (clarify this and where to put `.Renviron`): Data are stored locally in the `jslab/` directory on FSMResFiles
+* Set path to `jslab/` via an environment variable in a local `.Renviron` file (not pushed to GitHub):
+  * `JSLAB_DIR_WINDOWS` for Windows
+  * `JSLAB_DIR_UNIX` for macOS/Linux
+
+* "TRACK to TREAT/Data/"
+  * "LifePak Raw Data (Do Not Modify)/"  # TODO
+  * "Qualtrics Data/Raw Data/"           # TODO
+  * "Clean Data (Jeremy and Isaac)/"
+    * "staging/"                         # TODO
+      * "intermediate/"                  # TODO
+    * "final_read_only/"                 # TODO
+* "TRACK to TREAT P2/Data/"
+  * "Tracking Log/"                      # TODO
+  * "LifePak/2025.05.21/"                # TODO
+  * "Qualtrics/Raw/2026.02.26_final/"    # TODO
+  * "Clean Data (Jeremy and Isaac)/"
+    * "staging/"                         # TODO
+      * "intermediate/"                  # TODO
+    * "final_read_only/"                 # TODO
+
+### Code
 
 * README.md
 * Phase 1/
