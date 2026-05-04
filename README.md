@@ -101,10 +101,10 @@ Old data cleaning code, including documentation (some of which informed the code
 
 * LifePak IDs here are 6 digits (5-digit IDs elsewhere have leading 0 here; take care when comparing IDs)
 * Clean data includes EMA surveys only (excludes "feedback surveys", which were given after EMA surveys)
-* End-of-day free-responses in clean data are deidentified
-  * If future cleaning retains additional rows in clean data, those rows need to be deidentified
 * Raw `Notification.Time` is in local time zones of participants' devices (per LifeData support)
   * Clean timestamp stores these in UTC (actual time zones could be derived from [incomplete] GPS data)
+* LifePak cleaning scripts output free-responses to check for identifiers to intermediate data folder
+  * TODO: Jeremy Eberle to review Alyssa Gorkin's initial checks of the responses (see scripts for details)
 * **Phase 1 specifics:**
   * Negative values for `interest` are recoded as 0 in the clean data
     * "3T_P1_V1_NIS_2020_Mar_02.csv" from survey "TRACK to TREAT P1" had some negative values for `Session.Name` "3T Project Day", whose response options for this item were set from -2 to 100
@@ -202,4 +202,4 @@ Old data cleaning code, including documentation (some of which informed the code
   * **v2.0 (TODO: planned)**
     * Phase 1: Same output as v1.0
     * Phase 2: Cleans LifePak data and Qualtrics data (collection over)
-      * Clean LifePak data is outputted with and without free responses above (to deidentify in future)
+      * Clean LifePak data is outputted with and without these free responses (to deidentify in future): `most_pleasant`, `most_unpleasant`, `other`
