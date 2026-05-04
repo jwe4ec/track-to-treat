@@ -136,12 +136,12 @@ create_data_release <- function(clean_data_staging_dir, clean_data_final_dir, ph
   sink(file = file.path(clean_data_final_folder_dir, readme_name))
   
   cat("Clean Data for Phase ", phase, " of Project Track-to-Treat\n",
-      "Contributors: Isaac Ahuvia, Jeremy Eberle, Alyssa Gorkin\n\n",
+      "Contributors: Jeremy Eberle, Isaac Ahuvia, Alyssa Gorkin\n\n",
       
       "This folder, the following clean data files it contains, and this README\n",
       "were created by running the cleaning code on the GitHub repository below\n\n",
       
-      "Repository URL and README: https://github.com/isaacahuvia/track-to-treat\n\n",
+      "Repository URL and README: https://github.com/jwe4ec/track-to-treat\n\n",
       
       "The Phase ", phase, " code as of ", cleaning_code_date, " was run on ", system_date, " by the person below,\n",
       "who assigned the following version number\n\n",
