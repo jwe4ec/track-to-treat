@@ -143,10 +143,10 @@ Old data cleaning code, including documentation (some of which informed the code
     * Child item `scared_c_11`, which was absent from in-person baseline survey
   * Surveys retained at each wave (given need to deduplicate surveys within assessment windows):
     * "yb": Youth who did "yb" survey in window (within 1 week before starting EMA) and started EMA
-      * Given that "yb" window is based on first EMA notification date (see "Clean Youth Qualtrics Data and Add LSMH ID to LifePak Data.R")
+      * Given that "yb" window is based on first EMA notification date (see youth Qualtrics script)
       * All youth started EMA and did "yb" the day before, but 1 parent did "pb" a week early
     * "y3m": Youth who did "y3m" survey in window (3 months after ending "yb", +6 weeks; none were early) and "yb" survey in window
-      * Given that "y3m" window is based on "yb" end date (see "Clean Youth Qualtrics Data and Add LSMH ID to LifePak Data.R")
+      * Given that "y3m" window is based on "yb" end date (see youth Qualtrics script)
     * "pb", "p3m": Parents whose surveys are in same windows used for "yb" and "y3m"
     * The approximate assessment windows above were reasonably extended from the original windows
   * Clean Columns section lists raw data available that have not yet been cleaned
