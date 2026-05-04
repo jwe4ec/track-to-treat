@@ -333,13 +333,14 @@ mark_b_done_in_ax_window <- function(data, id_as_char, ema_notif_dates) {
   data <- data %>%
     left_join(ema_notif_dates, by = id_as_char, relationship = "many-to-one") %>%
   
-    # Compute indicator of survey completion before first EMA notification
+    # Compute indicator of survey completion within 7 days before first EMA notification
     # Note: Given that "EndDate" and "first_ema_notif_date" are in different time
     # zones ("America/Denver" for Phase 1 vs. participants' local times stored as 
     # UTC, respectively), this comparison is approximate. To rule out the role of 
     # time zone differences, derive actual time zones for "first_ema_notif_date" 
     # from LifePak GPS data (although GPS data are missing for some observations)
-    mutate(in_window_b = as_date(EndDate) < first_ema_notif_date)
+    mutate(in_window_b = as_date(EndDate) >= first_ema_notif_date - days(7) & 
+             as_date(EndDate) <= first_ema_notif_date - days(1))
     
   # Throw warning if any surveys were not completed in this window (in which case 
   # further analysis to rule out role of differing time zones is warranted)
@@ -1055,7 +1056,7 @@ load_p1_codebook <- function(codebook_path) {
   
 }
 
-# Function to load and clean Phase 2 codebook, as this is done in each script
+# Function to load and clean Phase 2 codebook
 load_p2_codebook <- function(codebook_path) {
   
   sheet_name <- "Qualtrics Measure Variables"

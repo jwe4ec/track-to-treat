@@ -141,6 +141,14 @@ Old data cleaning code, including documentation (some of which informed the code
   * Additional items excluded from composite variables
     * Parent item `scared_c_1`, which was entered into survey incorrectly
     * Child item `scared_c_11`, which was absent from in-person baseline survey
+  * Surveys retained at each wave (given need to deduplicate surveys within assessment windows):
+    * "yb": Youth who did "yb" survey in window (within 1 week before starting EMA) and started EMA
+      * Given that "yb" window is based on first EMA notification date (see "Clean Youth Qualtrics Data and Add LSMH ID to LifePak Data.R")
+      * All youth started EMA and did "yb" the day before, but 1 parent did "pb" a week early
+    * "y3m": Youth who did "y3m" survey in window (3 months after ending "yb", +6 weeks; none were early) and "yb" survey in window
+      * Given that "y3m" window is based on "yb" end date (see "Clean Youth Qualtrics Data and Add LSMH ID to LifePak Data.R")
+    * "pb", "p3m": Parents whose surveys are in same windows used for "yb" and "y3m"
+    * The approximate assessment windows above were reasonably extended from the original windows
   * Clean Columns section lists raw data available that have not yet been cleaned
   * Raw timestamps are in "America/Denver" time zone
 * **Phase 2 specifics:**
@@ -168,7 +176,7 @@ Old data cleaning code, including documentation (some of which informed the code
       * See "Youth Intervention.R"
     * "y3m-y24m": Youth who did given survey in window (3-24 months after ending "yi", +6 weeks and -1 week) and "yi" survey in window
       * Given that "y3m-y24m" windows are based on "yi" end date (see "Youth Intervention.R")
-    * "pb", "p3m-p24m": Parents of youth retained at corresponding waves
+    * "pb", "p3m-p24m": Parents whose surveys are in same windows used for "yb" and "y3m-y24m"
     * The approximate assessment windows above were reasonably extended from the original windows
   * Data collected but not cleaned (see raw codebook for details)
     * Youth
