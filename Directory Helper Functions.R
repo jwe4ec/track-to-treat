@@ -32,7 +32,7 @@ get_p1_dirs <- function(type = c("raw_lifepak_data", "raw_qualtrics_data",
   # Build all paths using file.path(), which works across operating systems
   raw_lifepak_data_dir   <- file.path(jslab_dir, "TRACK to TREAT", "Data", "LifePak Raw Data (Do Not Modify)")
   raw_qualtrics_data_dir <- file.path(jslab_dir, "TRACK to TREAT", "Data", "Qualtrics Data", "Raw Data")
-  clean_data_dir         <- file.path(jslab_dir, "TRACK to TREAT", "Data", "Clean Data (Isaac)")
+  clean_data_dir         <- file.path(jslab_dir, "TRACK to TREAT", "Data", "Clean Data (Jeremy and Isaac)")
   
   clean_data_staging_dir              <- file.path(clean_data_dir, "staging")
   clean_data_staging_intermediate_dir <- file.path(clean_data_staging_dir, "intermediate")
@@ -68,7 +68,7 @@ get_p2_dirs <- function(type = c("raw_tracking_log_data", "raw_lifepak_data", "r
   raw_tracking_log_data_dir <- file.path(jslab_dir, "TRACK to TREAT P2", "Data", "Tracking Log")
   raw_lifepak_data_dir      <- file.path(jslab_dir, "TRACK to TREAT P2", "Data", "LifePak", "2025.05.21")
   raw_qualtrics_data_dir    <- file.path(jslab_dir, "TRACK to TREAT P2", "Data", "Qualtrics", "Raw", "2026.02.26_final")
-  clean_data_dir            <- file.path(jslab_dir, "TRACK to TREAT P2", "Data", "Clean Data (Isaac)")
+  clean_data_dir            <- file.path(jslab_dir, "TRACK to TREAT P2", "Data", "Clean Data (Jeremy and Isaac)")
   
   clean_data_staging_dir              <- file.path(clean_data_dir, "staging")
   clean_data_staging_intermediate_dir <- file.path(clean_data_staging_dir, "intermediate")
