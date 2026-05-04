@@ -37,34 +37,7 @@ list2env(raw_data, envir = .GlobalEnv)
 nis_valid <- readRDS(file.path(dirs$clean_data_staging_intermediate, "Phase 1 LifePak Clean Data Without LSMH ID.rds"))
 
 # Load item-level codebook file
-codebook_path <- here("Phase 1", "2025.05.01 Track to Treat P1 Codebook.xlsx")
-sheet_name <- "Qualtrics Variables"
-(sheet_last_row <- nrow(openxlsx::read.xlsx(codebook_path, sheet_name)) + 1) # Add 1 for header row
-
-codebook <- openxlsx::read.xlsx(
-  codebook_path,
-  sheet_name,
-  rows = c(1, 3:sheet_last_row) # Skip column description row
-) %>%
-  # Select only necessary variables
-  select(
-    item = Variable.Name,
-    measure = Measure,
-    subscale = Subscale,
-    minimum = Minimum,
-    maximum = Maximum,
-    reversed = `Is.the.variable.reverse.coded?`
-  ) %>%
-  mutate(
-    # Make `reversed` logical
-    reversed = reversed == 1,
-    # Create `reverse_base`: the number a response should be subtracted from to reverse it
-    reverse_base = if_else(
-      reversed,
-      maximum + minimum,
-      NA_real_
-    )
-  )
+codebook <- load_p1_codebook(here("Phase 1", "2025.05.01 Track to Treat P1 Codebook.xlsx"))
 
 
 ## Check raw Qualtrics data versions using helper function
