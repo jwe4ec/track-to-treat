@@ -1,6 +1,6 @@
 ## Helper functions for directories
 
-# Function to get path to "jslab/" on FSMResFiles server depending on operating system
+# Function to get path to "jslab/" on FSMResFiles server depending on OS for Phases 1-2
 get_jslab_dir <- function() {
   
   jslab_dir <- if (.Platform$OS.type == "windows") {
