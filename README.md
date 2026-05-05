@@ -9,41 +9,46 @@ Old data cleaning code, including documentation (some of which informed the code
 
 ## File organization
 
-### Data
+### Private Data
 
-TODO (clarify this and note READMEs): Data are stored locally in `jslab/` on FSMResFiles
-
-* Set path to `jslab/` via an environment variable in a local `.Renviron` file (not pushed to GitHub):
-  * `JSLAB_DIR_WINDOWS` for Windows
-  * `JSLAB_DIR_UNIX` for macOS/Linux
+Raw and clean data and additional READMEs are stored privately in `jslab/` on FSMResFiles (see tree below). For public releases of clean data, see [Releases](#releases). 
 
 ```plaintext
-jslab/                                     # JSLAB_DIR_WINDOWS or JSLAB_DIR_UNIX defined in ".Renviron"
+jslab/                                      # JSLAB_DIR_WINDOWS or JSLAB_DIR_UNIX defined in ".Renviron"
 |
-├── TRACK to TREAT/Data/                   # Phase 1 data folder
-│   ├── LifePak Raw Data (Do Not Modify)/  # Raw LifePak data
-│   ├── Qualtrics Data/Raw Data/           # Raw Qualtrics data
+├── TRACK to TREAT/Data/                    # Phase 1 data folder
+|   ├── readme_ttt_p1.docx                  # Data collection README
+│   ├── LifePak Raw Data (Do Not Modify)/   # Raw LifePak data
+│   ├── Qualtrics Data/Raw Data/            # Raw Qualtrics data
 │   └── Clean Data (Jeremy and Isaac)/
-│       ├── staging/                       # Clean data staged for release to "final_read_only/"
-│       │   └── intermediate/              # Intermediate data used in data cleaning
-│       └── final_read_only/               # Versioned releases of clean Phase 1 data
+│       ├── staging/                        # Clean data staged for release to "final_read_only/"
+│       │   └── intermediate/               # Intermediate data used in data cleaning
+│       └── final_read_only/                # Versioned releases of clean Phase 1 data
 |
-└── TRACK to TREAT P2/Data/                # Phase 2 data folder
-    ├── Tracking Log/                      # Raw tracking log
-    ├── LifePak/2025.05.21/                # Raw LifePak data
-    ├── Qualtrics/Raw/2026.02.26_final/    # Raw Qualtrics data
+└── TRACK to TREAT P2/Data/                 # Phase 2 data folder
+    ├── README_ttt_p2_data_collection.docx  # Data collection README
+    ├── Tracking Log/                       # Raw tracking log
+    ├── LifePak/2025.05.21/                 # Raw LifePak data
+    ├── Qualtrics/Raw/2026.02.26_final/     # Raw Qualtrics data
     └── Clean Data (Jeremy and Isaac)/
-        ├── staging/                       # Clean data staged for release to "final_read_only/
-        │   └── intermediate/              # Intermediate data used in data cleaning
-        └── final_read_only/               # Versioned releases of clean Phase 2 data
+        ├── staging/                        # Clean data staged for release to "final_read_only/
+        │   └── intermediate/               # Intermediate data used in data cleaning
+        └── final_read_only/                # Versioned releases of clean Phase 2 data
 ```
 
 ### Code
 
+After downloading this repo, create an `.Renviron` file (do not commit it to GitHub) in the project root (shown as `.` in tree below). In `.Renviron`, set the path to `jslab/` by defining one of these environment variables:
+
+```plaintext
+JSLAB_DIR_WINDOWS = "path/to/jslab"  # For Windows
+JSLAB_DIR_UNIX = "path/to/jslab"     # For macOS/Linux
+```
+
 ```plaintext
 .
-├── .Renviron  # Untracked file used to set path to "jslab/" as JSLAB_DIR_WINDOWS or JSLAB_DIR_UNIX
-├── .gitignore  # Used to avoid pushing ".Renviron" and other files to GitHub
+├── .Renviron  # Excluded from GitHub; defines JSLAB_DIR_WINDOWS or JSLAB_DIR_UNIX
+├── .gitignore  # Used to prevent committing ".Renviron" and other files to GitHub
 ├── README.md
 ├── Helper Functions/  # Used across Phases 1-2
 |   ├── Directories.R
@@ -233,12 +238,14 @@ jslab/                                     # JSLAB_DIR_WINDOWS or JSLAB_DIR_UNIX
     * Phase 1: "./TRACK to TREAT/Data/Clean Data (Isaac)/"
     * Phase 2: "./TRACK to TREAT P2/Data/Clean Data (Isaac)/"
   * On 2026-05-04, these folders were renamed to ".../Clean Data (Jeremy and Isaac)/"
-* Releases:
-  * **v1.0 (2025-05-12)**
-    * Phase 1: Cleans LifePak and Qualtrics data (collection over)
-      * Clean LifePak data is outputted with and without these free responses (to deidentify in future): `most_pleasant`, `most_unpleasant`, `other_night`
-    * Phase 2: Not cleaned for this release
-  * **v2.0 (TODO: planned)**
-    * Phase 1: Same output as v1.0
-    * Phase 2: Cleans LifePak data and Qualtrics data (collection over)
-      * Clean LifePak data is outputted with and without these free responses (to deidentify in future): `most_pleasant`, `most_unpleasant`, `other`
+
+### Releases
+
+* **v1.0 (2025-05-12)**
+  * Phase 1: Cleans LifePak and Qualtrics data (collection over)
+    * Clean LifePak data is outputted with and without these free responses (to deidentify in future): `most_pleasant`, `most_unpleasant`, `other_night`
+  * Phase 2: Not cleaned for this release
+* **v2.0 (TODO: planned)**
+  * Phase 1: Same output as v1.0
+  * Phase 2: Cleans LifePak data and Qualtrics data (collection over)
+    * Clean LifePak data is outputted with and without these free responses (to deidentify in future): `most_pleasant`, `most_unpleasant`, `other`
