@@ -4,8 +4,8 @@ Centralized data cleaning code for Track to Treat
 
 Old data cleaning code, including documentation (some of which informed the code in this repository), is here:
 
-* Phase 1: https://github.com/jwe4ec/ttt-p1-main-analysis [URL may change]
-* Phase 2: https://github.com/jwe4ec/ttt-p2-cleaning [URL may change]
+* Phase 1: https://github.com/jwe4ec/ttt-p1-main-analysis [TODO: URL may change]
+* Phase 2: https://github.com/jwe4ec/ttt-p2-cleaning [TODO: URL may change]
 
 ## File organization
 
