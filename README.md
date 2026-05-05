@@ -241,6 +241,8 @@ JSLAB_DIR_UNIX = "path/to/jslab"     # For macOS/Linux
 
 ### Releases
 
+Public releases of clean data (excluding LifePak free responses) are stored on TODO.
+
 * **v1.0 (2025-05-12)**
   * Phase 1: Cleans LifePak and Qualtrics data (collection over)
     * Clean LifePak data is outputted with and without these free responses (to deidentify in future): `most_pleasant`, `most_unpleasant`, `other_night`
