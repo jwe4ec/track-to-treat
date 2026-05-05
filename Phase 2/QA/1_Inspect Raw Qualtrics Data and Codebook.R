@@ -12,8 +12,8 @@ groundhog.library(
 
 
 ## Load helper functions
-source(here("Directory Helper Functions.R"))
-source(here("Qualtrics Data Cleaning Helper Functions.R"))
+source(here("Helper Functions", "Directories.R"))
+source(here("Helper Functions", "Qualtrics Cleaning.R"))
 source(here("Phase 2", "QA", "QA Helper Functions.R"))
 
 

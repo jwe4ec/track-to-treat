@@ -2,11 +2,6 @@
 
 Centralized data cleaning code for Track to Treat
 
-Data are stored locally in the `jslab/` directory on FSMResFiles
-* Set path to `jslab/` via an environment variable in a local `.Renviron` file (not pushed to GitHub):
-  * `JSLAB_DIR_WINDOWS` for Windows
-  * `JSLAB_DIR_UNIX` for macOS/Linux
-
 Old data cleaning code, including documentation (some of which informed the code in this repository), is here:
 
 * Phase 1: https://github.com/jwe4ec/ttt-p1-main-analysis [URL may change]
@@ -14,52 +9,95 @@ Old data cleaning code, including documentation (some of which informed the code
 
 ## File organization
 
-* README.md
-* Phase 1/
-  * Raw P1 Metadata.csv (used to track expected raw data versions for checks against loaded files)
-  * 2025.05.01 Track to Treat P1 Codebook.xlsx (an item-level codebook used to clean the Qualtrics data)
-  * 1_Clean LifePak Data.R
-  * 2_Clean Youth Qualtrics Data and Add LSMH ID to LifePak Data.R
-  * 3_Clean Parent Qualtrics Data.R
-  * 4_Create Clean Data Release.R
-  * QA/
-    * Check Overlap.R (checking ID overlap across datasets)
-    * Compare Clean LifePak Datasets.R (checking clean LifePak data to previous versions)
-* Phase 2/
-  * Raw P2 Metadata.csv (used to track expected raw data versions for checks against loaded files)
-  * 2026.04.03 Track to Treat P2 Codebook.xlsx (an item-level codebook used to clean the Qualtrics data)
-    * "load_p2_codebook()" helper expands repeated-measure items with "[x]" prefix to "b" and "[3-24]m"
-  * 1_Clean Tracking Log and Create ID Lookup.R
-  * 2_Clean Phone Screen Data.R
-  * 3_Clean LifePak Data.R
-  * 4_Clean Youth Qualtrics Data/
-    * 1_Correct Codebook and Raw Youth Data.R
-    * 2_Youth Baseline.R
-    * 3_Youth Intervention.R
-    * 4_Youth 3m.R
-    * 5_Youth 6m.R
-    * 6_Youth 12m.R
-    * 7_Youth 18m.R
-    * 8_Youth 24m.R
-    * 9_Merge Youth Qualtrics Data.R
-  * 5_Clean Parent Qualtrics Data/
-    * 1_Correct Raw Parent Data.R
-    * 2_Parent Baseline.R
-    * 3_Parent 3m.R
-    * 4_Parent 6m.R
-    * 5_Parent 12m.R
-    * 6_Parent 18m.R
-    * 7_Parent 24m.R
-    * 8_Merge Parent Qualtrics Data.R
-  * 6_Create Cohort Indicators for Flow and Analysis.R
-  * 7_Create Clean Data Release.R
-  * QA/ (checking for issues to clean)
-    * 1_Inspect Raw Qualtrics Data and Codebook.R
-    * 2_Check Measure Item Metadata Across Waves.R
-    * QA Helper Functions.R
-* Directory Helper Functions.R
-* Version Control Helper Functions.R
-* Qualtrics Data Cleaning Helper Functions.R
+### Private Data
+
+Raw and clean data and additional READMEs are stored privately in `jslab/` on FSMResFiles (see tree below). For public releases of clean data, see [Releases](#releases). 
+
+```plaintext
+jslab/                                      # JSLAB_DIR_WINDOWS or JSLAB_DIR_UNIX defined in ".Renviron"
+|
+├── TRACK to TREAT/Data/                    # Phase 1 data folder
+|   ├── readme_ttt_p1.docx                  # Data collection README
+│   ├── LifePak Raw Data (Do Not Modify)/   # Raw LifePak data
+│   ├── Qualtrics Data/Raw Data/            # Raw Qualtrics data
+│   └── Clean Data (Jeremy and Isaac)/
+│       ├── staging/                        # Clean data staged for release to "final_read_only/"
+│       │   └── intermediate/               # Intermediate data used in data cleaning
+│       └── final_read_only/                # Versioned releases of clean Phase 1 data
+|
+└── TRACK to TREAT P2/Data/                 # Phase 2 data folder
+    ├── README_ttt_p2_data_collection.docx  # Data collection README
+    ├── Tracking Log/                       # Raw tracking log
+    ├── LifePak/2025.05.21/                 # Raw LifePak data
+    ├── Qualtrics/Raw/2026.02.26_final/     # Raw Qualtrics data
+    └── Clean Data (Jeremy and Isaac)/
+        ├── staging/                        # Clean data staged for release to "final_read_only/
+        │   └── intermediate/               # Intermediate data used in data cleaning
+        └── final_read_only/                # Versioned releases of clean Phase 2 data
+```
+
+### Code
+
+After downloading this repo, create an `.Renviron` file (do not commit it to GitHub) in the project root (shown as `.` in tree below). In `.Renviron`, set the path to `jslab/` by defining one of these environment variables:
+
+```plaintext
+JSLAB_DIR_WINDOWS = "path/to/jslab"  # For Windows
+JSLAB_DIR_UNIX = "path/to/jslab"     # For macOS/Linux
+```
+
+```plaintext
+.
+├── .Renviron  # Excluded from GitHub; defines JSLAB_DIR_WINDOWS or JSLAB_DIR_UNIX
+├── .gitignore  # Used to prevent committing ".Renviron" and other files to GitHub
+├── README.md
+├── Helper Functions/  # Used across Phases 1-2
+|   ├── Directories.R
+|   ├── Version Control.R
+|   └── Qualtrics Cleaning.R
+|
+├── Phase 1/
+│   ├── Raw P1 Metadata.csv
+│   ├── 2025.05.01 Track to Treat P1 Codebook.xlsx  # Item-level codebook used to clean Qualtrics data
+│   ├── 1_Clean LifePak Data.R
+│   ├── 2_Clean Youth Qualtrics Data and Add LSMH ID to LifePak Data.R
+│   ├── 3_Clean Parent Qualtrics Data.R
+│   ├── 4_Create Clean Data Release.R
+│   └── QA/
+│       ├── Check Overlap.R  # Checking ID overlap across datasets
+│       └── Compare Clean LifePak Datasets.R  # Checking clean LifePak data to previous versions
+|
+└── Phase 2/
+    ├── Raw P2 Metadata.csv
+    ├── 2026.04.18 Track to Treat P2 Codebook.xlsx  # Item-level codebook used to clean Qualtrics data
+    ├── 1_Clean Tracking Log and Create ID Lookup.R
+    ├── 2_Clean Phone Screen Data.R
+    ├── 3_Clean LifePak Data.R
+    ├── 4_Clean Youth Qualtrics Data/
+    │   ├── 1_Correct Codebook and Raw Youth Data.R
+    │   ├── 2_Youth Baseline.R
+    │   ├── 3_Youth Intervention.R
+    │   ├── 4_Youth 3m.R
+    │   ├── 5_Youth 6m.R
+    │   ├── 6_Youth 12m.R
+    │   ├── 7_Youth 18m.R
+    │   ├── 8_Youth 24m.R
+    │   └── 9_Merge Youth Qualtrics Data.R
+    ├── 5_Clean Parent Qualtrics Data/
+    │   ├── 1_Correct Raw Parent Data.R
+    │   ├── 2_Parent Baseline.R
+    │   ├── 3_Parent 3m.R
+    │   ├── 4_Parent 6m.R
+    │   ├── 5_Parent 12m.R
+    │   ├── 6_Parent 18m.R
+    │   ├── 7_Parent 24m.R
+    │   └── 8_Merge Parent Qualtrics Data.R
+    ├── 6_Create Cohort Indicators for Flow and Analysis.R
+    ├── 7_Create Clean Data Release.R
+    └── QA/  # Scripts checking for issues to clean
+        ├── 1_Inspect Raw Qualtrics Data and Codebook.R
+        ├── 2_Check Measure Item Metadata Across Waves.R
+        └── QA Helper Functions.R
+```
 
 ## Data cleaning notes
 
@@ -152,7 +190,8 @@ Old data cleaning code, including documentation (some of which informed the code
   * Clean Columns section lists raw data available that have not yet been cleaned
   * Raw timestamps are in "America/Denver" time zone
 * **Phase 2 specifics:**
-  * Phone screen data (entered by RA with parent on phone) are cleaned before youth/parent data at study waves
+  * `load_p2_codebook()` helper expands repeated-measure items with "[x]" prefix to "b" and "[3-24]m"
+  * Phone screen (entered by RA with parent on phone) is cleaned before youth/parent data at study waves
   * To move certain rows to correct waves, the tasks below are done across waves in "Correct Codebook and Raw Youth Data.R" and "Correct Raw Parent Data.R" before cleaning each wave individually
     * Fix item prefixes in codebook and column names in data
     * Remove extraneous columns (including click, page time variables)
@@ -199,12 +238,16 @@ Old data cleaning code, including documentation (some of which informed the code
     * Phase 1: "./TRACK to TREAT/Data/Clean Data (Isaac)/"
     * Phase 2: "./TRACK to TREAT P2/Data/Clean Data (Isaac)/"
   * On 2026-05-04, these folders were renamed to ".../Clean Data (Jeremy and Isaac)/"
-* Releases:
-  * **v1.0 (2025-05-12)**
-    * Phase 1: Cleans LifePak and Qualtrics data (collection over)
-      * Clean LifePak data is outputted with and without these free responses (to deidentify in future): `most_pleasant`, `most_unpleasant`, `other_night`
-    * Phase 2: Not cleaned for this release
-  * **v2.0 (TODO: planned)**
-    * Phase 1: Same output as v1.0
-    * Phase 2: Cleans LifePak data and Qualtrics data (collection over)
-      * Clean LifePak data is outputted with and without these free responses (to deidentify in future): `most_pleasant`, `most_unpleasant`, `other`
+
+### Releases
+
+Public releases of clean data (excluding LifePak free responses) are stored on TODO.
+
+* **v1.0 (2025-05-12)**
+  * Phase 1: Cleans LifePak and Qualtrics data (collection over)
+    * Clean LifePak data is outputted with and without these free responses (to deidentify in future): `most_pleasant`, `most_unpleasant`, `other_night`
+  * Phase 2: Not cleaned for this release
+* **v2.0 (TODO: planned)**
+  * Phase 1: Same output as v1.0
+  * Phase 2: Cleans LifePak data and Qualtrics data (collection over)
+    * Clean LifePak data is outputted with and without these free responses (to deidentify in future): `most_pleasant`, `most_unpleasant`, `other`

@@ -15,8 +15,8 @@ groundhog.library(
 
 
 ## Load helper functions
-source(here("Directory Helper Functions.R"))
-source(here("Version Control Helper Functions.R"))
+source(here("Helper Functions", "Directories.R"))
+source(here("Helper Functions", "Version Control.R"))
 
 
 ## Load data
