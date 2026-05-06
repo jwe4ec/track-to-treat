@@ -1,6 +1,6 @@
 # track-to-treat
 
-Centralized data cleaning code for Project Track to Treat (TTT)
+Centralized data cleaning code for Phases 1-2 of Project Track to Treat (TTT)
 
 ## Project Overview
 
