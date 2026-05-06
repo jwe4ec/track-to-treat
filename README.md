@@ -15,12 +15,10 @@ Phase 2 aims (a) to use network parameters from EMA data to predict treatment re
 - After youth and their parent each completed a baseline Qualtrics survey, youth completed 21 days of EMA (5 pings per day) administered via LifePak followed by a Qualtrics intervention survey (including pre-SSI measures, random assignment to and completion of one of the three SSIs, and post-SSI measures). Youth and their parent then each completed Qualtrics surveys 3, 6, 12, 18, and 24 months later.
 - Phase 2 study registration: [https://clinicaltrials.gov/study/NCT04607902](https://clinicaltrials.gov/study/NCT04607902)
 
-TODO: Old data cleaning code, including documentation (some of which informed the code in this repository), is here:
+Old data cleaning code, including documentation (some of which informed the code in this repository), is here:
 
 * Phase 1: https://github.com/jwe4ec/ttt-p1-cleaning-old
 * Phase 2: https://github.com/jwe4ec/ttt-p2-lifepak-cleaning-old
-
-TODO: The initial centralized data cleaning code was drafted by [Michael Mullarkey](https://github.com/mcmullarkey). Lab staff who contributed to Phase I of TTT include former research coordinators Sharon Leong (formerly Chen) and Akash Shroff, and Laura Jans (research assistant at the time).
 
 ## File Organization
 
