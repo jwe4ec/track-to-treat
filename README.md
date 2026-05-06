@@ -133,9 +133,9 @@ JSLAB_DIR_UNIX = "path/to/jslab"     # For macOS/Linux
   * Clean LifePak and Qualtrics data (at baseline, intervention, and 3-24 months) for valid participants
     * But further filtering is needed if intent-to-treat (ITT) sample is desired (see below)
   * Cohort indicators for all people who inquired about study
-    * See "Phase 2 Cohort Indicators for Flow and Analysis.rds". Use this to:
+    * See `Phase 2 Cohort Indicators for Flow and Analysis.rds`. Use this to:
       * Create participant flowchart
-        * See sample sizes in "4_Create Cohort Indicators for Flow and Analysis.R"
+        * See sample sizes in `4_Create Cohort Indicators for Flow and Analysis.R`
       * Filter LSMH IDs to those for whom `analyze_itt_sample` is `TRUE` to get ITT sample
         * Defined as those randomized but not meeting free-text exclusion criteria
   
@@ -158,7 +158,7 @@ JSLAB_DIR_UNIX = "path/to/jslab"     # For macOS/Linux
   * TODO: Jeremy Eberle to review Alyssa Gorkin's initial checks of the responses (see scripts for details)
 * **Phase 1 specifics:**
   * Negative values for `interest` are recoded as 0 in the clean data
-    * "3T_P1_V1_NIS_2020_Mar_02.csv" from survey "TRACK to TREAT P1" had some negative values for `Session.Name` "3T Project Day", whose response options for this item were set from -2 to 100
+    * `3T_P1_V1_NIS_2020_Mar_02.csv` from survey "TRACK to TREAT P1" had some negative values for `Session.Name` "3T Project Day", whose response options for this item were set from -2 to 100
   * Some participants got their first notification after 7:30 am; it's unclear how or why
   * Empty rows from multiple datasets overlapping in time for LifePak ID 958251 are removed
   * Most participants have 105 total notifications, but some have fewer; it's unclear why
@@ -205,7 +205,7 @@ JSLAB_DIR_UNIX = "path/to/jslab"     # For macOS/Linux
 * **Phase 2 specifics:**
   * `load_p2_codebook()` helper expands repeated-measure items with "[x]" prefix to "b" and "[3-24]m"
   * Phone screen (entered by RA with parent on phone) is cleaned before youth/parent data at study waves
-  * To move certain rows to correct waves, the tasks below are done across waves in "Correct Codebook and Raw Youth Data.R" and "Correct Raw Parent Data.R" before cleaning each wave individually
+  * To move certain rows to correct waves, the tasks below are done across waves in `Correct Codebook and Raw Youth Data.R` and `Correct Raw Parent Data.R` before cleaning each wave individually
     * Fix item prefixes in codebook and column names in data
     * Remove extraneous columns (including click, page time variables)
     * Create "_original_dataset" column labeling each row's original survey dataset
@@ -223,11 +223,11 @@ JSLAB_DIR_UNIX = "path/to/jslab"     # For macOS/Linux
     * Youth items `sitbi_2d`, `sitbi_3c`, `sitbi_4c`: missing "is" at some waves
   * Surveys retained at each wave (given need to deduplicate surveys within assessment windows):
     * "yb": Youth who did "yb" survey in window (within 3 weeks before starting EMA) and started EMA
-      * Given that "yb" window is based on first EMA notification date (see "Youth Baseline.R")
+      * Given that "yb" window is based on first EMA notification date (see `Youth Baseline.R`)
     * "yi": Youth who did "yi" survey in window (within 6 weeks after end of 3-week EMA period)
-      * See "Youth Intervention.R"
+      * See `Youth Intervention.R`
     * "y3m-y24m": Youth who did given survey in window (3-24 months after ending "yi", +6 weeks and -1 week) and "yi" survey in window
-      * Given that "y3m-y24m" windows are based on "yi" end date (see "Youth Intervention.R")
+      * Given that "y3m-y24m" windows are based on "yi" end date (see `Youth Intervention.R`)
     * "pb", "p3m-p24m": Parents whose surveys are in same windows used for "yb" and "y3m-y24m"
     * The approximate assessment windows above were reasonably extended from the original windows
   * Data collected but not cleaned (see raw codebook for details)
@@ -241,16 +241,16 @@ JSLAB_DIR_UNIX = "path/to/jslab"     # For macOS/Linux
 
 ## Version Control
 
-* Expected raw data versions are tracked in "Raw <P1/P2> Metadata.csv" files
+* Expected raw data versions are tracked in `Raw <P1/P2> Metadata.csv` files
 * Cleaning scripts save data to `staging/` to avoid overwriting data in `final_read_only/`
 * `Create Clean Data Release.R` creates versioned "releases" of data in `final_read_only/`
   * Versions < v1.0 are for development only; versions >= v1.0 are suitable for analysis
   * To view the code (and raw data versions) for a release, go to this repo's corresponding [tag](https://github.com/jwe4ec/track-to-treat/tags)
 * This repo was transferred from https://github.com/isaacahuvia/track-to-treat on 2026-04-25
   * Before 2026-05-04, clean data were outputted to:
-    * Phase 1: "./TRACK to TREAT/Data/Clean Data (Isaac)/"
-    * Phase 2: "./TRACK to TREAT P2/Data/Clean Data (Isaac)/"
-  * On 2026-05-04, these folders were renamed to ".../Clean Data (Jeremy and Isaac)/"
+    * Phase 1: `./TRACK to TREAT/Data/Clean Data (Isaac)/`
+    * Phase 2: `./TRACK to TREAT P2/Data/Clean Data (Isaac)/`
+  * On 2026-05-04, these folders were renamed to `.../Clean Data (Jeremy and Isaac)/`
 
 ### Releases
 
