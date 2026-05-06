@@ -1,17 +1,32 @@
 # track-to-treat
 
-Centralized data cleaning code for Track to Treat
+Centralized data cleaning code for Project Track to Treat (TTT)
 
-Old data cleaning code, including documentation (some of which informed the code in this repository), is here:
+## Project Overview
 
-* Phase 1: https://github.com/jwe4ec/ttt-p1-main-analysis [TODO: URL may change]
+Phase 1 of TTT aims to use parameters from network models estimated from ecological momentary assessment (EMA) data to predict 3-month changes in depression symptoms and related constructs in depressed adolescents.
+
+- Phase 1 was an observational study and included no intervention.
+- After youth and their parent each completed a baseline Qualtrics survey, youth completed 21 days of EMA (5 pings per day) administered via LifePak followed by a Qualtrics survey 3 months later.
+
+Phase 2 aims (a) to use network parameters from EMA data to predict treatment response in depressed adolescents and (b) to test the efficacy of two single-session interventions (SSIs) over a 2-year follow-up period.
+
+- Phase 2, using a different sample from Phase 1, consisted of an observational period followed by a randomized controlled trial testing behavioral activation and growth mindset SSIs against an active control SSI.
+- After youth and their parent each completed a baseline Qualtrics survey, youth completed 21 days of EMA (5 pings per day) administered via LifePak followed by a Qualtrics intervention survey (including pre-SSI measures, random assignment to and completion of one of the three SSIs, and post-SSI measures). Youth and their parent then each completed Qualtrics surveys 3, 6, 12, 18, and 24 months later.
+- Phase 2 study registration: [https://clinicaltrials.gov/study/NCT04607902](https://clinicaltrials.gov/study/NCT04607902)
+
+TODO: Old data cleaning code, including documentation (some of which informed the code in this repository), is here:
+
+* Phase 1: https://github.com/jwe4ec/ttt-p1-cleaning-old
 * Phase 2: https://github.com/jwe4ec/ttt-p2-cleaning [TODO: URL may change]
 
-## File organization
+TODO: The initial centralized data cleaning code was drafted by [Michael Mullarkey](https://github.com/mcmullarkey). Lab staff who contributed to Phase I of TTT include former research coordinators Sharon Leong (formerly Chen) and Akash Shroff, and Laura Jans (research assistant at the time).
+
+## File Organization
 
 ### Private Data
 
-Raw and clean data and additional READMEs are stored privately in `jslab/` on FSMResFiles (see tree below). For public releases of clean data, see [Releases](#releases). 
+Raw and clean data and additional READMEs are stored privately in `jslab/` on the [FSMResFiles][FSMResFiles] server at [Northwestern's Feinberg School of Medicine][feinberg] (see tree below). For public releases of clean data, see [Releases](#releases). 
 
 ```plaintext
 jslab/                                      # JSLAB_DIR_WINDOWS or JSLAB_DIR_UNIX defined in ".Renviron"
@@ -99,7 +114,7 @@ JSLAB_DIR_UNIX = "path/to/jslab"     # For macOS/Linux
         └── QA Helper Functions.R
 ```
 
-## Data cleaning notes
+## Data Cleaning Notes
 
 ### General
 
@@ -126,7 +141,7 @@ JSLAB_DIR_UNIX = "path/to/jslab"     # For macOS/Linux
       * Filter LSMH IDs to those for whom `analyze_itt_sample` is `TRUE` to get ITT sample
         * Defined as those randomized but not meeting free-text exclusion criteria
   
-### Tracking log
+### Tracking Log
 
 * **Phase 1 specifics:**
   * Not included in cleaning pipeline
@@ -135,7 +150,7 @@ JSLAB_DIR_UNIX = "path/to/jslab"     # For macOS/Linux
     * ID lookup of LSMH and LifePak IDs (used to drop vs. keep certain IDs during cleaning)
     * Cohort indicators for participant flowchart and data analysis (see above)
 
-### LifePak data
+### LifePak Data
 
 * LifePak IDs here are 6 digits (5-digit IDs elsewhere have leading 0 here; take care when comparing IDs)
 * Clean data includes EMA surveys only (excludes "feedback surveys", which were given after EMA surveys)
@@ -159,7 +174,7 @@ JSLAB_DIR_UNIX = "path/to/jslab"     # For macOS/Linux
   * Considerably more messiness with EMA surveys given larger sample in Phase 2
   * Many participants have fewer than 105 notifications, and some have more (redownloaded app)
 
-### Qualtrics data
+### Qualtrics Data
 
 * When items are reverse-coded, cleaning scripts unreverse them (while retaining the original item name)
   * By contrast, in LifePak data, when items are reversed the suffix "_rev" is appended to the item name
@@ -226,7 +241,7 @@ JSLAB_DIR_UNIX = "path/to/jslab"     # For macOS/Linux
       * COVID-19 items
       * Prognostic Pessimism for Depression scale (PPD)
 
-## Version control
+## Version Control
 
 * Expected raw data versions are tracked in "Raw <P1/P2> Metadata.csv" files
 * Cleaning scripts save data to `staging/` to avoid overwriting data in `final_read_only/`
@@ -251,3 +266,8 @@ Public releases of clean data (excluding LifePak free responses) are stored on T
   * Phase 1: Same output as v1.0
   * Phase 2: Cleans LifePak data and Qualtrics data (collection over)
     * Clean LifePak data is outputted with and without these free responses (to deidentify in future): `most_pleasant`, `most_unpleasant`, `other`
+
+<!-- Reference Links -->
+
+[fsmresfiles]: https://www.feinberg.northwestern.edu/it/services/server-storage-and-data/research-data-storage.html
+[feinberg]: https://www.feinberg.northwestern.edu/
