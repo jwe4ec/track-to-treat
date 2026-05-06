@@ -158,7 +158,7 @@ JSLAB_DIR_UNIX = "path/to/jslab"     # For macOS/Linux
   * TODO: Jeremy Eberle to review Alyssa Gorkin's initial checks of the responses (see scripts for details)
 * **Phase 1 specifics:**
   * Negative values for `interest` are recoded as 0 in the clean data
-    * `3T_P1_V1_NIS_2020_Mar_02.csv` from survey "TRACK to TREAT P1" had some negative values for `Session.Name` "3T Project Day", whose response options for this item were set from -2 to 100
+    * `3T_P1_V1_NIS_2020_Mar_02.csv` from survey `TRACK to TREAT P1` had some negative values for `Session.Name` `3T Project Day`, whose response options for this item were set from -2 to 100
   * Some participants got their first notification after 7:30 am; it's unclear how or why
   * Empty rows from multiple datasets overlapping in time for LifePak ID 958251 are removed
   * Most participants have 105 total notifications, but some have fewer; it's unclear why
@@ -166,16 +166,16 @@ JSLAB_DIR_UNIX = "path/to/jslab"     # For macOS/Linux
   * Use LSMH ID to refer to unique participants
     * Unlike in Phase 1, multiple LifePak IDs for a given participant are not merged into one LifePak ID
     * Moreover, LifePak ID in youth baseline Qualtrics data is not cleaned
-  * Phase 2 clean data lacks Phase 1 clean data's "time_of_day" variable
-    * This is because in Phase 2 the day and night EMA surveys were both named "3T Project"
-  * Phase 2 clean data's "other" variable is equivalent to Phase 1 clean data's "other_night"
+  * Phase 2 clean data lacks Phase 1 clean data's `time_of_day` variable
+    * This is because in Phase 2 the day and night EMA surveys were both named `3T Project`
+  * Phase 2 clean data's `other` variable is equivalent to Phase 1 clean data's `other_night`
   * Considerably more messiness with EMA surveys given larger sample in Phase 2
   * Many participants have fewer than 105 notifications, and some have more (redownloaded app)
 
 ### Qualtrics Data
 
 * When items are reverse-coded, cleaning scripts unreverse them (while retaining the original item name)
-  * By contrast, in LifePak data, when items are reversed the suffix "_rev" is appended to the item name
+  * By contrast, in LifePak data, when items are reversed the suffix `_rev` is appended to the item name
 * Item excluded from composite variables
   * Parent BSI-18 item on suicidal thoughts, which was not administered
 * Some youth and parent item names differ (compare item content before comparing responses)
@@ -193,22 +193,22 @@ JSLAB_DIR_UNIX = "path/to/jslab"     # For macOS/Linux
     * Parent item `scared_c_1`, which was entered into survey incorrectly
     * Child item `scared_c_11`, which was absent from in-person baseline survey
   * Surveys retained at each wave (given need to deduplicate surveys within assessment windows):
-    * "yb": Youth who did "yb" survey in window (within 1 week before starting EMA) and started EMA
-      * Given that "yb" window is based on first EMA notification date (see youth Qualtrics script)
-      * All youth started EMA and did "yb" the day before, but 1 parent did "pb" a week early
-    * "y3m": Youth who did "y3m" survey in window (3 months after ending "yb", +6 weeks; none were early) and "yb" survey in window
-      * Given that "y3m" window is based on "yb" end date (see youth Qualtrics script)
-    * "pb", "p3m": Parents whose surveys are in same windows used for "yb" and "y3m"
+    * `yb`: Youth who did `yb` survey in window (within 1 week before starting EMA) and started EMA
+      * Given that `yb` window is based on first EMA notification date (see youth Qualtrics script)
+      * All youth started EMA and did `yb` the day before, but 1 parent did `pb` a week early
+    * `y3m`: Youth who did `y3m` survey in window (3 months after ending `yb`, +6 weeks; none were early) and `yb` survey in window
+      * Given that `y3m` window is based on `yb` end date (see youth Qualtrics script)
+    * `pb`, `p3m`: Parents whose surveys are in same windows used for `yb` and `y3m`
     * The approximate assessment windows above were reasonably extended from the original windows
   * Clean Columns section lists raw data available that have not yet been cleaned
-  * Raw timestamps are in "America/Denver" time zone
+  * Raw timestamps are in `America/Denver` time zone
 * **Phase 2 specifics:**
-  * `load_p2_codebook()` helper expands repeated-measure items with "[x]" prefix to "b" and "[3-24]m"
+  * `load_p2_codebook()` helper expands repeated-measure items with `[x]` prefix to `b` and `[3-24]m`
   * Phone screen (entered by RA with parent on phone) is cleaned before youth/parent data at study waves
   * To move certain rows to correct waves, the tasks below are done across waves in `Correct Codebook and Raw Youth Data.R` and `Correct Raw Parent Data.R` before cleaning each wave individually
     * Fix item prefixes in codebook and column names in data
     * Remove extraneous columns (including click, page time variables)
-    * Create "_original_dataset" column labeling each row's original survey dataset
+    * Create `_original_dataset` column labeling each row's original survey dataset
     * Recode certain items that interfere with binding rows across waves
     * Manually move certain rows to correct waves
   * Self-reported `_date` columns in parent data are overwritten with date from `EndDate` timestamp
@@ -222,13 +222,13 @@ JSLAB_DIR_UNIX = "path/to/jslab"     # For macOS/Linux
     * Youth item `sitbi_1a`: missing "or" at some waves
     * Youth items `sitbi_2d`, `sitbi_3c`, `sitbi_4c`: missing "is" at some waves
   * Surveys retained at each wave (given need to deduplicate surveys within assessment windows):
-    * "yb": Youth who did "yb" survey in window (within 3 weeks before starting EMA) and started EMA
-      * Given that "yb" window is based on first EMA notification date (see `Youth Baseline.R`)
-    * "yi": Youth who did "yi" survey in window (within 6 weeks after end of 3-week EMA period)
+    * `yb`: Youth who did `yb` survey in window (within 3 weeks before starting EMA) and started EMA
+      * Given that `yb` window is based on first EMA notification date (see `Youth Baseline.R`)
+    * `yi`: Youth who did `yi` survey in window (within 6 weeks after end of 3-week EMA period)
       * See `Youth Intervention.R`
-    * "y3m-y24m": Youth who did given survey in window (3-24 months after ending "yi", +6 weeks and -1 week) and "yi" survey in window
-      * Given that "y3m-y24m" windows are based on "yi" end date (see `Youth Intervention.R`)
-    * "pb", "p3m-p24m": Parents whose surveys are in same windows used for "yb" and "y3m-y24m"
+    * `y3m`-`y24m`: Youth who did given survey in window (3-24 months after ending `yi`, +6 weeks and -1 week) and `yi` survey in window
+      * Given that `y3m`-`y24m` windows are based on `yi` end date (see `Youth Intervention.R`)
+    * `pb`, `p3m`-`p24m`: Parents whose surveys are in same windows used for `yb` and `y3m`-`y24m`
     * The approximate assessment windows above were reasonably extended from the original windows
   * Data collected but not cleaned (see raw codebook for details)
     * Youth
