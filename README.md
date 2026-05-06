@@ -18,7 +18,7 @@ Phase 2 aims (a) to use network parameters from EMA data to predict treatment re
 TODO: Old data cleaning code, including documentation (some of which informed the code in this repository), is here:
 
 * Phase 1: https://github.com/jwe4ec/ttt-p1-cleaning-old
-* Phase 2: https://github.com/jwe4ec/ttt-p2-cleaning [TODO: URL may change]
+* Phase 2: https://github.com/jwe4ec/ttt-p2-lifepak-cleaning-old
 
 TODO: The initial centralized data cleaning code was drafted by [Michael Mullarkey](https://github.com/mcmullarkey). Lab staff who contributed to Phase I of TTT include former research coordinators Sharon Leong (formerly Chen) and Akash Shroff, and Laura Jans (research assistant at the time).
 
