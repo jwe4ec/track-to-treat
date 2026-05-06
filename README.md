@@ -158,7 +158,7 @@ JSLAB_DIR_UNIX = "path/to/jslab"     # For macOS/Linux
   * TODO: Jeremy Eberle to review Alyssa Gorkin's initial checks of the responses (see scripts for details)
 * **Phase 1 specifics:**
   * Negative values for `interest` are recoded as 0 in the clean data
-    * `3T_P1_V1_NIS_2020_Mar_02.csv` from survey `TRACK to TREAT P1` had some negative values for `Session.Name` `3T Project Day`, whose response options for this item were set from -2 to 100
+    * `3T_P1_V1_NIS_2020_Mar_02.csv` from survey `"TRACK to TREAT P1"` had some negative values for `Session.Name` `"3T Project Day"`, whose response options for this item were set from -2 to 100
   * Some participants got their first notification after 7:30 am; it's unclear how or why
   * Empty rows from multiple datasets overlapping in time for LifePak ID 958251 are removed
   * Most participants have 105 total notifications, but some have fewer; it's unclear why
@@ -167,7 +167,7 @@ JSLAB_DIR_UNIX = "path/to/jslab"     # For macOS/Linux
     * Unlike in Phase 1, multiple LifePak IDs for a given participant are not merged into one LifePak ID
     * Moreover, LifePak ID in youth baseline Qualtrics data is not cleaned
   * Phase 2 clean data lacks Phase 1 clean data's `time_of_day` variable
-    * This is because in Phase 2 the day and night EMA surveys were both named `3T Project`
+    * This is because in Phase 2 the day and night EMA surveys were both named `"3T Project"`
   * Phase 2 clean data's `other` variable is equivalent to Phase 1 clean data's `other_night`
   * Considerably more messiness with EMA surveys given larger sample in Phase 2
   * Many participants have fewer than 105 notifications, and some have more (redownloaded app)
