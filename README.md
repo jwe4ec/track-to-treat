@@ -1,9 +1,10 @@
 # track-to-treat
 
-Centralized data cleaning code for Phases 1-2 of Project Track to Treat (TTT)
+Centralized data cleaning code for Project Track to Treat (TTT)
 
 ## Table of Contents
 
+- [Citation](#citation)
 - [Project Overview](#project-overview)
 - [File Organization](#file-organization)
 - [General Approach](#general-approach)
@@ -13,6 +14,10 @@ Centralized data cleaning code for Phases 1-2 of Project Track to Treat (TTT)
 - [Outputs](#outputs)
 - [Version Control](#version-control)
   - [Releases](#releases)
+
+## Citation
+
+When using a given [release][#releases] of the cleaning code or associated clean data, please cite the version number and Version DOI for the release. For the full citation including this version information, see the [Release Notes][releases].
 
 ## Project Overview
 
@@ -286,6 +291,7 @@ JSLAB_DIR_UNIX = "path/to/jslab"     # For macOS/Linux
 
 [fsmresfiles]: https://www.feinberg.northwestern.edu/it/services/server-storage-and-data/research-data-storage.html
 [feinberg]: https://www.feinberg.northwestern.edu/
+[releases]: https://github.com/jwe4ec/track-to-treat/releases
 
 <!-- Footnotes -->
 
