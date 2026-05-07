@@ -21,7 +21,7 @@ When using a given [release](#releases) of the cleaning code or associated clean
 
 ## Project Overview
 
-Phase 1 of Project Track to Treat (TTT) aims to use parameters from network models fit to ecological momentary assessment (EMA) data to predict 3-month changes in depression symptoms and related constructs in depressed adolescents.
+Phase 1 of Project Track to Treat (TTT) aims to use parameters from network models fit to ecological momentary assessment (EMA) data to predict 3-month changes in symptoms in depressed adolescents.
 
 - Phase 1 was an observational study and included no intervention.
 - After youth and their parent each completed a baseline Qualtrics survey, youth completed 21 days of EMA (5 pings per day) administered via LifePak followed by a Qualtrics survey 3 months later.
