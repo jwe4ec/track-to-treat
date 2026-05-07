@@ -126,10 +126,8 @@ JSLAB_DIR_UNIX = "path/to/jslab"     # For macOS/Linux
 
 ## General Approach
 
-TODO: Update
-
 * Scripts are numbered in the order to be run
-* Scripts generally follow the same flow:
+* Scripts generally do these tasks:
   * Load data and check raw data versions
   * Remove invalid and duplicated responses
   * Merge datasets (across waves, etc.)
