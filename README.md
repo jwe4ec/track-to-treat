@@ -2,6 +2,14 @@
 
 Centralized data cleaning code for Phases 1-2 of Project Track to Treat (TTT)
 
+## Table of Contents
+
+- [Project Overview](#project-overview)
+- [File Organization](#file-organization)
+- [Data Cleaning Notes](#data-cleaning-notes)
+- [Version Control](#version-control)
+  - [Releases](#releases)
+
 ## Project Overview
 
 Phase 1 of TTT aims to use parameters from network models estimated from ecological momentary assessment (EMA) data to predict 3-month changes in depression symptoms and related constructs in depressed adolescents.
