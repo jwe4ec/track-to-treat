@@ -282,7 +282,7 @@ JSLAB_DIR_UNIX = "path/to/jslab"     # For macOS/Linux
   * Phase 1: Cleans LifePak and Qualtrics data (collection over)
     * Clean LifePak data is outputted with and without these free responses (to deidentify in future): `most_pleasant`, `most_unpleasant`, `other_night`
   * Phase 2: Not cleaned for this release
-* **v2.0 (TODO: planned)**
+* **v2.0 (2026-05-07)**
   * Phase 1: Same output as v1.0
   * Phase 2: Cleans LifePak data and Qualtrics data (collection over)
     * Clean LifePak data is outputted with and without these free responses (to deidentify in future): `most_pleasant`, `most_unpleasant`, `other`
