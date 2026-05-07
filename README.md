@@ -274,7 +274,7 @@ JSLAB_DIR_UNIX = "path/to/jslab"     # For macOS/Linux
 * Cleaning scripts save data to `staging/` to avoid overwriting data in `final_read_only/`
 * `Create Clean Data Release.R` creates versioned "releases" of data in `final_read_only/`
   * Versions < v1.0 are for development only; versions >= v1.0 are suitable for analysis
-  * To view the code (and raw data versions) for a release, go to this repo's corresponding [tag](https://github.com/jwe4ec/track-to-treat/tags)
+  * To view the code and citation for a release, see this repo's [Releases][releases]
 
 ### Releases
 
