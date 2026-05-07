@@ -36,7 +36,7 @@ Old data cleaning code, including documentation (some of which informed the code
 
 ### Private Data
 
-Raw and clean data and additional READMEs are stored privately in `jslab/` on the [FSMResFiles][FSMResFiles] server at [Northwestern's Feinberg School of Medicine][feinberg] (see tree below). For versioned releases of clean data, see [Releases](#releases). 
+Raw and clean[^1] data and additional READMEs are stored privately in `jslab/` on the [FSMResFiles][FSMResFiles] server at [Northwestern's Feinberg School of Medicine][feinberg] (see tree below). For versioned releases of clean data, see [Releases](#releases). 
 
 ```plaintext
 jslab/                                      # JSLAB_DIR_WINDOWS or JSLAB_DIR_UNIX defined in ".Renviron"
@@ -272,11 +272,6 @@ TODO: Update
 * `Create Clean Data Release.R` creates versioned "releases" of data in `final_read_only/`
   * Versions < v1.0 are for development only; versions >= v1.0 are suitable for analysis
   * To view the code (and raw data versions) for a release, go to this repo's corresponding [tag](https://github.com/jwe4ec/track-to-treat/tags)
-* This repo was transferred from https://github.com/isaacahuvia/track-to-treat on 2026-04-25
-  * Before 2026-05-04, clean data were outputted to:
-    * Phase 1: `./TRACK to TREAT/Data/Clean Data (Isaac)/`
-    * Phase 2: `./TRACK to TREAT P2/Data/Clean Data (Isaac)/`
-  * On 2026-05-04, these folders were renamed to `.../Clean Data (Jeremy and Isaac)/`
 
 ### Releases
 
@@ -293,3 +288,11 @@ TODO: Update
 
 [fsmresfiles]: https://www.feinberg.northwestern.edu/it/services/server-storage-and-data/research-data-storage.html
 [feinberg]: https://www.feinberg.northwestern.edu/
+
+<!-- Footnotes -->
+
+[^1]: This repo was transferred from https://github.com/isaacahuvia/track-to-treat on 2026-04-25
+  * Before 2026-05-04, clean data were outputted to:
+    * Phase 1: `./TRACK to TREAT/Data/Clean Data (Isaac)/`
+    * Phase 2: `./TRACK to TREAT P2/Data/Clean Data (Isaac)/`
+  * On 2026-05-04, these folders were renamed to `.../Clean Data (Jeremy and Isaac)/`
