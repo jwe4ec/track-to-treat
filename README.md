@@ -17,7 +17,7 @@ Centralized data cleaning code for Project Track to Treat (TTT)
 
 ## Citation
 
-When using a given [release][#releases] of the cleaning code or associated clean data, please cite the version number and Version DOI for the release. For the full citation including this version information, see the [Release Notes][releases].
+When using a given [release](#releases) of the cleaning code or associated clean data, please cite the version number and Version DOI for the release. **For the full citation including this version information, see the [Release Notes][releases].**
 
 ## Project Overview
 
