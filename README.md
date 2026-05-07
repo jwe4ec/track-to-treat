@@ -24,7 +24,7 @@ Old data cleaning code, including documentation (some of which informed the code
 
 ### Private Data
 
-Raw and clean data and additional READMEs are stored privately in `jslab/` on the [FSMResFiles][FSMResFiles] server at [Northwestern's Feinberg School of Medicine][feinberg] (see tree below). For public releases of clean data, see [Releases](#releases). 
+Raw and clean data and additional READMEs are stored privately in `jslab/` on the [FSMResFiles][FSMResFiles] server at [Northwestern's Feinberg School of Medicine][feinberg] (see tree below). For versioned releases of clean data, see [Releases](#releases). 
 
 ```plaintext
 jslab/                                      # JSLAB_DIR_WINDOWS or JSLAB_DIR_UNIX defined in ".Renviron"
@@ -253,8 +253,6 @@ JSLAB_DIR_UNIX = "path/to/jslab"     # For macOS/Linux
   * On 2026-05-04, these folders were renamed to `.../Clean Data (Jeremy and Isaac)/`
 
 ### Releases
-
-Public releases of clean data (excluding LifePak free responses) are stored on TODO (decide whether to link to this OSF project: https://osf.io/yjv72).
 
 * **v1.0 (2025-05-12)**
   * Phase 1: Cleans LifePak and Qualtrics data (collection over)
