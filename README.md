@@ -13,11 +13,11 @@ Centralized data cleaning for Project Track to Treat
 - [Qualtrics Data Cleaning](#qualtrics-data-cleaning)
 - [Outputs](#outputs)
 - [Version Control](#version-control)
-  - [Releases](#releases)
+- [Phase-Specific Releases](#phase-specific-releases)
 
 ## Citation
 
-When using a given [release](#releases) of the cleaning code or associated clean data, please cite the version number and Version DOI for the release. **For the full citation including this version information, see the [Release Notes][releases].**
+When using a given [release](#phase-specific-releases) of this code or associated clean data, please cite the version number and Version DOI for the release. **For the citation including this version information, see the [Release Notes][releases].**
 
 ## Project Overview
 
@@ -167,6 +167,8 @@ JSLAB_DIR_UNIX = "path/to/jslab"     # For macOS/Linux
 * Some participants got their first notification after 7:30 am; it's unclear how or why
 * Empty rows from multiple datasets overlapping in time for LifePak ID 958251 are removed
 * Most participants have 105 total notifications, but some have fewer; it's unclear why
+* Clean data is outputted with and without these free responses (to deidentify in future):
+  * `most_pleasant`, `most_unpleasant`, `other_night`
 
 ### Phase 2 Specifics
 
@@ -178,6 +180,8 @@ JSLAB_DIR_UNIX = "path/to/jslab"     # For macOS/Linux
 * Phase 2 clean data's `other` variable is equivalent to Phase 1 clean data's `other_night`
 * Considerably more messiness with EMA surveys given larger sample in Phase 2
 * Many participants have fewer than 105 notifications, and some have more (redownloaded app)
+* Clean data is outputted with and without these free responses (to deidentify in future):
+  * `most_pleasant`, `most_unpleasant`, `other`
 
 ## Qualtrics Data Cleaning
 
@@ -272,20 +276,43 @@ JSLAB_DIR_UNIX = "path/to/jslab"     # For macOS/Linux
 
 * Expected raw data versions are tracked in `Raw <P1/P2> Metadata.csv` files
 * Cleaning scripts save data to `staging/` to avoid overwriting data in `final_read_only/`
-* `Create Clean Data Release.R` creates versioned "releases" of data in `final_read_only/`
-  * Versions < v1.0 are for development only; versions >= v1.0 are suitable for analysis
-  * To view the code and citation for a release, see this repo's [Releases][releases]
 
-### Releases
+## Phase-Specific Releases
 
-* **v1.0 (2025-05-12)**
-  * Phase 1: Cleans LifePak and Qualtrics data (collection over)
-    * Clean LifePak data is outputted with and without these free responses (to deidentify in future): `most_pleasant`, `most_unpleasant`, `other_night`
-  * Phase 2: Not cleaned for this release
-* **v2.0 (2026-05-07)**
-  * Phase 1: Same output as v1.0
-  * Phase 2: Cleans LifePak data and Qualtrics data (collection over)
-    * Clean LifePak data is outputted with and without these free responses (to deidentify in future): `most_pleasant`, `most_unpleasant`, `other`
+* Although this development repository houses code for both Phases 1-2, releases are phase-specific
+  * Each phase has its own version numbers, OSF project (for clean data), and Zenodo record (for code)
+* New releases of both data and code are created after key updates to a phase's clean data/code/docs
+
+### Clean Data Releases
+
+* `Create Clean Data Release.R` creates versioned local "releases" of data in `final_read_only/`
+* A copy of the phase's data release is uploaded in a ZIP to the phase's OSF project
+  * TODO: The OSF projects are currently private but eventually will be public
+    * Phase 1 OSF project: https://osf.io/yjv72
+    * Phase 2 OSF project: https://osf.io/8pa3z
+  * LifePak free responses are excluded from the upload
+* Do not delete any previous releases (they may be used in certain analyses!)
+
+### Corresponding Code Releases
+
+* See this repo's [Releases][releases] for:
+  * The phase's scripts (uploaded in a ZIP to Assets) that were run to create a given data release
+    * The notes and ZIP are also uploaded to the phase's Zenodo record, which mints a Version DOI
+    * (For snapshot of whole repo at time of release, see source code ZIP in Assets or link to tag)
+  * **Citation for a given release's code and associated clean data**
+    * Please cite this (vs. the OSF project), as it includes both the version number and Version DOI
+
+### Phase 1 Releases
+
+* **TODO (create tag): phase1_v1.1 (2026-05-09)**
+  * Updates code and README; clean data unchanged from `phase1_v1.0`
+* **TODO (change tag): phase1_v1.0 (2025-05-12)**
+  * Cleans LifePak and Qualtrics data (collection over)
+
+### Phase 2 Releases
+
+* **TODO (create tag): phase2_v1.0 (2026-05-09)**
+  * Cleans LifePak and Qualtrics data (collection over)
 
 <!-- Reference Links -->
 
