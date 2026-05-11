@@ -138,11 +138,11 @@ See supplemental READMEs for Phases
 
 ## Phase-Specific Releases
 
-* Although this development repository houses code for both Phases 1-2, releases are phase-specific
-  * Each phase has its own version numbers, OSF project (for clean data), and Zenodo record (for code)
+* Although this repository houses code for both Phases 1-2, releases are phase-specific
+  * Each phase has its own version numbers, OSF project (for clean data), Zenodo record (for code), and citation
 * New releases of both data and code are created after key updates to a phase's clean data/code/docs
 
-### Clean Data Releases
+### Clean Data
 
 * `Create Clean Data Release.R` creates versioned local "releases" of data in `final_read_only/`
 * A copy of the phase's data release is uploaded in a ZIP to the phase's OSF project
@@ -152,7 +152,7 @@ See supplemental READMEs for Phases
   * LifePak free responses are excluded from the upload
 * Do not delete any previous releases (they may be used in certain analyses!)
 
-### Corresponding Code Releases
+### Corresponding Code
 
 * See this repo's [Releases][releases] for:
   * The phase's scripts (uploaded in a ZIP to Assets) that were run to create a given data release
