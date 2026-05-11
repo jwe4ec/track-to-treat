@@ -85,7 +85,7 @@ JSLAB_DIR_UNIX = "path/to/jslab"     # For macOS/Linux
 
 ## Tracking Log Cleaning
 
-See supplemental READMEs for Phases [1](/Phase 1/README.md) and [2](/Phase 2/README.md)
+See supplemental READMEs for Phases [1](./Phase 1/README.md) and [2](./Phase 2/README.md)
 
 ## LifePak Data Cleaning
 
@@ -96,7 +96,7 @@ See supplemental READMEs for Phases [1](/Phase 1/README.md) and [2](/Phase 2/REA
 * LifePak cleaning scripts output free-responses to check for identifiers to intermediate data folder
   * TODO: Jeremy Eberle to review Alyssa Gorkin's initial checks of the responses (see scripts for details)
 
-For phase-specific details, see supplemental READMEs for Phases [1](/Phase 1/README.md) and [2](/Phase 2/README.md)
+For phase-specific details, see supplemental READMEs for Phases [1](./Phase 1/README.md) and [2](./Phase 2/README.md)
 
 ## Qualtrics Data Cleaning
 
@@ -114,11 +114,11 @@ For phase-specific details, see supplemental READMEs for Phases [1](/Phase 1/REA
 * Take care when comparing timestamps between LifePak/Qualtrics datasets (different time zones)
 * Ranges of youth SITBI-SF items need to be checked against those expected
 
-For phase-specific details, see supplemental READMEs for Phases [1](/Phase 1/README.md) and [2](/Phase 2/README.md)
+For phase-specific details, see supplemental READMEs for Phases [1](./Phase 1/README.md) and [2](./Phase 2/README.md)
 
 ## Outputs
 
-See supplemental READMEs for Phases [1](/Phase 1/README.md) and [2](/Phase 2/README.md)
+See supplemental READMEs for Phases [1](./Phase 1/README.md) and [2](./Phase 2/README.md)
 
 ## Version Control
 
