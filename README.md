@@ -17,7 +17,7 @@ Centralized data cleaning for Project Track to Treat
 
 ## Citation
 
-When using a given [phase-specific release](#phase-specific-releases) of this code or associated clean data, please cite the version number and Version DOI for the phase's release. **For the citation including this version info, see the [Release Notes][releases].**
+When using a given [phase-specific release](#phase-specific-releases) of this code or associated clean data, please cite the version number and Version DOI for the release. **For the citation including this version info, see the [Release Notes][releases].**
 
 ## Project Overview
 
