@@ -41,7 +41,7 @@ Old data cleaning code, including documentation (some of which informed the code
 
 ### Private Data
 
-Raw and clean data and additional READMEs are stored privately in `jslab/` on the [FSMResFiles][FSMResFiles] server at [Northwestern's Feinberg School of Medicine][feinberg] (see tree below). For versioned releases of clean data, see [Releases](#releases). 
+Raw and clean data and additional READMEs are stored privately in `jslab/` on the [FSMResFiles][FSMResFiles] server at [Northwestern's Feinberg School of Medicine][feinberg] (see tree below). For versioned releases of clean data, see [Phase-Specific Releases](#phase-specific-releases). 
 
 ```plaintext
 jslab/                       # JSLAB_DIR_WINDOWS or JSLAB_DIR_UNIX defined in ".Renviron"
