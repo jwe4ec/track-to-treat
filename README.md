@@ -51,7 +51,7 @@ jslab/                       # JSLAB_DIR_WINDOWS or JSLAB_DIR_UNIX defined in ".
 ```
 
 For details on data folders, see supplemental READMEs for Phases
-[1](./Phase%201/README.md#private-data) and [2](./Phase%202/README.md#private-data)
+[1](./Phase%201/README.md#private-data) and [2](./Phase%202/README.md#private-data).
 
 ### Code
 
@@ -77,7 +77,7 @@ JSLAB_DIR_UNIX = "path/to/jslab"     # For macOS/Linux
 ```
 
 For details on cleaning folders, see supplemental READMEs for Phases 
-[1](./Phase%201/README.md#code) and [2](./Phase%202/README.md#code)
+[1](./Phase%201/README.md#code) and [2](./Phase%202/README.md#code).
 
 ## General Approach
 
@@ -92,7 +92,7 @@ For details on cleaning folders, see supplemental READMEs for Phases
 ## Tracking Log Cleaning
 
 See supplemental READMEs for Phases 
-[1](./Phase%201/README.md#tracking-log-cleaning) and [2](./Phase%202/README.md#tracking-log-cleaning)
+[1](./Phase%201/README.md#tracking-log-cleaning) and [2](./Phase%202/README.md#tracking-log-cleaning).
 
 ## LifePak Data Cleaning
 
@@ -104,7 +104,7 @@ See supplemental READMEs for Phases
   * TODO: Jeremy Eberle to review Alyssa Gorkin's initial checks of the responses (see scripts for details)
 
 For phase-specific details, see supplemental READMEs for Phases
-[1](./Phase%201/README.md#lifepak-data-cleaning) and [2](./Phase%202/README.md#lifepak-data-cleaning)
+[1](./Phase%201/README.md#lifepak-data-cleaning) and [2](./Phase%202/README.md#lifepak-data-cleaning).
 
 ## Qualtrics Data Cleaning
 
@@ -123,12 +123,12 @@ For phase-specific details, see supplemental READMEs for Phases
 * Ranges of youth SITBI-SF items need to be checked against those expected
 
 For phase-specific details, see supplemental READMEs for Phases 
-[1](./Phase%201/README.md#qualtrics-data-cleaning) and [2](./Phase%202/README.md#qualtrics-data-cleaning)
+[1](./Phase%201/README.md#qualtrics-data-cleaning) and [2](./Phase%202/README.md#qualtrics-data-cleaning).
 
 ## Outputs
 
 See supplemental READMEs for Phases
-[1](./Phase%201/README.md#outputs) and [2](./Phase%202/README.md#outputs)
+[1](./Phase%201/README.md#outputs) and [2](./Phase%202/README.md#outputs).
 
 ## Version Control
 
