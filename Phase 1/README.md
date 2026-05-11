@@ -40,7 +40,7 @@ jslab/                                      # JSLAB_DIR_WINDOWS or JSLAB_DIR_UNI
 |   ├── Version Control.R
 |   └── Qualtrics Cleaning.R
 |
-└── Phase 1/
+└── Phase 1/  # Phase 1 cleaning
     ├── Raw P1 Metadata.csv
     ├── 2025.05.01 Track to Treat P1 Codebook.xlsx  # Item-level codebook used to clean Qualtrics data
     ├── 1_Clean LifePak Data.R

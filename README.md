@@ -50,6 +50,8 @@ jslab/                       # JSLAB_DIR_WINDOWS or JSLAB_DIR_UNIX defined in ".
 └── TRACK to TREAT P2/Data/  # Phase 2 data folder
 ```
 
+For details on data folders, see supplemental READMEs for Phases [1](./Phase%201/README.md) and [2](./Phase%202/README.md)
+
 ### Code
 
 After downloading this repo, create an `.Renviron` file (do not commit it to GitHub) in the project root (shown as `.` in tree below). In `.Renviron`, set the path to `jslab/` by defining one of these environment variables:
@@ -69,9 +71,11 @@ JSLAB_DIR_UNIX = "path/to/jslab"     # For macOS/Linux
 |   ├── Version Control.R
 |   └── Qualtrics Cleaning.R
 |
-├── Phase 1/  # Phase 1 cleaning scripts
-└── Phase 2/  # Phase 2 cleaning scripts
+├── Phase 1/  # Phase 1 cleaning
+└── Phase 2/  # Phase 2 cleaning
 ```
+
+For details on cleaning folders, see supplemental READMEs for Phases [1](./Phase%201/README.md) and [2](./Phase%202/README.md)
 
 ## General Approach
 

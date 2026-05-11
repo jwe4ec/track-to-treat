@@ -41,7 +41,7 @@ jslab/                                      # JSLAB_DIR_WINDOWS or JSLAB_DIR_UNI
 |   ├── Version Control.R
 |   └── Qualtrics Cleaning.R
 |
-└── Phase 2/
+└── Phase 2/  # Phase 2 cleaning
     ├── Raw P2 Metadata.csv
     ├── 2026.04.18 Track to Treat P2 Codebook.xlsx  # Item-level codebook used to clean Qualtrics data
     ├── 1_Clean Tracking Log and Create ID Lookup.R
