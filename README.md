@@ -118,7 +118,7 @@ For phase-specific details, see supplemental READMEs for Phases [1](./Phase%201/
 
 ## Outputs
 
-See supplemental READMEs for Phases [1](./Phase 1/README.md) and [2](./Phase%202/README.md)
+See supplemental READMEs for Phases [1](./Phase%201/README.md) and [2](./Phase%202/README.md)
 
 ## Version Control
 
