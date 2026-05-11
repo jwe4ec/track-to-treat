@@ -17,7 +17,7 @@ Centralized data cleaning for Project Track to Treat
 
 ## Citation
 
-When using a given [release](#phase-specific-releases) of this code or associated clean data, please cite the version number and Version DOI for the release. **For the citation including this version info, see the [Release Notes][releases].**
+When using a given [phase-specific release](#phase-specific-releases) of this code or associated clean data, please cite the version number and Version DOI for the phase's release. **For the citation including this version info, see the [Release Notes][releases].**
 
 ## Project Overview
 
@@ -154,11 +154,11 @@ See supplemental READMEs for Phases
 ### Corresponding Code
 
 * See this repo's [Releases][releases] for:
-  * The phase's scripts (uploaded in a ZIP to Assets) run to create a given data release
+  * The phase's scripts (uploaded in a ZIP to Assets) that were run to create a given data release
     * The notes and ZIP are also uploaded to the phase's Zenodo record, which mints a Version DOI
-    * (For snapshot of whole repo at release time, see source code ZIP in Assets or link to tag)
+    * (For snapshot of whole repo at time of release, see source code ZIP in Assets or link to tag)
   * **Citation for a given release's code and associated clean data**
-    * Cite this (vs. OSF project), as it includes both the version number and Version DOI
+    * Please cite this (vs. the OSF project), as it includes both the version number and Version DOI
 
 ### Phase 1 Releases
 
