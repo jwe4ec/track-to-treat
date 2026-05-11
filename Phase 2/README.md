@@ -22,7 +22,7 @@ jslab/TRACK to TREAT P2/Data/           # Phase 2 data folder
 ├── LifePak/2025.05.21/                 # Raw LifePak data
 ├── Qualtrics/Raw/2026.02.26_final/     # Raw Qualtrics data
 └── Clean Data (Jeremy and Isaac)/
-    ├── staging/                        # Clean data staged for release to "final_read_only/
+    ├── staging/                        # Clean data staged for release to "final_read_only/"
     │   └── intermediate/               # Intermediate data used in data cleaning
     └── final_read_only/                # Versioned releases of clean Phase 2 data
 ```
