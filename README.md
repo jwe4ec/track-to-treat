@@ -163,7 +163,7 @@ See supplemental READMEs for Phases
 ### Phase 1 Releases
 
 * **TODO (create tag): phase1_v1.1 (2026-05-11)**
-  * Updates code and README; clean data unchanged from `phase1_v1.0`
+  * Updates code and README, but does not change clean data
 * **TODO (change tag): phase1_v1.0 (2025-05-12)**
   * Cleans LifePak and Qualtrics data (collection over)
 
