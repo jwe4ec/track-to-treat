@@ -16,40 +16,30 @@ to Phases 1-2, with additional details specific to Phase 1.
 ### Private Data
 
 ```plaintext
-jslab/                                      # JSLAB_DIR_WINDOWS or JSLAB_DIR_UNIX defined in ".Renviron"
-|
-└── TRACK to TREAT/Data/                    # Phase 1 data folder
-    ├── readme_ttt_p1.docx                  # Data collection README
-    ├── LifePak Raw Data (Do Not Modify)/   # Raw LifePak data
-    ├── Qualtrics Data/Raw Data/            # Raw Qualtrics data
-    └── Clean Data (Jeremy and Isaac)/
-        ├── staging/                        # Clean data staged for release to "final_read_only/"
-        │   └── intermediate/               # Intermediate data used in data cleaning
-        └── final_read_only/                # Versioned releases of clean Phase 1 data
+jslab/TRACK to TREAT/Data/             # Phase 1 data folder
+├── readme_ttt_p1.docx                 # Data collection README
+├── LifePak Raw Data (Do Not Modify)/  # Raw LifePak data
+├── Qualtrics Data/Raw Data/           # Raw Qualtrics data
+└── Clean Data (Jeremy and Isaac)/
+    ├── staging/                       # Clean data staged for release to "final_read_only/"
+    │   └── intermediate/              # Intermediate data used in data cleaning
+    └── final_read_only/               # Versioned releases of clean Phase 1 data
 ```
 
 ### Code
 
 ```plaintext
-.
-├── .Renviron  # Excluded from GitHub; defines JSLAB_DIR_WINDOWS or JSLAB_DIR_UNIX
-├── .gitignore  # Used to prevent committing ".Renviron" and other files to GitHub
+./Phase 1/  # Phase 1 cleaning
 ├── README.md
-├── Helper Functions/  # Used across Phases 1-2
-|   ├── Directories.R
-|   ├── Version Control.R
-|   └── Qualtrics Cleaning.R
-|
-└── Phase 1/  # Phase 1 cleaning
-    ├── Raw P1 Metadata.csv
-    ├── 2025.05.01 Track to Treat P1 Codebook.xlsx  # Item-level codebook used to clean Qualtrics data
-    ├── 1_Clean LifePak Data.R
-    ├── 2_Clean Youth Qualtrics Data and Add LSMH ID to LifePak Data.R
-    ├── 3_Clean Parent Qualtrics Data.R
-    ├── 4_Create Clean Data Release.R
-    └── QA/
-        ├── Check Overlap.R  # Checking ID overlap across datasets
-        └── Compare Clean LifePak Datasets.R  # Checking clean LifePak data to previous versions
+├── Raw P1 Metadata.csv
+├── 2025.05.01 Track to Treat P1 Codebook.xlsx  # Item-level codebook used to clean Qualtrics data
+├── 1_Clean LifePak Data.R
+├── 2_Clean Youth Qualtrics Data and Add LSMH ID to LifePak Data.R
+├── 3_Clean Parent Qualtrics Data.R
+├── 4_Create Clean Data Release.R
+└── QA/
+    ├── Check Overlap.R  # Checking ID overlap across datasets
+    └── Compare Clean LifePak Datasets.R  # Checking clean LifePak data to previous versions
 ```
 
 ## Tracking Log Cleaning

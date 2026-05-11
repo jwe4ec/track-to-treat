@@ -16,62 +16,52 @@ to Phases 1-2, with additional details specific to Phase 2.
 ### Private Data
 
 ```plaintext
-jslab/                                      # JSLAB_DIR_WINDOWS or JSLAB_DIR_UNIX defined in ".Renviron"
-|
-└── TRACK to TREAT P2/Data/                 # Phase 2 data folder
-    ├── README_ttt_p2_data_collection.docx  # Data collection README
-    ├── Tracking Log/                       # Raw tracking log
-    ├── LifePak/2025.05.21/                 # Raw LifePak data
-    ├── Qualtrics/Raw/2026.02.26_final/     # Raw Qualtrics data
-    └── Clean Data (Jeremy and Isaac)/
-        ├── staging/                        # Clean data staged for release to "final_read_only/
-        │   └── intermediate/               # Intermediate data used in data cleaning
-        └── final_read_only/                # Versioned releases of clean Phase 2 data
+jslab/TRACK to TREAT P2/Data/           # Phase 2 data folder
+├── README_ttt_p2_data_collection.docx  # Data collection README
+├── Tracking Log/                       # Raw tracking log
+├── LifePak/2025.05.21/                 # Raw LifePak data
+├── Qualtrics/Raw/2026.02.26_final/     # Raw Qualtrics data
+└── Clean Data (Jeremy and Isaac)/
+    ├── staging/                        # Clean data staged for release to "final_read_only/
+    │   └── intermediate/               # Intermediate data used in data cleaning
+    └── final_read_only/                # Versioned releases of clean Phase 2 data
 ```
 
 ### Code
 
 ```plaintext
-.
-├── .Renviron  # Excluded from GitHub; defines JSLAB_DIR_WINDOWS or JSLAB_DIR_UNIX
-├── .gitignore  # Used to prevent committing ".Renviron" and other files to GitHub
+./Phase 2/  # Phase 2 cleaning
 ├── README.md
-├── Helper Functions/  # Used across Phases 1-2
-|   ├── Directories.R
-|   ├── Version Control.R
-|   └── Qualtrics Cleaning.R
-|
-└── Phase 2/  # Phase 2 cleaning
-    ├── Raw P2 Metadata.csv
-    ├── 2026.04.18 Track to Treat P2 Codebook.xlsx  # Item-level codebook used to clean Qualtrics data
-    ├── 1_Clean Tracking Log and Create ID Lookup.R
-    ├── 2_Clean Phone Screen Data.R
-    ├── 3_Clean LifePak Data.R
-    ├── 4_Clean Youth Qualtrics Data/
-    │   ├── 1_Correct Codebook and Raw Youth Data.R
-    │   ├── 2_Youth Baseline.R
-    │   ├── 3_Youth Intervention.R
-    │   ├── 4_Youth 3m.R
-    │   ├── 5_Youth 6m.R
-    │   ├── 6_Youth 12m.R
-    │   ├── 7_Youth 18m.R
-    │   ├── 8_Youth 24m.R
-    │   └── 9_Merge Youth Qualtrics Data.R
-    ├── 5_Clean Parent Qualtrics Data/
-    │   ├── 1_Correct Raw Parent Data.R
-    │   ├── 2_Parent Baseline.R
-    │   ├── 3_Parent 3m.R
-    │   ├── 4_Parent 6m.R
-    │   ├── 5_Parent 12m.R
-    │   ├── 6_Parent 18m.R
-    │   ├── 7_Parent 24m.R
-    │   └── 8_Merge Parent Qualtrics Data.R
-    ├── 6_Create Cohort Indicators for Flow and Analysis.R
-    ├── 7_Create Clean Data Release.R
-    └── QA/  # Scripts checking for issues to clean
-        ├── 1_Inspect Raw Qualtrics Data and Codebook.R
-        ├── 2_Check Measure Item Metadata Across Waves.R
-        └── QA Helper Functions.R
+├── Raw P2 Metadata.csv
+├── 2026.04.18 Track to Treat P2 Codebook.xlsx  # Item-level codebook used to clean Qualtrics data
+├── 1_Clean Tracking Log and Create ID Lookup.R
+├── 2_Clean Phone Screen Data.R
+├── 3_Clean LifePak Data.R
+├── 4_Clean Youth Qualtrics Data/
+│   ├── 1_Correct Codebook and Raw Youth Data.R
+│   ├── 2_Youth Baseline.R
+│   ├── 3_Youth Intervention.R
+│   ├── 4_Youth 3m.R
+│   ├── 5_Youth 6m.R
+│   ├── 6_Youth 12m.R
+│   ├── 7_Youth 18m.R
+│   ├── 8_Youth 24m.R
+│   └── 9_Merge Youth Qualtrics Data.R
+├── 5_Clean Parent Qualtrics Data/
+│   ├── 1_Correct Raw Parent Data.R
+│   ├── 2_Parent Baseline.R
+│   ├── 3_Parent 3m.R
+│   ├── 4_Parent 6m.R
+│   ├── 5_Parent 12m.R
+│   ├── 6_Parent 18m.R
+│   ├── 7_Parent 24m.R
+│   └── 8_Merge Parent Qualtrics Data.R
+├── 6_Create Cohort Indicators for Flow and Analysis.R
+├── 7_Create Clean Data Release.R
+└── QA/  # Scripts checking for issues to clean
+    ├── 1_Inspect Raw Qualtrics Data and Codebook.R
+    ├── 2_Check Measure Item Metadata Across Waves.R
+    └── QA Helper Functions.R
 ```
 
 ## Tracking Log Cleaning
