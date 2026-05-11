@@ -134,6 +134,7 @@ See supplemental READMEs for Phases
 
 * Expected raw data versions are tracked in `Raw <P1/P2> Metadata.csv` files
 * Cleaning scripts save data to `staging/` to avoid overwriting data in `final_read_only/`
+* This repo was transferred from https://github.com/isaacahuvia/track-to-treat on 2026-04-25
 
 ## Phase-Specific Releases
 
@@ -177,7 +178,3 @@ See supplemental READMEs for Phases
 [fsmresfiles]: https://www.feinberg.northwestern.edu/it/services/server-storage-and-data/research-data-storage.html
 [feinberg]: https://www.feinberg.northwestern.edu/
 [releases]: https://github.com/jwe4ec/track-to-treat/releases
-
-<!-- Footnotes -->
-
-[^1]: Before this repo was transferred from https://github.com/isaacahuvia/track-to-treat on 2026-04-25, clean data were outputted to `.../Clean Data (Isaac)/` (renamed `.../Clean Data (Jeremy and Isaac)/`).

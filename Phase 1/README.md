@@ -26,6 +26,8 @@ jslab/TRACK to TREAT/Data/             # Phase 1 data folder
     └── final_read_only/               # Versioned releases of clean Phase 1 data
 ```
 
+- Before 2026-04-25, clean data were outputted to `.../Clean Data (Isaac)/` (renamed `.../Clean Data (Jeremy and Isaac)/`)
+
 ### Code
 
 ```plaintext
