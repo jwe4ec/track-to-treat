@@ -149,8 +149,8 @@ create_data_release <- function(clean_data_staging_dir, clean_data_final_dir, ph
       "Version:    ", version, "\n",
       "Created By: ", firstname, "\n\n",
       
-      "Folder:\n",
-      clean_data_final_folder_dir, "\n\n",
+      "Folder (without path to 'jslab/'):\n",
+      sub(get_jslab_dir(), "jslab", clean_data_final_folder_dir), "\n\n",
       
       "Clean Data Files:\n",
       paste(names(staged_files), collapse = "\n"), "\n\n",
