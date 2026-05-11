@@ -1,6 +1,6 @@
 # Phase 2 Specifics
 
-This README supplements the [main README](/track-to-treat/README.md), which applies
+This README supplements the [main README](/README.md), which applies
 to Phases 1-2, with additional details specific to Phase 2.
 
 ## Table of Contents
