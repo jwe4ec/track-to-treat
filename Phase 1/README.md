@@ -13,7 +13,7 @@ to Phases 1-2, with additional details specific to Phase 1.
 
 ## File Organization
 
-### Phase 1 Private Data Folder
+### Private Data
 
 ```plaintext
 jslab/TRACK to TREAT/Data/             # Phase 1 data folder
@@ -26,7 +26,7 @@ jslab/TRACK to TREAT/Data/             # Phase 1 data folder
     └── final_read_only/               # Versioned releases of clean Phase 1 data
 ```
 
-### Phase 1 Cleaning Code Folder
+### Code
 
 ```plaintext
 ./Phase 1/  # Phase 1 cleaning

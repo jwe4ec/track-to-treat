@@ -50,7 +50,8 @@ jslab/                       # JSLAB_DIR_WINDOWS or JSLAB_DIR_UNIX defined in ".
 └── TRACK to TREAT P2/Data/  # Phase 2 data folder
 ```
 
-For details on data folders, see supplemental READMEs for Phases [1](./Phase%201/README.md) and [2](./Phase%202/README.md)
+For details on data folders, see supplemental READMEs for Phases
+[1](./Phase%201/README.md#private-data) and [2](./Phase%202/README.md#private-data)
 
 ### Code
 
@@ -75,7 +76,8 @@ JSLAB_DIR_UNIX = "path/to/jslab"     # For macOS/Linux
 └── Phase 2/  # Phase 2 cleaning
 ```
 
-For details on cleaning folders, see supplemental READMEs for Phases [1](./Phase%201/README.md) and [2](./Phase%202/README.md)
+For details on cleaning folders, see supplemental READMEs for Phases 
+[1](./Phase%201/README.md#code) and [2](./Phase%202/README.md#code)
 
 ## General Approach
 
@@ -89,7 +91,8 @@ For details on cleaning folders, see supplemental READMEs for Phases [1](./Phase
 
 ## Tracking Log Cleaning
 
-See supplemental READMEs for Phases [1](./Phase%201/README.md) and [2](./Phase%202/README.md)
+See supplemental READMEs for Phases 
+[1](./Phase%201/README.md#tracking-log-cleaning) and [2](./Phase%202/README.md#tracking-log-cleaning)
 
 ## LifePak Data Cleaning
 
@@ -100,7 +103,8 @@ See supplemental READMEs for Phases [1](./Phase%201/README.md) and [2](./Phase%2
 * LifePak cleaning scripts output free-responses to check for identifiers to intermediate data folder
   * TODO: Jeremy Eberle to review Alyssa Gorkin's initial checks of the responses (see scripts for details)
 
-For phase-specific details, see supplemental READMEs for Phases [1](./Phase%201/README.md) and [2](./Phase%202/README.md)
+For phase-specific details, see supplemental READMEs for Phases
+[1](./Phase%201/README.md#lifepak-data-cleaning) and [2](./Phase%202/README.md#lifepak-data-cleaning)
 
 ## Qualtrics Data Cleaning
 
@@ -118,11 +122,13 @@ For phase-specific details, see supplemental READMEs for Phases [1](./Phase%201/
 * Take care when comparing timestamps between LifePak/Qualtrics datasets (different time zones)
 * Ranges of youth SITBI-SF items need to be checked against those expected
 
-For phase-specific details, see supplemental READMEs for Phases [1](./Phase%201/README.md) and [2](./Phase%202/README.md)
+For phase-specific details, see supplemental READMEs for Phases 
+[1](./Phase%201/README.md#qualtrics-data-cleaning) and [2](./Phase%202/README.md#qualtrics-data-cleaning)
 
 ## Outputs
 
-See supplemental READMEs for Phases [1](./Phase%201/README.md) and [2](./Phase%202/README.md)
+See supplemental READMEs for Phases
+[1](./Phase%201/README.md#outputs) and [2](./Phase%202/README.md#outputs)
 
 ## Version Control
 
