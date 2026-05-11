@@ -158,7 +158,7 @@ See supplemental READMEs for Phases
     * The notes and ZIP are also uploaded to the phase's Zenodo record, which mints a Version DOI
     * (For snapshot of whole repo at time of release, see source code ZIP in Assets or link to tag)
   * **Citation for a given release's code and associated clean data**
-    * Please cite this (vs. the OSF project), as it includes both the version number and Version DOI
+    * **Please cite this (vs. the OSF project), as it includes both the version number and Version DOI**
 
 ### Phase 1 Releases
 
