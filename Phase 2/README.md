@@ -70,7 +70,7 @@ jslab/TRACK to TREAT P2/Data/           # Phase 2 data folder
 
 * Phase Sheet of tracking log is cleaned and used to create the following
   * ID lookup of LSMH and LifePak IDs (used to drop vs. keep certain IDs during cleaning)
-  * Cohort indicators for participant flowchart and data analysis (see above)
+  * Cohort indicators for participant flowchart and data analysis (see [Outputs](#outputs))
 
 ## LifePak Data Cleaning
 
