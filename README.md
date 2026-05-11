@@ -17,7 +17,7 @@ Centralized data cleaning for Project Track to Treat
 
 ## Citation
 
-When using a given [release](#phase-specific-releases) of this code or associated clean data, please cite the version number and Version DOI for the release. **For the citation including this version information, see the [Release Notes][releases].**
+When using a given [release](#phase-specific-releases) of this code or associated clean data, please cite the version number and Version DOI for the release. **For the citation including this version info, see the [Release Notes][releases].**
 
 ## Project Overview
 
@@ -147,8 +147,8 @@ See supplemental READMEs for Phases
 * `Create Clean Data Release.R` creates versioned local "releases" of data in `final_read_only/`
 * A copy of the phase's data release is uploaded in a ZIP to the phase's OSF project
   * TODO: The OSF projects are currently private but eventually will be public
-    * Phase 1 OSF project: https://osf.io/yjv72
-    * Phase 2 OSF project: https://osf.io/8pa3z
+    * **Phase 1 OSF project:** https://osf.io/yjv72
+    * **Phase 2 OSF project:** https://osf.io/8pa3z
   * LifePak free responses are excluded from the upload
 * Do not delete any previous releases (they may be used in certain analyses!)
 
