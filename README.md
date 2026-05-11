@@ -146,9 +146,8 @@ See supplemental READMEs for Phases
 
 * `Create Clean Data Release.R` creates versioned local "releases" of data in `final_read_only/`
 * A copy of the phase's data release is uploaded in a ZIP to the phase's OSF project
-  * TODO: The OSF projects are currently private but eventually will be public
-    * **Phase 1 OSF project:** https://osf.io/yjv72
-    * **Phase 2 OSF project:** https://osf.io/8pa3z
+  * **Phase 1 OSF project:** https://osf.io/yjv72  (TODO: eventually will be public)
+  * **Phase 2 OSF project:** https://osf.io/8pa3z  (TODO: eventually will be public)
   * LifePak free responses are excluded from the upload
 * Do not delete any previous releases (they may be used in certain analyses!)
 
@@ -163,14 +162,14 @@ See supplemental READMEs for Phases
 
 ### Phase 1 Releases
 
-* **TODO (create tag): phase1_v1.1 (2026-05-09)**
+* **TODO (create tag): phase1_v1.1 (2026-05-11)**
   * Updates code and README; clean data unchanged from `phase1_v1.0`
 * **TODO (change tag): phase1_v1.0 (2025-05-12)**
   * Cleans LifePak and Qualtrics data (collection over)
 
 ### Phase 2 Releases
 
-* **TODO (create tag): phase2_v1.0 (2026-05-09)**
+* **TODO (create tag): phase2_v1.0 (2026-05-11)**
   * Cleans LifePak and Qualtrics data (collection over)
 
 <!-- Reference Links -->
