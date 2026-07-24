@@ -1,0 +1,1027 @@
+---
+title: "TTT Phase 2 Primary Analyses: ADULT CDI-P"
+author: "Damien Lekkas"
+date: "2026-06-19"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+0. LOAD REQUIRED PACKAGES
+```{r }
+library(dplyr)
+library(tidyr)
+library(nlme)
+library(emmeans)
+library(ggplot2)
+```
+
+
+1. GET ITT SAMPLE TO ANALYZE (n = 215)
+```{r }
+
+cohort_indicators <- readRDS("/users/Damien/Desktop/TTT_Phase2_Analyses/Cleaned_Data/2026-05-11_v1.0_Phase 2 Cohort Indicators for Flow and Analysis.rds")
+itt_sample_ids <- cohort_indicators$lsmh_id[which(cohort_indicators$analyze_itt_sample == TRUE)]
+
+```
+
+
+2. READ IN YOUTH DATA AND SUBSET BY ITT SAMPLE ID
+```{r }
+
+youth_data_IN <- readRDS("/users/Damien/Desktop/TTT_Phase2_Analyses/Cleaned_Data/2026-05-11_v1.0_Phase 2 Youth Qualtrics Clean Data - All Waves.rds")
+youth_itt_data <- youth_data_IN[which(youth_data_IN$lsmh_id %in% itt_sample_ids),]
+
+```
+
+
+3. READ IN PARENT DATA AND SUBSET BY ITT SAMPLE ID
+```{r }
+
+parent_data_IN <- readRDS("/users/Damien/Desktop/TTT_Phase2_Analyses/Cleaned_Data/2026-05-11_v1.0_Phase 2 Parent Qualtrics Clean Data - All Waves.rds")
+parent_itt_data <- parent_data_IN[which(parent_data_IN$lsmh_id %in% itt_sample_ids),]
+
+```
+
+
+4. ADULT CDI-2-P MODEL
+```{r }
+
+#Filter Data
+parent_cdi_data_wide <- parent_itt_data %>%
+  select(matches("lsmh_id"), matches("condition"), contains("cdi_mean"))
+
+#Reshape to Long Format
+parent_cdi_data_wide$condition <- factor(parent_cdi_data_wide$condition, levels=c("ST", "BA", "GMI"))
+parent_cdi_data_wide <- parent_cdi_data_wide %>% rename(id = lsmh_id)
+parent_cdi_data_wide <- parent_cdi_data_wide %>% rename('1' = pb_cdi_mean)
+parent_cdi_data_wide <- parent_cdi_data_wide %>% rename('2' = p3m_cdi_mean)
+parent_cdi_data_wide <- parent_cdi_data_wide %>% rename('3' = p6m_cdi_mean)
+parent_cdi_data_wide <- parent_cdi_data_wide %>% rename('4' = p12m_cdi_mean)
+parent_cdi_data_wide <- parent_cdi_data_wide %>% rename('5' = p18m_cdi_mean)
+parent_cdi_data_wide <- parent_cdi_data_wide %>% rename('6' = p24m_cdi_mean)
+
+parent_cdi_data_long <- pivot_longer(data = parent_cdi_data_wide, 
+                               cols = c("1", "2", "3", "4", "5", "6"),
+                               names_to = "time", 
+                               values_to = "cdi",
+                               values_drop_na = FALSE)
+parent_cdi_data_long$time <- as.integer(parent_cdi_data_long$time)
+
+attach(parent_cdi_data_long)
+month <- time
+month[time == 1] <- 0
+month[time == 2] <- 3
+month[time == 3] <- 6
+month[time == 4] <- 12
+month[time == 5] <- 18
+month[time == 6] <- 24
+month.f <- factor(month, c(0, 3, 6, 12, 18, 24)) 
+
+
+#Define Mean Response Model and Unstructured Residual Covariance Model in Advance
+fml <- cdi ~ I(month.f == 3) + I(month.f == 6) + I(month.f == 12) + I(month.f == 18) + I(month.f == 24) + 
+  I(month.f == 3 & condition == "BA") + I(month.f == 6 & condition == "BA") + I(month.f == 12 & condition == "BA") + 
+  I(month.f == 18 & condition == "BA") + I(month.f == 24 & condition == "BA") +
+  I(month.f == 3 & condition == "GMI") + I(month.f == 6 & condition == "GMI") + I(month.f == 12 & condition == "GMI") + 
+  I(month.f == 18 & condition == "GMI") + I(month.f == 24 & condition == "GMI")
+  
+cor_un <- corSymm(form = ~ time | id)
+var_un <- varIdent(form = ~ 1 | month.f)
+
+set.seed(10111952)
+cdi_mod_OUT <- gls(fml, corr = cor_un, weights = var_un, na.action = na.omit)
+
+desmatrix_cdi_mod_OUT <- model.matrix(cdi_mod_OUT)
+colnames(desmatrix_cdi_mod_OUT)
+desmatrix_df_cdi_mod_OUT <- data.frame(desmatrix_cdi_mod_OUT)
+summary(cdi_mod_OUT)
+
+```
+
+
+5. COMPUTE MARGINAL MEANS MANUALLY
+```{r }
+
+#Create marginal means matrix including dummy variables that parallel the model
+mm_grid <- expand.grid(condition = c("ST", "BA", "GMI"), time = c("1", "2", "3", "4", "5", "6"))
+
+mm_grid$t2 <- ifelse(mm_grid$time == "2", 1, 0)
+mm_grid$t3 <- ifelse(mm_grid$time == "3", 1, 0)
+mm_grid$t4 <- ifelse(mm_grid$time == "4", 1, 0)
+mm_grid$t5 <- ifelse(mm_grid$time == "5", 1, 0)
+mm_grid$t6 <- ifelse(mm_grid$time == "6", 1, 0)
+
+mm_grid$t2_BA <- ifelse(mm_grid$time == "2" & mm_grid$condition == "BA", 1, 0)
+mm_grid$t3_BA <- ifelse(mm_grid$time == "3" & mm_grid$condition == "BA", 1, 0)
+mm_grid$t4_BA <- ifelse(mm_grid$time == "4" & mm_grid$condition == "BA", 1, 0)
+mm_grid$t5_BA <- ifelse(mm_grid$time == "5" & mm_grid$condition == "BA", 1, 0)
+mm_grid$t6_BA <- ifelse(mm_grid$time == "6" & mm_grid$condition == "BA", 1, 0)
+
+mm_grid$t2_GMI <- ifelse(mm_grid$time == "2" & mm_grid$condition == "GMI", 1, 0)
+mm_grid$t3_GMI <- ifelse(mm_grid$time == "3" & mm_grid$condition == "GMI", 1, 0)
+mm_grid$t4_GMI <- ifelse(mm_grid$time == "4" & mm_grid$condition == "GMI", 1, 0)
+mm_grid$t5_GMI <- ifelse(mm_grid$time == "5" & mm_grid$condition == "GMI", 1, 0)
+mm_grid$t6_GMI <- ifelse(mm_grid$time == "6" & mm_grid$condition == "GMI", 1, 0)
+
+
+#Get beta weights and their variance-covariance matrix
+beta <- coef(cdi_mod_OUT)
+vcov_matrix <- vcov(cdi_mod_OUT)
+
+
+#Create selection vector X
+selvect_X <- model.matrix(~ t2 + t3 + t4 + t5 + t6 + t2_BA + t3_BA + t4_BA + t5_BA + t6_BA +
+                            t2_GMI + t3_GMI + t4_GMI + t5_GMI + t6_GMI, data = mm_grid)
+
+
+#Compute estimated marginal mean = X * beta
+mm_grid$marginal_mean <- as.numeric(selvect_X %*% beta)
+
+
+#Compute SE for marginal mean = sqrt(diag(X*V*X'))
+mm_grid$se <- sqrt(diag(selvect_X %*% vcov_matrix %*% t(selvect_X)))
+
+
+# Compute 95% CI for marginal mean using large-sample normal approximation
+mm_grid$ci_lo <- mm_grid$marginal_mean - 1.96 * mm_grid$se
+mm_grid$ci_hi <- mm_grid$marginal_mean + 1.96 * mm_grid$se
+mm_grid
+```
+
+
+
+6. SELECT AND CALCULATE CONFIRMATORY CONTRASTS AND CORRECT FOR MULTIPLE HYPOTHESES
+
+6A. BETWEEN-GROUP CONTRASTS (4)
+```{r }
+btwn_group_contrast_results_df <- data.frame(contrast = character(),
+                                             estimate = numeric(),
+                                             ci_lo = numeric(),
+                                             ci_hi = numeric(),
+                                             pvalue = numeric(),
+                                             adj_pval = numeric(),
+                                             cohens_d = numeric(),
+                                             stringsAsFactors = FALSE)
+
+
+#1. BA VS ST @ 3 MONTHS
+BA_3mo <- selvect_X[mm_grid$condition == "BA" & mm_grid$time == "2", , drop = FALSE]
+ST_3mo <- selvect_X[mm_grid$condition == "ST" & mm_grid$time == "2", , drop = FALSE]
+
+#Create contrast vector
+contvect <- BA_3mo - ST_3mo
+
+#Compute contrast estimate and SE
+BA_ST_3mo_est <- as.numeric(contvect %*% beta)
+BA_ST_3mo_se  <- sqrt(as.numeric(contvect %*% vcov_matrix %*% t(contvect)))
+
+#Compute 95% CI using large-sample normal approximation
+BA_ST_3mo_ci_lo <- BA_ST_3mo_est - 1.96 * BA_ST_3mo_se
+BA_ST_3mo_ci_hi <- BA_ST_3mo_est + 1.96 * BA_ST_3mo_se
+
+#Compute p value using Wald statistic
+BA_ST_3mo_z <- BA_ST_3mo_est / BA_ST_3mo_se
+BA_ST_3mo_p <- 2 * pnorm(abs(BA_ST_3mo_z), lower.tail = FALSE)
+
+
+
+#2. BA VS ST @ 6 MONTHS
+BA_6mo <- selvect_X[mm_grid$condition == "BA" & mm_grid$time == "3", , drop = FALSE]
+ST_6mo <- selvect_X[mm_grid$condition == "ST" & mm_grid$time == "3", , drop = FALSE]
+
+#Create contrast vector
+contvect <- BA_6mo - ST_6mo
+
+#Compute contrast estimate and SE
+BA_ST_6mo_est <- as.numeric(contvect %*% beta)
+BA_ST_6mo_se  <- sqrt(as.numeric(contvect %*% vcov_matrix %*% t(contvect)))
+
+#Compute 95% CI using large-sample normal approximation
+BA_ST_6mo_ci_lo <- BA_ST_6mo_est - 1.96 * BA_ST_6mo_se
+BA_ST_6mo_ci_hi <- BA_ST_6mo_est + 1.96 * BA_ST_6mo_se
+
+#Compute p value using Wald statistic
+BA_ST_6mo_z <- BA_ST_6mo_est / BA_ST_6mo_se
+BA_ST_6mo_p <- 2 * pnorm(abs(BA_ST_6mo_z), lower.tail = FALSE)
+
+
+
+#3. GMI VS ST @ 3 MONTHS
+GMI_3mo <- selvect_X[mm_grid$condition == "GMI" & mm_grid$time == "2", , drop = FALSE]
+ST_3mo <- selvect_X[mm_grid$condition == "ST" & mm_grid$time == "2", , drop = FALSE]
+
+#Create contrast vector
+contvect <- GMI_3mo - ST_3mo
+
+#Compute contrast estimate and SE
+GMI_ST_3mo_est <- as.numeric(contvect %*% beta)
+GMI_ST_3mo_se  <- sqrt(as.numeric(contvect %*% vcov_matrix %*% t(contvect)))
+
+#Compute 95% CI using large-sample normal approximation
+GMI_ST_3mo_ci_lo <- GMI_ST_3mo_est - 1.96 * GMI_ST_3mo_se
+GMI_ST_3mo_ci_hi <- GMI_ST_3mo_est + 1.96 * GMI_ST_3mo_se
+
+#Compute p value using Wald statistic
+GMI_ST_3mo_z <- GMI_ST_3mo_est / GMI_ST_3mo_se
+GMI_ST_3mo_p <- 2 * pnorm(abs(GMI_ST_3mo_z), lower.tail = FALSE)
+
+
+
+#4. GMI VS ST @ 6 MONTHS
+GMI_6mo <- selvect_X[mm_grid$condition == "GMI" & mm_grid$time == "3", , drop = FALSE]
+ST_6mo <- selvect_X[mm_grid$condition == "ST" & mm_grid$time == "3", , drop = FALSE]
+
+#Create contrast vector
+contvect <- GMI_6mo - ST_6mo
+
+#Compute contrast estimate and SE
+GMI_ST_6mo_est <- as.numeric(contvect %*% beta)
+GMI_ST_6mo_se  <- sqrt(as.numeric(contvect %*% vcov_matrix %*% t(contvect)))
+
+#Compute 95% CI using large-sample normal approximation
+GMI_ST_6mo_ci_lo <- GMI_ST_6mo_est - 1.96 * GMI_ST_6mo_se
+GMI_ST_6mo_ci_hi <- GMI_ST_6mo_est + 1.96 * GMI_ST_6mo_se
+
+#Compute p value using Wald statistic
+GMI_ST_6mo_z <- GMI_ST_6mo_est / GMI_ST_6mo_se
+GMI_ST_6mo_p <- 2 * pnorm(abs(GMI_ST_6mo_z), lower.tail = FALSE)
+
+
+#Compute adjusted p-values, pooled sd, and Cohens D and put results together
+btwn_group_adj_pvals <- p.adjust(c(BA_ST_3mo_p, BA_ST_6mo_p, GMI_ST_3mo_p, GMI_ST_6mo_p), "holm")
+btwn_group_pooled_sd <- sd(parent_cdi_data_long$cdi[which(parent_cdi_data_long$time == 1)])
+
+btwn_group_contrast_results_df <- rbind(btwn_group_contrast_results_df,
+                                        data.frame(contrast = "BA vs ST @ 3mo", 
+                                                estimate = BA_ST_3mo_est, 
+                                                ci_lo = BA_ST_3mo_ci_lo, 
+                                                ci_hi = BA_ST_3mo_ci_hi, 
+                                                pvalue = BA_ST_3mo_p,
+                                                adj_pval = btwn_group_adj_pvals[1],
+                                                cohens_d = BA_ST_3mo_est/btwn_group_pooled_sd))
+
+btwn_group_contrast_results_df <- rbind(btwn_group_contrast_results_df,
+                                        data.frame(contrast = "BA vs ST @ 6mo", 
+                                                estimate = BA_ST_6mo_est, 
+                                                ci_lo = BA_ST_6mo_ci_lo, 
+                                                ci_hi = BA_ST_6mo_ci_hi, 
+                                                pvalue = BA_ST_6mo_p,
+                                                adj_pval = btwn_group_adj_pvals[2],
+                                                cohens_d = BA_ST_6mo_est/btwn_group_pooled_sd))
+
+btwn_group_contrast_results_df <- rbind(btwn_group_contrast_results_df,
+                                        data.frame(contrast = "GMI vs ST @ 3mo", 
+                                                estimate = GMI_ST_3mo_est, 
+                                                ci_lo = GMI_ST_3mo_ci_lo, 
+                                                ci_hi = GMI_ST_3mo_ci_hi, 
+                                                pvalue = GMI_ST_3mo_p,
+                                                adj_pval = btwn_group_adj_pvals[3],
+                                                cohens_d = GMI_ST_3mo_est/btwn_group_pooled_sd))
+
+
+btwn_group_contrast_results_df <- rbind(btwn_group_contrast_results_df,
+                                        data.frame(contrast = "GMI vs ST @ 6mo", 
+                                                estimate = GMI_ST_6mo_est, 
+                                                ci_lo = GMI_ST_6mo_ci_lo, 
+                                                ci_hi = GMI_ST_6mo_ci_hi, 
+                                                pvalue = GMI_ST_6mo_p,
+                                                adj_pval = btwn_group_adj_pvals[4],
+                                                cohens_d = GMI_ST_6mo_est/btwn_group_pooled_sd))
+
+(btwn_group_contrast_results_df)
+
+#Save output table
+btwn_group_contrast_results_df <- btwn_group_contrast_results_df %>% mutate(across(where(is.numeric), round, digits = 3))
+btwn_group_contrast_results_table_OUT <- flextable(btwn_group_contrast_results_df) %>%
+  theme_booktabs() %>%
+  autofit()
+save_as_docx(btwn_group_contrast_results_table_OUT, path = "/users/Damien/Desktop/parent_CDI-2-P_confirmatory_btwn_group_contrasts_table.docx")
+
+```
+
+
+6B. WITHIN-GROUP CONTRASTS (4)
+```{r }
+within_group_contrast_results_df <- data.frame(contrast = character(),
+                                               estimate = numeric(),
+                                               ci_lo = numeric(),
+                                               ci_hi = numeric(),
+                                               pvalue = numeric(),
+                                               adj_pval = numeric(),
+                                               cohens_d = numeric(),
+                                               stringsAsFactors = FALSE)
+
+#1. BA FROM BASELINE TO 3 MONTHS
+BA_base <- selvect_X[mm_grid$condition == "BA" & mm_grid$time == "1", , drop = FALSE]
+BA_3mo <- selvect_X[mm_grid$condition == "BA" & mm_grid$time == "2", , drop = FALSE]
+
+#Create contrast vector
+contvect <- BA_3mo - BA_base
+
+#Compute contrast estimate and SE
+BA_base_3mo_est <- as.numeric(contvect %*% beta)
+BA_base_3mo_se  <- sqrt(as.numeric(contvect %*% vcov_matrix %*% t(contvect)))
+
+#Compute 95% CI using large-sample normal approximation
+BA_base_3mo_ci_lo <- BA_base_3mo_est - 1.96 * BA_base_3mo_se
+BA_base_3mo_ci_hi <- BA_base_3mo_est + 1.96 * BA_base_3mo_se
+
+#Compute p value using Wald statistic
+BA_base_3mo_z <- BA_base_3mo_est / BA_base_3mo_se
+BA_base_3mo_p <- 2 * pnorm(abs(BA_base_3mo_z), lower.tail = FALSE)
+
+
+#2. BA FROM BASELINE TO 6 MONTHS
+BA_base <- selvect_X[mm_grid$condition == "BA" & mm_grid$time == "1", , drop = FALSE]
+BA_6mo <- selvect_X[mm_grid$condition == "BA" & mm_grid$time == "3", , drop = FALSE]
+
+#Create contrast vector
+contvect <- BA_6mo - BA_base
+
+#Compute contrast estimate and SE
+BA_base_6mo_est <- as.numeric(contvect %*% beta)
+BA_base_6mo_se  <- sqrt(as.numeric(contvect %*% vcov_matrix %*% t(contvect)))
+
+#Compute 95% CI using large-sample normal approximation
+BA_base_6mo_ci_lo <- BA_base_6mo_est - 1.96 * BA_base_6mo_se
+BA_base_6mo_ci_hi <- BA_base_6mo_est + 1.96 * BA_base_6mo_se
+
+#Compute p value using Wald statistic
+BA_base_6mo_z <- BA_base_6mo_est / BA_base_6mo_se
+BA_base_6mo_p <- 2 * pnorm(abs(BA_base_6mo_z), lower.tail = FALSE)
+
+
+
+#3. GMI FROM BASELINE TO 3 MONTHS
+GMI_base <- selvect_X[mm_grid$condition == "GMI" & mm_grid$time == "1", , drop = FALSE]
+GMI_3mo <- selvect_X[mm_grid$condition == "GMI" & mm_grid$time == "2", , drop = FALSE]
+
+#Create contrast vector
+contvect <- GMI_3mo - GMI_base
+
+#Compute contrast estimate and SE
+GMI_base_3mo_est <- as.numeric(contvect %*% beta)
+GMI_base_3mo_se  <- sqrt(as.numeric(contvect %*% vcov_matrix %*% t(contvect)))
+
+#Compute 95% CI using large-sample normal approximation
+GMI_base_3mo_ci_lo <- GMI_base_3mo_est - 1.96 * GMI_base_3mo_se
+GMI_base_3mo_ci_hi <- GMI_base_3mo_est + 1.96 * GMI_base_3mo_se
+
+#Compute p value using Wald statistic
+GMI_base_3mo_z <- GMI_base_3mo_est / GMI_base_3mo_se
+GMI_base_3mo_p <- 2 * pnorm(abs(GMI_base_3mo_z), lower.tail = FALSE)
+
+
+#4. GMI FROM BASELINE TO 6 MONTHS
+GMI_base <- selvect_X[mm_grid$condition == "GMI" & mm_grid$time == "1", , drop = FALSE]
+GMI_6mo <- selvect_X[mm_grid$condition == "GMI" & mm_grid$time == "3", , drop = FALSE]
+
+#Create contrast vector
+contvect <- GMI_6mo - GMI_base
+
+#Compute contrast estimate and SE
+GMI_base_6mo_est <- as.numeric(contvect %*% beta)
+GMI_base_6mo_se  <- sqrt(as.numeric(contvect %*% vcov_matrix %*% t(contvect)))
+
+#Compute 95% CI using large-sample normal approximation
+GMI_base_6mo_ci_lo <- GMI_base_6mo_est - 1.96 * GMI_base_6mo_se
+GMI_base_6mo_ci_hi <- GMI_base_6mo_est + 1.96 * GMI_base_6mo_se
+
+#Compute p value using Wald statistic
+GMI_base_6mo_z <- GMI_base_6mo_est / GMI_base_6mo_se
+GMI_base_6mo_p <- 2 * pnorm(abs(GMI_base_6mo_z), lower.tail = FALSE)
+
+
+#Calculate adjusted p-values, condition-specific baseline sds to compute Cohen's D, and put results together
+within_group_adj_pvals <- p.adjust(c(BA_base_3mo_p, BA_base_6mo_p, GMI_base_3mo_p, GMI_base_6mo_p), "holm")
+
+BA_baseline_sd <- sd(parent_cdi_data_long$cdi[which(parent_cdi_data_long$time == 1 & parent_cdi_data_long$condition == "BA")])
+GMI_baseline_sd <- sd(parent_cdi_data_long$cdi[which(parent_cdi_data_long$time == 1 & parent_cdi_data_long$condition == "GMI")])
+
+within_group_contrast_results_df <- rbind(within_group_contrast_results_df,
+                                        data.frame(contrast = "BA @ base vs BA @ 3mo", 
+                                                estimate = BA_base_3mo_est, 
+                                                ci_lo = BA_base_3mo_ci_lo, 
+                                                ci_hi = BA_base_3mo_ci_hi, 
+                                                pvalue = BA_base_3mo_p,
+                                                adj_pval = within_group_adj_pvals[1],
+                                                cohens_d = BA_base_3mo_est/BA_baseline_sd))
+
+within_group_contrast_results_df <- rbind(within_group_contrast_results_df,
+                                        data.frame(contrast = "BA @ base vs BA @ 6mo", 
+                                                estimate = BA_base_6mo_est, 
+                                                ci_lo = BA_base_6mo_ci_lo, 
+                                                ci_hi = BA_base_6mo_ci_hi, 
+                                                pvalue = BA_base_6mo_p,
+                                                adj_pval = within_group_adj_pvals[2],
+                                                cohens_d = BA_base_6mo_est/BA_baseline_sd))
+
+within_group_contrast_results_df <- rbind(within_group_contrast_results_df,
+                                        data.frame(contrast = "GMI @ base vs GMI @ 3mo", 
+                                                estimate = GMI_base_3mo_est, 
+                                                ci_lo = GMI_base_3mo_ci_lo, 
+                                                ci_hi = GMI_base_3mo_ci_hi, 
+                                                pvalue = GMI_base_3mo_p,
+                                                adj_pval = within_group_adj_pvals[3],
+                                                cohens_d = GMI_base_3mo_est/GMI_baseline_sd))
+
+
+within_group_contrast_results_df <- rbind(within_group_contrast_results_df,
+                                        data.frame(contrast = "GMI @ base vs GMI @ 6mo", 
+                                                estimate = GMI_base_6mo_est, 
+                                                ci_lo = GMI_base_6mo_ci_lo, 
+                                                ci_hi = GMI_base_6mo_ci_hi, 
+                                                pvalue = GMI_base_6mo_p,
+                                                adj_pval = within_group_adj_pvals[4],
+                                                cohens_d = GMI_base_6mo_est/GMI_baseline_sd))
+
+(within_group_contrast_results_df)
+
+#Save output table
+within_group_contrast_results_df <- within_group_contrast_results_df %>% mutate(across(where(is.numeric), round, digits = 4))
+within_group_contrast_results_table_OUT <- flextable(within_group_contrast_results_df) %>%
+  theme_booktabs() %>%
+  autofit()
+save_as_docx(within_group_contrast_results_table_OUT, path = "/users/Damien/Desktop/parent_CDI-2-P_confirmatory_within_group_contrasts_table.docx")
+
+```
+
+
+7. SELECT AND CALCULATE EXPLORATORY CONTRASTS AND CORRECT FOR MULTIPLE HYPOTHESES
+
+7A. BETWEEN-GROUP CONTRASTS (5) 
+```{r }
+exp_btwn_group_contrast_results_df <- data.frame(contrast = character(),
+                                                 estimate = numeric(),
+                                                 ci_lo = numeric(),
+                                                 ci_hi = numeric(),
+                                                 pvalue = numeric(),
+                                                 adj_pval = numeric(),
+                                                 cohens_d = numeric(),
+                                                 stringsAsFactors = FALSE)
+
+#1. BA VS GMI @ 3 MONTHS
+BA_3mo <- selvect_X[mm_grid$condition == "BA" & mm_grid$time == "2", , drop = FALSE]
+GMI_3mo <- selvect_X[mm_grid$condition == "GMI" & mm_grid$time == "2", , drop = FALSE]
+
+#Create contrast vector
+contvect <- BA_3mo - GMI_3mo
+
+#Compute contrast estimate and SE
+BA_GMI_3mo_est <- as.numeric(contvect %*% beta)
+BA_GMI_3mo_se  <- sqrt(as.numeric(contvect %*% vcov_matrix %*% t(contvect)))
+
+#Compute 95% CI using large-sample normal approximation
+BA_GMI_3mo_ci_lo <- BA_GMI_3mo_est - 1.96 * BA_GMI_3mo_se
+BA_GMI_3mo_ci_hi <- BA_GMI_3mo_est + 1.96 * BA_GMI_3mo_se
+
+#Compute p value using Wald statistic
+BA_GMI_3mo_z <- BA_GMI_3mo_est / BA_GMI_3mo_se
+BA_GMI_3mo_p <- 2 * pnorm(abs(BA_GMI_3mo_z), lower.tail = FALSE)
+
+
+
+
+#2. BA VS GMI @ 6 MONTHS
+BA_6mo <- selvect_X[mm_grid$condition == "BA" & mm_grid$time == "3", , drop = FALSE]
+GMI_6mo <- selvect_X[mm_grid$condition == "GMI" & mm_grid$time == "3", , drop = FALSE]
+
+#Create contrast vector
+contvect <- BA_6mo - GMI_6mo
+
+#Compute contrast estimate and SE
+BA_GMI_6mo_est <- as.numeric(contvect %*% beta)
+BA_GMI_6mo_se  <- sqrt(as.numeric(contvect %*% vcov_matrix %*% t(contvect)))
+
+#Compute 95% CI using large-sample normal approximation
+BA_GMI_6mo_ci_lo <- BA_GMI_6mo_est - 1.96 * BA_GMI_6mo_se
+BA_GMI_6mo_ci_hi <- BA_GMI_6mo_est + 1.96 * BA_GMI_6mo_se
+
+#Compute p value using Wald statistic
+BA_GMI_6mo_z <- BA_GMI_6mo_est / BA_GMI_6mo_se
+BA_GMI_6mo_p <- 2 * pnorm(abs(BA_GMI_6mo_z), lower.tail = FALSE)
+
+
+
+
+#3. BA VS GMI @ 12 MONTHS
+BA_12mo <- selvect_X[mm_grid$condition == "BA" & mm_grid$time == "4", , drop = FALSE]
+GMI_12mo <- selvect_X[mm_grid$condition == "GMI" & mm_grid$time == "4", , drop = FALSE]
+
+#Create contrast vector
+contvect <- BA_12mo - GMI_12mo
+
+#Compute contrast estimate and SE
+BA_GMI_12mo_est <- as.numeric(contvect %*% beta)
+BA_GMI_12mo_se  <- sqrt(as.numeric(contvect %*% vcov_matrix %*% t(contvect)))
+
+#Compute 95% CI using large-sample normal approximation
+BA_GMI_12mo_ci_lo <- BA_GMI_12mo_est - 1.96 * BA_GMI_12mo_se
+BA_GMI_12mo_ci_hi <- BA_GMI_12mo_est + 1.96 * BA_GMI_12mo_se
+
+#Compute p value using Wald statistic
+BA_GMI_12mo_z <- BA_GMI_12mo_est / BA_GMI_12mo_se
+BA_GMI_12mo_p <- 2 * pnorm(abs(BA_GMI_12mo_z), lower.tail = FALSE)
+
+
+
+
+#4. BA VS GMI @ 18 MONTHS
+BA_18mo <- selvect_X[mm_grid$condition == "BA" & mm_grid$time == "5", , drop = FALSE]
+GMI_18mo <- selvect_X[mm_grid$condition == "GMI" & mm_grid$time == "5", , drop = FALSE]
+
+#Create contrast vector
+contvect <- BA_18mo - GMI_18mo
+
+#Compute contrast estimate and SE
+BA_GMI_18mo_est <- as.numeric(contvect %*% beta)
+BA_GMI_18mo_se  <- sqrt(as.numeric(contvect %*% vcov_matrix %*% t(contvect)))
+
+#Compute 95% CI using large-sample normal approximation
+BA_GMI_18mo_ci_lo <- BA_GMI_18mo_est - 1.96 * BA_GMI_18mo_se
+BA_GMI_18mo_ci_hi <- BA_GMI_18mo_est + 1.96 * BA_GMI_18mo_se
+
+#Compute p value using Wald statistic
+BA_GMI_18mo_z <- BA_GMI_18mo_est / BA_GMI_18mo_se
+BA_GMI_18mo_p <- 2 * pnorm(abs(BA_GMI_18mo_z), lower.tail = FALSE)
+
+
+
+
+#5. BA VS GMI @ 24 MONTHS
+BA_24mo <- selvect_X[mm_grid$condition == "BA" & mm_grid$time == "6", , drop = FALSE]
+GMI_24mo <- selvect_X[mm_grid$condition == "GMI" & mm_grid$time == "6", , drop = FALSE]
+
+#Create contrast vector
+contvect <- BA_24mo - GMI_24mo
+
+#Compute contrast estimate and SE
+BA_GMI_24mo_est <- as.numeric(contvect %*% beta)
+BA_GMI_24mo_se  <- sqrt(as.numeric(contvect %*% vcov_matrix %*% t(contvect)))
+
+#Compute 95% CI using large-sample normal approximation
+BA_GMI_24mo_ci_lo <- BA_GMI_24mo_est - 1.96 * BA_GMI_24mo_se
+BA_GMI_24mo_ci_hi <- BA_GMI_24mo_est + 1.96 * BA_GMI_24mo_se
+
+#Compute p value using Wald statistic
+BA_GMI_24mo_z <- BA_GMI_24mo_est / BA_GMI_24mo_se
+BA_GMI_24mo_p <- 2 * pnorm(abs(BA_GMI_24mo_z), lower.tail = FALSE)
+
+
+#Compute adjusted p-values, pooled sd, and Cohens D and put results together
+exp_btwn_group_adj_pvals <- p.adjust(c(BA_GMI_3mo_p, BA_GMI_6mo_p, BA_GMI_12mo_p, BA_GMI_18mo_p, BA_GMI_24mo_p), "BH")
+
+exp_btwn_group_pooled_sd <- sd(parent_cdi_data_long$cdi[which(parent_cdi_data_long$time == 1)], na.rm = T)
+
+exp_btwn_group_contrast_results_df <- rbind(exp_btwn_group_contrast_results_df,
+                                            data.frame(contrast = "BA vs GMI @ 3mo", 
+                                                       estimate = BA_GMI_3mo_est, 
+                                                       ci_lo = BA_GMI_3mo_ci_lo, 
+                                                       ci_hi = BA_GMI_3mo_ci_hi, 
+                                                       pvalue = BA_GMI_3mo_p,
+                                                       adj_pval = exp_btwn_group_adj_pvals[1],
+                                                       cohens_d = BA_GMI_3mo_est/exp_btwn_group_pooled_sd))
+
+exp_btwn_group_contrast_results_df <- rbind(exp_btwn_group_contrast_results_df,
+                                            data.frame(contrast = "BA vs GMI @ 6mo", 
+                                                       estimate = BA_GMI_6mo_est, 
+                                                       ci_lo = BA_GMI_6mo_ci_lo, 
+                                                       ci_hi = BA_GMI_6mo_ci_hi, 
+                                                       pvalue = BA_GMI_6mo_p,
+                                                       adj_pval = exp_btwn_group_adj_pvals[2],
+                                                       cohens_d = BA_GMI_6mo_est/exp_btwn_group_pooled_sd))
+
+exp_btwn_group_contrast_results_df <- rbind(exp_btwn_group_contrast_results_df,
+                                            data.frame(contrast = "BA vs GMI @ 12mo", 
+                                                       estimate = BA_GMI_12mo_est, 
+                                                       ci_lo = BA_GMI_12mo_ci_lo, 
+                                                       ci_hi = BA_GMI_12mo_ci_hi, 
+                                                       pvalue = BA_GMI_12mo_p,
+                                                       adj_pval = exp_btwn_group_adj_pvals[3],
+                                                       cohens_d = BA_GMI_12mo_est/exp_btwn_group_pooled_sd))
+
+exp_btwn_group_contrast_results_df <- rbind(exp_btwn_group_contrast_results_df,
+                                            data.frame(contrast = "BA vs GMI @ 18mo", 
+                                                       estimate = BA_GMI_18mo_est, 
+                                                       ci_lo = BA_GMI_18mo_ci_lo, 
+                                                       ci_hi = BA_GMI_18mo_ci_hi, 
+                                                       pvalue = BA_GMI_18mo_p,
+                                                       adj_pval = exp_btwn_group_adj_pvals[4],
+                                                       cohens_d = BA_GMI_18mo_est/exp_btwn_group_pooled_sd))
+
+exp_btwn_group_contrast_results_df <- rbind(exp_btwn_group_contrast_results_df,
+                                            data.frame(contrast = "BA vs GMI @ 24mo", 
+                                                       estimate = BA_GMI_24mo_est, 
+                                                       ci_lo = BA_GMI_24mo_ci_lo, 
+                                                       ci_hi = BA_GMI_24mo_ci_hi, 
+                                                       pvalue = BA_GMI_24mo_p,
+                                                       adj_pval = exp_btwn_group_adj_pvals[5],
+                                                       cohens_d = BA_GMI_24mo_est/exp_btwn_group_pooled_sd))
+
+(exp_btwn_group_contrast_results_df)
+
+#Save output table
+exp_btwn_group_contrast_results_df <- exp_btwn_group_contrast_results_df %>% mutate(across(where(is.numeric), round, digits = 3))
+exp_btwn_group_contrast_results_table_OUT <- flextable(exp_btwn_group_contrast_results_df) %>%
+  theme_booktabs() %>%
+  autofit()
+save_as_docx(exp_btwn_group_contrast_results_table_OUT, path = "/users/Damien/Desktop/parent_CDI-2-P_exploratory_btwn_group_contrasts_table.docx")
+
+```
+
+
+7B. WITHIN-GROUP CONTRASTS (11)
+```{r }
+exp_within_group_contrast_results_df <- data.frame(contrast = character(),
+                                                   estimate = numeric(),
+                                                   ci_lo = numeric(),
+                                                   ci_hi = numeric(),
+                                                   pvalue = numeric(),
+                                                   adj_pval = numeric(),
+                                                   cohens_d = numeric(),
+                                                   stringsAsFactors = FALSE)
+
+
+#1. BA FROM BASELINE TO 12 MONTHS
+BA_base <- selvect_X[mm_grid$condition == "BA" & mm_grid$time == "1", , drop = FALSE]
+BA_12mo <- selvect_X[mm_grid$condition == "BA" & mm_grid$time == "4", , drop = FALSE]
+
+#Create contrast vector
+contvect <- BA_12mo - BA_base
+
+#Compute contrast estimate and SE
+BA_base_12mo_est <- as.numeric(contvect %*% beta)
+BA_base_12mo_se  <- sqrt(as.numeric(contvect %*% vcov_matrix %*% t(contvect)))
+
+#Compute 95% CI using large-sample normal approximation
+BA_base_12mo_ci_lo <- BA_base_12mo_est - 1.96 * BA_base_12mo_se
+BA_base_12mo_ci_hi <- BA_base_12mo_est + 1.96 * BA_base_12mo_se
+
+#Compute p value using Wald statistic
+BA_base_12mo_z <- BA_base_12mo_est / BA_base_12mo_se
+BA_base_12mo_p <- 2 * pnorm(abs(BA_base_12mo_z), lower.tail = FALSE)
+
+
+
+#2. BA FROM BASELINE TO 18 MONTHS
+BA_base <- selvect_X[mm_grid$condition == "BA" & mm_grid$time == "1", , drop = FALSE]
+BA_18mo <- selvect_X[mm_grid$condition == "BA" & mm_grid$time == "5", , drop = FALSE]
+
+#Create contrast vector
+contvect <- BA_18mo - BA_base
+
+#Compute contrast estimate and SE
+BA_base_18mo_est <- as.numeric(contvect %*% beta)
+BA_base_18mo_se  <- sqrt(as.numeric(contvect %*% vcov_matrix %*% t(contvect)))
+
+#Compute 95% CI using large-sample normal approximation
+BA_base_18mo_ci_lo <- BA_base_18mo_est - 1.96 * BA_base_18mo_se
+BA_base_18mo_ci_hi <- BA_base_18mo_est + 1.96 * BA_base_18mo_se
+
+#Compute p value using Wald statistic
+BA_base_18mo_z <- BA_base_18mo_est / BA_base_18mo_se
+BA_base_18mo_p <- 2 * pnorm(abs(BA_base_18mo_z), lower.tail = FALSE)
+
+
+
+#3. BA FROM BASELINE TO 24 MONTHS
+BA_base <- selvect_X[mm_grid$condition == "BA" & mm_grid$time == "1", , drop = FALSE]
+BA_24mo <- selvect_X[mm_grid$condition == "BA" & mm_grid$time == "6", , drop = FALSE]
+
+#Create contrast vector
+contvect <- BA_24mo - BA_base
+
+#Compute contrast estimate and SE
+BA_base_24mo_est <- as.numeric(contvect %*% beta)
+BA_base_24mo_se  <- sqrt(as.numeric(contvect %*% vcov_matrix %*% t(contvect)))
+
+#Compute 95% CI using large-sample normal approximation
+BA_base_24mo_ci_lo <- BA_base_24mo_est - 1.96 * BA_base_24mo_se
+BA_base_24mo_ci_hi <- BA_base_24mo_est + 1.96 * BA_base_24mo_se
+
+#Compute p value using Wald statistic
+BA_base_24mo_z <- BA_base_24mo_est / BA_base_24mo_se
+BA_base_24mo_p <- 2 * pnorm(abs(BA_base_24mo_z), lower.tail = FALSE)
+
+
+#4. GMI FROM BASELINE TO 12 MONTHS
+GMI_base <- selvect_X[mm_grid$condition == "GMI" & mm_grid$time == "1", , drop = FALSE]
+GMI_12mo <- selvect_X[mm_grid$condition == "GMI" & mm_grid$time == "4", , drop = FALSE]
+
+#Create contrast vector
+contvect <- GMI_12mo - GMI_base
+
+#Compute contrast estimate and SE
+GMI_base_12mo_est <- as.numeric(contvect %*% beta)
+GMI_base_12mo_se  <- sqrt(as.numeric(contvect %*% vcov_matrix %*% t(contvect)))
+
+#Compute 95% CI using large-sample normal approximation
+GMI_base_12mo_ci_lo <- GMI_base_12mo_est - 1.96 * GMI_base_12mo_se
+GMI_base_12mo_ci_hi <- GMI_base_12mo_est + 1.96 * GMI_base_12mo_se
+
+#Compute p value using Wald statistic
+GMI_base_12mo_z <- GMI_base_12mo_est / GMI_base_12mo_se
+GMI_base_12mo_p <- 2 * pnorm(abs(GMI_base_12mo_z), lower.tail = FALSE)
+
+
+
+#5. GMI FROM BASELINE TO 18 MONTHS
+GMI_base <- selvect_X[mm_grid$condition == "GMI" & mm_grid$time == "1", , drop = FALSE]
+GMI_18mo <- selvect_X[mm_grid$condition == "GMI" & mm_grid$time == "5", , drop = FALSE]
+
+#Create contrast vector
+contvect <- GMI_18mo - GMI_base
+
+#Compute contrast estimate and SE
+GMI_base_18mo_est <- as.numeric(contvect %*% beta)
+GMI_base_18mo_se  <- sqrt(as.numeric(contvect %*% vcov_matrix %*% t(contvect)))
+
+#Compute 95% CI using large-sample normal approximation
+GMI_base_18mo_ci_lo <- GMI_base_18mo_est - 1.96 * GMI_base_18mo_se
+GMI_base_18mo_ci_hi <- GMI_base_18mo_est + 1.96 * GMI_base_18mo_se
+
+#Compute p value using Wald statistic
+GMI_base_18mo_z <- GMI_base_18mo_est / GMI_base_18mo_se
+GMI_base_18mo_p <- 2 * pnorm(abs(GMI_base_18mo_z), lower.tail = FALSE)
+
+
+
+#6. GMI FROM BASELINE TO 24 MONTHS
+GMI_base <- selvect_X[mm_grid$condition == "GMI" & mm_grid$time == "1", , drop = FALSE]
+GMI_24mo <- selvect_X[mm_grid$condition == "GMI" & mm_grid$time == "6", , drop = FALSE]
+
+#Create contrast vector
+contvect <- GMI_24mo - GMI_base
+
+#Compute contrast estimate and SE
+GMI_base_24mo_est <- as.numeric(contvect %*% beta)
+GMI_base_24mo_se  <- sqrt(as.numeric(contvect %*% vcov_matrix %*% t(contvect)))
+
+#Compute 95% CI using large-sample normal approximation
+GMI_base_24mo_ci_lo <- GMI_base_24mo_est - 1.96 * GMI_base_24mo_se
+GMI_base_24mo_ci_hi <- GMI_base_24mo_est + 1.96 * GMI_base_24mo_se
+
+#Compute p value using Wald statistic
+GMI_base_24mo_z <- GMI_base_24mo_est / GMI_base_24mo_se
+GMI_base_24mo_p <- 2 * pnorm(abs(GMI_base_24mo_z), lower.tail = FALSE)
+
+
+
+#7. ST FROM BASELINE TO 3 MONTHS
+ST_base <- selvect_X[mm_grid$condition == "ST" & mm_grid$time == "1", , drop = FALSE]
+ST_3mo <- selvect_X[mm_grid$condition == "ST" & mm_grid$time == "2", , drop = FALSE]
+
+#Create contrast vector
+contvect <- ST_3mo - ST_base
+
+#Compute contrast estimate and SE
+ST_base_3mo_est <- as.numeric(contvect %*% beta)
+ST_base_3mo_se  <- sqrt(as.numeric(contvect %*% vcov_matrix %*% t(contvect)))
+
+#Compute 95% CI using large-sample normal approximation
+ST_base_3mo_ci_lo <- ST_base_3mo_est - 1.96 * ST_base_3mo_se
+ST_base_3mo_ci_hi <- ST_base_3mo_est + 1.96 * ST_base_3mo_se
+
+#Compute p value using Wald statistic
+ST_base_3mo_z <- ST_base_3mo_est / ST_base_3mo_se
+ST_base_3mo_p <- 2 * pnorm(abs(ST_base_3mo_z), lower.tail = FALSE)
+
+
+
+#8. ST FROM BASELINE TO 6 MONTHS
+ST_base <- selvect_X[mm_grid$condition == "ST" & mm_grid$time == "1", , drop = FALSE]
+ST_6mo <- selvect_X[mm_grid$condition == "ST" & mm_grid$time == "3", , drop = FALSE]
+
+#Create contrast vector
+contvect <- ST_6mo - ST_base
+
+#Compute contrast estimate and SE
+ST_base_6mo_est <- as.numeric(contvect %*% beta)
+ST_base_6mo_se  <- sqrt(as.numeric(contvect %*% vcov_matrix %*% t(contvect)))
+
+#Compute 95% CI using large-sample normal approximation
+ST_base_6mo_ci_lo <- ST_base_6mo_est - 1.96 * ST_base_6mo_se
+ST_base_6mo_ci_hi <- ST_base_6mo_est + 1.96 * ST_base_6mo_se
+
+#Compute p value using Wald statistic
+ST_base_6mo_z <- ST_base_6mo_est / ST_base_6mo_se
+ST_base_6mo_p <- 2 * pnorm(abs(ST_base_6mo_z), lower.tail = FALSE)
+
+
+
+#9. ST FROM BASELINE TO 12 MONTHS
+ST_base <- selvect_X[mm_grid$condition == "ST" & mm_grid$time == "1", , drop = FALSE]
+ST_12mo <- selvect_X[mm_grid$condition == "ST" & mm_grid$time == "4", , drop = FALSE]
+
+#Create contrast vector
+contvect <- ST_12mo - ST_base
+
+#Compute contrast estimate and SE
+ST_base_12mo_est <- as.numeric(contvect %*% beta)
+ST_base_12mo_se  <- sqrt(as.numeric(contvect %*% vcov_matrix %*% t(contvect)))
+
+#Compute 95% CI using large-sample normal approximation
+ST_base_12mo_ci_lo <- ST_base_12mo_est - 1.96 * ST_base_12mo_se
+ST_base_12mo_ci_hi <- ST_base_12mo_est + 1.96 * ST_base_12mo_se
+
+#Compute p value using Wald statistic
+ST_base_12mo_z <- ST_base_12mo_est / ST_base_12mo_se
+ST_base_12mo_p <- 2 * pnorm(abs(ST_base_12mo_z), lower.tail = FALSE)
+
+
+
+#10. ST FROM BASELINE TO 18 MONTHS
+ST_base <- selvect_X[mm_grid$condition == "ST" & mm_grid$time == "1", , drop = FALSE]
+ST_18mo <- selvect_X[mm_grid$condition == "ST" & mm_grid$time == "5", , drop = FALSE]
+
+#Create contrast vector
+contvect <- ST_18mo - ST_base
+
+#Compute contrast estimate and SE
+ST_base_18mo_est <- as.numeric(contvect %*% beta)
+ST_base_18mo_se  <- sqrt(as.numeric(contvect %*% vcov_matrix %*% t(contvect)))
+
+#Compute 95% CI using large-sample normal approximation
+ST_base_18mo_ci_lo <- ST_base_18mo_est - 1.96 * ST_base_18mo_se
+ST_base_18mo_ci_hi <- ST_base_18mo_est + 1.96 * ST_base_18mo_se
+
+#Compute p value using Wald statistic
+ST_base_18mo_z <- ST_base_18mo_est / ST_base_18mo_se
+ST_base_18mo_p <- 2 * pnorm(abs(ST_base_18mo_z), lower.tail = FALSE)
+
+
+
+#11. ST FROM BASELINE TO 24 MONTHS
+ST_base <- selvect_X[mm_grid$condition == "ST" & mm_grid$time == "1", , drop = FALSE]
+ST_24mo <- selvect_X[mm_grid$condition == "ST" & mm_grid$time == "6", , drop = FALSE]
+
+#Create contrast vector
+contvect <- ST_24mo - ST_base
+
+#Compute contrast estimate and SE
+ST_base_24mo_est <- as.numeric(contvect %*% beta)
+ST_base_24mo_se  <- sqrt(as.numeric(contvect %*% vcov_matrix %*% t(contvect)))
+
+#Compute 95% CI using large-sample normal approximation
+ST_base_24mo_ci_lo <- ST_base_24mo_est - 1.96 * ST_base_24mo_se
+ST_base_24mo_ci_hi <- ST_base_24mo_est + 1.96 * ST_base_24mo_se
+
+#Compute p value using Wald statistic
+ST_base_24mo_z <- ST_base_24mo_est / ST_base_24mo_se
+ST_base_24mo_p <- 2 * pnorm(abs(ST_base_24mo_z), lower.tail = FALSE)
+
+
+#Calculate adjusted p-values, condition-specific baseline sds to compute Cohen's D, and put results together
+exp_within_group_adj_pvals <- p.adjust(c(BA_base_12mo_p, BA_base_18mo_p, BA_base_24mo_p, 
+                                         GMI_base_12mo_p, GMI_base_18mo_p, GMI_base_24mo_p,
+                                         ST_base_3mo_p, ST_base_6mo_p, ST_base_12mo_p, ST_base_18mo_p, ST_base_24mo_p), "BH")
+
+exp_BA_baseline_sd <- sd(parent_cdi_data_long$cdi[which(parent_cdi_data_long$time == 1 & parent_cdi_data_long$condition == "BA")], na.rm = T)
+exp_GMI_baseline_sd <- sd(parent_cdi_data_long$cdi[which(parent_cdi_data_long$time == 1 & parent_cdi_data_long$condition == "GMI")], na.rm = T)
+exp_ST_baseline_sd <- sd(parent_cdi_data_long$cdi[which(parent_cdi_data_long$time == 1 & parent_cdi_data_long$condition == "ST")], na.rm = T)
+
+exp_within_group_contrast_results_df <- rbind(exp_within_group_contrast_results_df,
+                                              data.frame(contrast = "BA @ base vs BA @ 12mo", 
+                                                         estimate = BA_base_12mo_est, 
+                                                         ci_lo = BA_base_12mo_ci_lo, 
+                                                         ci_hi = BA_base_12mo_ci_hi, 
+                                                         pvalue = BA_base_12mo_p,
+                                                         adj_pval = exp_within_group_adj_pvals[1],
+                                                         cohens_d = BA_base_12mo_est/exp_BA_baseline_sd))
+
+exp_within_group_contrast_results_df <- rbind(exp_within_group_contrast_results_df,
+                                              data.frame(contrast = "BA @ base vs BA @ 18mo", 
+                                                         estimate = BA_base_18mo_est, 
+                                                         ci_lo = BA_base_18mo_ci_lo, 
+                                                         ci_hi = BA_base_18mo_ci_hi, 
+                                                         pvalue = BA_base_18mo_p,
+                                                         adj_pval = exp_within_group_adj_pvals[2],
+                                                         cohens_d = BA_base_18mo_est/exp_BA_baseline_sd))
+
+exp_within_group_contrast_results_df <- rbind(exp_within_group_contrast_results_df,
+                                              data.frame(contrast = "BA @ base vs BA @ 24mo", 
+                                                         estimate = BA_base_24mo_est, 
+                                                         ci_lo = BA_base_24mo_ci_lo, 
+                                                         ci_hi = BA_base_24mo_ci_hi, 
+                                                         pvalue = BA_base_24mo_p,
+                                                         adj_pval = exp_within_group_adj_pvals[3],
+                                                         cohens_d = BA_base_24mo_est/exp_BA_baseline_sd))
+
+exp_within_group_contrast_results_df <- rbind(exp_within_group_contrast_results_df,
+                                              data.frame(contrast = "GMI @ base vs GMI @ 12mo", 
+                                                         estimate = GMI_base_12mo_est, 
+                                                         ci_lo = GMI_base_12mo_ci_lo, 
+                                                         ci_hi = GMI_base_12mo_ci_hi, 
+                                                         pvalue = GMI_base_12mo_p,
+                                                         adj_pval = exp_within_group_adj_pvals[4],
+                                                         cohens_d = GMI_base_12mo_est/exp_GMI_baseline_sd))
+
+exp_within_group_contrast_results_df <- rbind(exp_within_group_contrast_results_df,
+                                              data.frame(contrast = "GMI @ base vs GMI @ 18mo", 
+                                                         estimate = GMI_base_18mo_est, 
+                                                         ci_lo = GMI_base_18mo_ci_lo, 
+                                                         ci_hi = GMI_base_18mo_ci_hi, 
+                                                         pvalue = GMI_base_18mo_p,
+                                                         adj_pval = exp_within_group_adj_pvals[5],
+                                                         cohens_d = GMI_base_18mo_est/exp_GMI_baseline_sd))
+
+exp_within_group_contrast_results_df <- rbind(exp_within_group_contrast_results_df,
+                                              data.frame(contrast = "GMI @ base vs GMI @ 24mo", 
+                                                         estimate = GMI_base_24mo_est, 
+                                                         ci_lo = GMI_base_24mo_ci_lo, 
+                                                         ci_hi = GMI_base_24mo_ci_hi, 
+                                                         pvalue = GMI_base_24mo_p,
+                                                         adj_pval = exp_within_group_adj_pvals[6],
+                                                         cohens_d = GMI_base_24mo_est/exp_GMI_baseline_sd))
+
+exp_within_group_contrast_results_df <- rbind(exp_within_group_contrast_results_df,
+                                              data.frame(contrast = "ST @ base vs ST @ 3mo", 
+                                                         estimate = ST_base_3mo_est, 
+                                                         ci_lo = ST_base_3mo_ci_lo, 
+                                                         ci_hi = ST_base_3mo_ci_hi, 
+                                                         pvalue = ST_base_3mo_p,
+                                                         adj_pval = exp_within_group_adj_pvals[7],
+                                                         cohens_d = ST_base_3mo_est/exp_ST_baseline_sd))
+
+exp_within_group_contrast_results_df <- rbind(exp_within_group_contrast_results_df,
+                                              data.frame(contrast = "ST @ base vs ST @ 6mo", 
+                                                         estimate = ST_base_6mo_est, 
+                                                         ci_lo = ST_base_6mo_ci_lo, 
+                                                         ci_hi = ST_base_6mo_ci_hi, 
+                                                         pvalue = ST_base_6mo_p,
+                                                         adj_pval = exp_within_group_adj_pvals[8],
+                                                         cohens_d = ST_base_6mo_est/exp_ST_baseline_sd))
+
+exp_within_group_contrast_results_df <- rbind(exp_within_group_contrast_results_df,
+                                              data.frame(contrast = "ST @ base vs ST @ 12mo", 
+                                                         estimate = ST_base_12mo_est, 
+                                                         ci_lo = ST_base_12mo_ci_lo, 
+                                                         ci_hi = ST_base_12mo_ci_hi, 
+                                                         pvalue = ST_base_12mo_p,
+                                                         adj_pval = exp_within_group_adj_pvals[9],
+                                                         cohens_d = ST_base_12mo_est/exp_ST_baseline_sd))
+
+exp_within_group_contrast_results_df <- rbind(exp_within_group_contrast_results_df,
+                                              data.frame(contrast = "ST @ base vs ST @ 18mo", 
+                                                         estimate = ST_base_18mo_est, 
+                                                         ci_lo = ST_base_18mo_ci_lo, 
+                                                         ci_hi = ST_base_18mo_ci_hi, 
+                                                         pvalue = ST_base_18mo_p,
+                                                         adj_pval = exp_within_group_adj_pvals[10],
+                                                         cohens_d = ST_base_18mo_est/exp_ST_baseline_sd))
+
+exp_within_group_contrast_results_df <- rbind(exp_within_group_contrast_results_df,
+                                              data.frame(contrast = "ST @ base vs ST @ 24mo", 
+                                                         estimate = ST_base_24mo_est, 
+                                                         ci_lo = ST_base_24mo_ci_lo, 
+                                                         ci_hi = ST_base_24mo_ci_hi, 
+                                                         pvalue = ST_base_24mo_p,
+                                                         adj_pval = exp_within_group_adj_pvals[11],
+                                                         cohens_d = ST_base_24mo_est/exp_ST_baseline_sd))
+
+(exp_within_group_contrast_results_df)
+
+#Save output table
+exp_within_group_contrast_results_df <- exp_within_group_contrast_results_df %>% mutate(across(where(is.numeric), round, digits = 3))
+exp_within_group_contrast_results_table_OUT <- flextable(exp_within_group_contrast_results_df) %>%
+  theme_booktabs() %>%
+  autofit()
+save_as_docx(exp_within_group_contrast_results_table_OUT, path = "/users/Damien/Desktop/parent_CDI-2-P_exploratory_within_group_contrasts_table.docx")
+
+```
+
+
+8. PLOT MODEL-ESTIMATED MEANS WITH 95% CIS ACROSS ALL TIME POINTS FOR EACH SSI CONDITION
+```{r }
+mm_grid <- mm_grid %>%
+  mutate(
+    time = factor(
+      time,
+      levels = c("1", "2", "3", "4", "5", "6"),
+      labels = c("baseline", "3 months", "6 months", "12 months", "18 months", "24 months")
+    ),
+    condition = factor(condition, levels = c("ST", "BA", "GMI"))
+  )
+
+ggplot(mm_grid, aes(x = time, y = marginal_mean, group = condition)) +
+  geom_line(aes(linetype = condition), linewidth = 0.8) +
+  geom_point(aes(shape = condition), size = 2.5) +
+  geom_errorbar(
+    aes(ymin = ci_lo,
+        ymax = ci_hi,
+        linetype = condition),
+    width = 0.10,
+    linewidth = 0.6) +
+  labs(x = "Measurement Occassion",
+       y = "Model-Estimated Mean",
+       linetype = "Condition",
+       shape = "Condition",
+       title = "Model-Estimated Means over Time for Parent CDI-P across Treatment Conditions") +
+  theme_classic()
+  
+```
+
+
